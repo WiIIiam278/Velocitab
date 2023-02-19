@@ -11,6 +11,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import net.william278.annotaml.Annotaml;
 import net.william278.velocitab.config.Settings;
 import net.william278.velocitab.luckperms.LuckPermsHook;
+import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.tab.PlayerTabList;
@@ -30,7 +31,10 @@ import java.util.Optional;
         description = "Simple velocity TAB menu plugin",
         url = "https://william278.net/",
         authors = {"William278"},
-        dependencies = {@Dependency(id = "luckperms", optional = true)}
+        dependencies = {
+                @Dependency(id = "protocolize"),
+                @Dependency(id = "luckperms", optional = true)
+        }
 )
 public class Velocitab {
 
@@ -40,6 +44,7 @@ public class Velocitab {
     private final Path dataDirectory;
     private PlayerTabList tabList;
     private LuckPermsHook luckPerms;
+    private ScoreboardManager scoreboardManager;
 
     @Inject
     public Velocitab(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
@@ -52,6 +57,7 @@ public class Velocitab {
     public void onProxyInitialization(ProxyInitializeEvent event) {
         loadSettings();
         loadHooks();
+        prepareScoreboardManager();
         prepareTabList();
         logger.info("Successfully enabled Velocitab v" + BuildConstants.VERSION);
     }
@@ -90,6 +96,16 @@ public class Velocitab {
         } catch (IllegalArgumentException e) {
             logger.warn("LuckPerms was not loaded: " + e.getMessage(), e);
         }
+    }
+
+    private void prepareScoreboardManager() {
+        this.scoreboardManager = new ScoreboardManager(this);
+        scoreboardManager.registerPacket();
+    }
+
+    @NotNull
+    public ScoreboardManager getScoreboardManager() {
+        return scoreboardManager;
     }
 
     @NotNull

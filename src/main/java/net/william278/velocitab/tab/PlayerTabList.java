@@ -3,7 +3,6 @@ package net.william278.velocitab.tab;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
-import com.velocitypowered.api.proxy.Player;
 import de.themoep.minedown.adventure.MineDown;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
@@ -13,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class PlayerTabList {
     private final Velocitab plugin;
@@ -27,33 +26,66 @@ public class PlayerTabList {
     @SuppressWarnings("UnstableApiUsage")
     @Subscribe
     public void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
-        // Remove previous Tab entries for players when they move servers
-        if (event.getPreviousServer() != null) {
-            removePlayer(event.getPlayer());
+        // Remove the player from the tracking list if they are switching servers
+        if (event.getPreviousServer() == null) {
+            players.removeIf(player -> player.getPlayer().getUniqueId().equals(event.getPlayer().getUniqueId()));
         }
 
-        final TabPlayer player = plugin.getTabPlayer(event.getPlayer());
+        // Add the player to the tracking list
+        players.add(plugin.getTabPlayer(event.getPlayer()));
 
-        // Reset existing tab list
-        player.getPlayer().getTabList().clearHeaderAndFooter();
-        if (!player.getPlayer().getTabList().getEntries().isEmpty()) {
-            player.getPlayer().getTabList().getEntries().clear();
-        }
-
-        // Show existing list to new player
-        players.forEach(listPlayer -> player.addPlayer(listPlayer, plugin));
-        addPlayer(player);
-        refreshHeaderAndFooter();
+        // Update the tab list of all players
+        plugin.getServer().getScheduler().buildTask(plugin, this::updateList)
+                .delay(500, TimeUnit.MILLISECONDS)
+                .schedule();
     }
 
     @Subscribe
     public void onPlayerQuit(@NotNull DisconnectEvent event) {
-        try {
-            removePlayer(event.getPlayer());
-            refreshHeaderAndFooter();
-        } catch (Exception ignored) {
-            // Ignore when server shutting down
-        }
+        // Remove the player from the tracking list
+        players.removeIf(player -> player.getPlayer().getUniqueId().equals(event.getPlayer().getUniqueId()));
+
+        // Remove the player from the tab list of all other players
+        plugin.getScoreboardManager().removeTeam(event.getPlayer());
+        plugin.getServer().getAllPlayers().forEach(player -> {
+            if (player.getTabList().containsEntry(event.getPlayer().getUniqueId())) {
+                player.getTabList().removeEntry(event.getPlayer().getUniqueId());
+            }
+        });
+
+        // Update the tab list of all players
+        plugin.getServer().getScheduler().buildTask(plugin, this::updateList)
+                .delay(500, TimeUnit.MILLISECONDS)
+                .schedule();
+    }
+
+    public void updatePlayer(@NotNull TabPlayer tabPlayer) {
+        // Remove the existing player from the tracking list
+        players.removeIf(player -> player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId()));
+
+        // Add the player to the tracking list
+        players.add(tabPlayer);
+
+        // Update the player's team sorting
+        plugin.getScoreboardManager().removeTeam(tabPlayer.getPlayer());
+
+        // Update the tab list of all players
+        plugin.getServer().getScheduler().buildTask(plugin, this::updateList)
+                .delay(500, TimeUnit.MILLISECONDS)
+                .schedule();
+    }
+
+    private void updateList() {
+        players.forEach(player -> {
+            player.sendHeaderAndFooter(this);
+            player.getPlayer().getTabList().getEntries()
+                    .forEach(entry -> players.stream()
+                            .filter(p -> p.getPlayer().getGameProfile().getId().equals(entry.getProfile().getId()))
+                            .findFirst().ifPresent(tabPlayer -> {
+                                entry.setDisplayName(tabPlayer.getDisplayName(plugin));
+                                plugin.getScoreboardManager().setPlayerTeam(tabPlayer);
+                            }));
+        });
     }
 
     @NotNull
@@ -66,22 +98,4 @@ public class PlayerTabList {
         return new MineDown(Placeholder.format(plugin.getSettings().getFooter(), plugin, player)).toComponent();
     }
 
-    // Add a new tab player to the list and update for online players
-    public void addPlayer(@NotNull TabPlayer player) {
-        players.add(player);
-        players.forEach(tabPlayer -> tabPlayer.addPlayer(player, plugin));
-    }
-
-    public void removePlayer(@NotNull Player playerToRemove) {
-        final Optional<TabPlayer> quitTabPlayer = players.stream()
-                .filter(player -> player.getPlayer().equals(playerToRemove)).findFirst();
-        if (quitTabPlayer.isPresent()) {
-            players.remove(quitTabPlayer.get());
-            players.forEach(tabPlayer -> tabPlayer.removePlayer(quitTabPlayer.get(), plugin));
-        }
-    }
-
-    public void refreshHeaderAndFooter() {
-        players.forEach(tabPlayer -> tabPlayer.sendHeaderAndFooter(this));
-    }
 }

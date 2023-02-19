@@ -10,7 +10,6 @@ import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.Role;
-import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,12 +44,8 @@ public class LuckPermsHook {
 
     @Subscribe
     public void onLuckPermsGroupUpdate(@NotNull UserDataRecalculateEvent event) {
-        plugin.getServer().getPlayer(event.getUser().getUniqueId()).ifPresent(player -> {
-            final PlayerTabList tabList = plugin.getTabList();
-            tabList.removePlayer(player);
-            tabList.addPlayer(plugin.getTabPlayer(player));
-            tabList.refreshHeaderAndFooter();
-        });
+        plugin.getServer().getPlayer(event.getUser().getUniqueId())
+                .ifPresent(player -> plugin.getTabList().updatePlayer(plugin.getTabPlayer(player)));
     }
 
     private OptionalInt getWeight(@Nullable String groupName) {

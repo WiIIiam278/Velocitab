@@ -25,7 +25,7 @@ public class Role implements Comparable<Role> {
 
     @Override
     public int compareTo(@NotNull Role o) {
-        return o.weight - weight;
+        return weight - o.weight;
     }
 
     public Optional<String> getPrefix() {

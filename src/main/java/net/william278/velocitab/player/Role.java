@@ -42,6 +42,6 @@ public class Role implements Comparable<Role> {
 
     @NotNull
     public String getStringComparableWeight() {
-        return String.format("%05d", weight);
+        return String.format("%03d", weight);
     }
 }

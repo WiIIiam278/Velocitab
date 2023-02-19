@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class PlayerTabList {
     private final Velocitab plugin;
@@ -22,6 +23,31 @@ public class PlayerTabList {
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
         this.players = new ArrayList<>();
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    @Subscribe
+    public void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
+        final TabPlayer player = plugin.getTabPlayer(event.getPlayer());
+
+        // Reset existing tab list
+        player.getPlayer().getTabList().clearHeaderAndFooter();
+        player.getPlayer().getTabList().getEntries().clear();
+
+        // Show existing list to new player
+        players.forEach(listPlayer -> player.addPlayer(listPlayer, plugin));
+        addPlayer(player);
+        refreshHeaderAndFooter();
+    }
+
+    @Subscribe
+    public void onPlayerQuit(@NotNull DisconnectEvent event) {
+        try {
+            removePlayer(event.getPlayer());
+            refreshHeaderAndFooter();
+        } catch (Exception ignored) {
+            // Ignore when server shutting down
+        }
     }
 
     @NotNull
@@ -34,35 +60,22 @@ public class PlayerTabList {
         return new MineDown(Placeholder.format(plugin.getSettings().getFooter(), plugin, player)).toComponent();
     }
 
-
-    @SuppressWarnings("UnstableApiUsage")
-    @Subscribe
-    public void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
-        final TabPlayer player = plugin.getTabPlayer(event.getPlayer());
-
-        // Show existing list to new player
-        players.forEach(listPlayer -> player.addPlayer(listPlayer, plugin));
-
-        // Update list for all players with new player
+    // Add a new tab player to the list and update for online players
+    public void addPlayer(@NotNull TabPlayer player) {
         players.add(player);
-        players.forEach(tabPlayer -> {
-            tabPlayer.addPlayer(player, plugin);
-            tabPlayer.sendHeaderAndFooter(this);
-        });
+        players.forEach(tabPlayer -> tabPlayer.addPlayer(player, plugin));
     }
 
-    @Subscribe
-    public void onPlayerQuit(@NotNull DisconnectEvent event) {
-        final Player quitPlayer = event.getPlayer();
+    public void removePlayer(@NotNull Player playerToRemove) {
         final Optional<TabPlayer> quitTabPlayer = players.stream()
-                .filter(player -> player.player().equals(quitPlayer)).findFirst();
+                .filter(player -> player.getPlayer().equals(playerToRemove)).findFirst();
         if (quitTabPlayer.isPresent()) {
             players.remove(quitTabPlayer.get());
-            players.forEach(tabPlayer -> {
-                tabPlayer.removePlayer(quitTabPlayer.get());
-                tabPlayer.sendHeaderAndFooter(this);
-            });
+            players.forEach(tabPlayer -> tabPlayer.removePlayer(quitTabPlayer.get(), plugin));
         }
     }
 
+    public void refreshHeaderAndFooter() {
+        players.forEach(tabPlayer -> tabPlayer.sendHeaderAndFooter(this));
+    }
 }

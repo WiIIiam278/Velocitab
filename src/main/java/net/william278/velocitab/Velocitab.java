@@ -53,6 +53,7 @@ public class Velocitab {
         loadSettings();
         loadHooks();
         prepareTabList();
+        logger.info("Successfully enabled Velocitab v" + BuildConstants.VERSION);
     }
 
     @NotNull
@@ -84,10 +85,16 @@ public class Velocitab {
 
         // If LuckPerms is present, load the hook
         try {
-            luckPerms = new LuckPermsHook();
+            luckPerms = new LuckPermsHook(this);
+            server.getEventManager().register(this, luckPerms);
         } catch (IllegalArgumentException e) {
             logger.warn("LuckPerms was not loaded: " + e.getMessage(), e);
         }
+    }
+
+    @NotNull
+    public PlayerTabList getTabList() {
+        return tabList;
     }
 
     private void prepareTabList() {

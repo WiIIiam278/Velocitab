@@ -1,46 +1,42 @@
 package net.william278.velocitab.config;
 
-import net.william278.annotaml.YamlComment;
 import net.william278.annotaml.YamlFile;
 import net.william278.annotaml.YamlKey;
+import net.william278.velocitab.BuildConstants;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
-@YamlFile(header = "Velocitab Config File")
+@YamlFile(header = """
+        ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+        ┃       Velocitab Config       ┃
+        ┃    Developed by William278   ┃
+        ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+        ┗╸ Placeholders: %players_online%, %max_players_online%, %local_players_online%, %current_date%, %current_time%, %username%, %server%, %ping%, %prefix%, %suffix%, %role%""")
 public class Settings {
 
-    @YamlKey("tab_list.header")
-    private String header = "Welcome to the server!";
-
-    @YamlKey("tab_list.footer")
-    private String footer = "Welcome to the server!";
-
-    @YamlKey("tab_list.format")
-    private String format;
-
-    @YamlComment("Use LuckPerms for tab list formatting (if installed)")
-    @YamlKey("use_luckperms")
-    private boolean useLuckPerms = true;
+    @YamlKey("header")
+    private String header = "&rainbow&Running Velocitab v" + BuildConstants.VERSION + " by William278";
+    @YamlKey("footer")
+    private String footer = "[There are currently %players_online%/%max_players_online% players online](gray)";
+    @YamlKey("format")
+    private String format = "&7[%server%] &f%prefix%%username%";
 
     private Settings() {
     }
 
     @NotNull
     public String getHeader() {
-        return header;
+        return StringEscapeUtils.unescapeJava(header);
     }
 
     @NotNull
     public String getFooter() {
-        return footer;
+        return StringEscapeUtils.unescapeJava(footer);
     }
 
     @NotNull
     public String getFormat() {
-        return format;
-    }
-
-    public boolean isUseLuckPerms() {
-        return useLuckPerms;
+        return StringEscapeUtils.unescapeJava(format);
     }
 
 }

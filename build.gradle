@@ -1,0 +1,74 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'org.ajoberstar.grgit' version '5.0.0'
+}
+
+group = 'net.william278'
+version = "1.0-${versionMetadata()}"
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url = 'https://jitpack.io' }
+    maven { url = 'https://repo.minebench.de/' }
+}
+
+dependencies {
+    compileOnly 'com.velocitypowered:velocity-api:3.1.1'
+    compileOnly 'net.luckperms:api:5.4'
+
+    implementation 'net.william278:Annotaml:2.0.1'
+    implementation 'de.themoep:minedown-adventure:1.7.1-SNAPSHOT'
+
+    annotationProcessor 'com.velocitypowered:velocity-api:3.1.1'
+}
+
+shadowJar {
+    relocate 'de.themoep', 'net.william278.velocitab.libraries'
+    relocate 'net.william278.annotaml', 'net.william278.velocitab.libraries.annotaml'
+
+    dependencies {
+        //noinspection GroovyAssignabilityCheck
+        exclude dependency(':slf4j-api')
+    }
+}
+
+def targetJavaVersion = 16
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+jar.dependsOn shadowJar
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = targetJavaVersion
+}
+
+def templateSource = file('src/main/templates')
+def templateDest = layout.buildDirectory.dir('generated/sources/templates')
+def generateTemplates = tasks.register('generateTemplates', Copy) { task ->
+    def props = [
+            'version': project.version
+    ]
+    task.inputs.properties props
+
+    task.from templateSource
+    task.into templateDest
+    task.expand props
+}
+
+sourceSets.main.java.srcDir(generateTemplates.map { it.outputs })
+
+@SuppressWarnings('GrMethodMayBeStatic')
+def versionMetadata() {
+    if (grgit == null) {
+        return System.getenv("GITHUB_RUN_NUMBER") ? 'build.' + System.getenv("GITHUB_RUN_NUMBER") : 'unknown'
+    }
+    return grgit.head().abbreviatedId + (grgit.status().clean ? '' : '-indev')
+}

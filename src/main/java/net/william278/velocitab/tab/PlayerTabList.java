@@ -28,6 +28,11 @@ public class PlayerTabList {
     @SuppressWarnings("UnstableApiUsage")
     @Subscribe
     public void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
+        // Remove previous Tab entries for players when they move servers
+        if (event.getPreviousServer() != null) {
+            removePlayer(event.getPlayer());
+        }
+
         final TabPlayer player = plugin.getTabPlayer(event.getPlayer());
 
         // Reset existing tab list

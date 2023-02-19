@@ -34,6 +34,7 @@ public enum Placeholder {
         this.formatter = formatter;
     }
 
+    @NotNull
     public static String format(@NotNull String format, @NotNull Velocitab plugin, @NotNull TabPlayer player) {
         for (Placeholder placeholder : values()) {
             format = format.replace("%" + placeholder.name().toLowerCase() + "%", placeholder.formatter.apply(plugin, player));

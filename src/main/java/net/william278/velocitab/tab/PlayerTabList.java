@@ -32,7 +32,9 @@ public class PlayerTabList {
 
         // Reset existing tab list
         player.getPlayer().getTabList().clearHeaderAndFooter();
-        player.getPlayer().getTabList().getEntries().clear();
+        if (!player.getPlayer().getTabList().getEntries().isEmpty()) {
+            player.getPlayer().getTabList().getEntries().clear();
+        }
 
         // Show existing list to new player
         players.forEach(listPlayer -> player.addPlayer(listPlayer, plugin));

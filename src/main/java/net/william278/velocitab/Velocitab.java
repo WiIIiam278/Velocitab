@@ -93,6 +93,7 @@ public class Velocitab {
         try {
             luckPerms = new LuckPermsHook(this);
             server.getEventManager().register(this, luckPerms);
+            logger.info("Successfully hooked into LuckPerms");
         } catch (IllegalArgumentException e) {
             logger.warn("LuckPerms was not loaded: " + e.getMessage(), e);
         }
@@ -120,8 +121,12 @@ public class Velocitab {
 
     @NotNull
     public TabPlayer getTabPlayer(@NotNull Player player) {
-        return new TabPlayer(player, getLuckPerms().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE),
-                getLuckPerms().map(LuckPermsHook::getHighestWeight).orElse(0));
+        return new TabPlayer(
+                player,
+                getLuckPerms().map(hook -> hook.getPlayerRole(player))
+                        .orElse(Role.DEFAULT_ROLE),
+                getLuckPerms().map(LuckPermsHook::getHighestWeight)
+                        .orElse(0));
     }
 
 }

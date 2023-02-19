@@ -15,8 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static dev.simplix.protocolize.api.util.ProtocolVersions.MINECRAFT_1_19;
-import static dev.simplix.protocolize.api.util.ProtocolVersions.MINECRAFT_1_19_3;
+import static dev.simplix.protocolize.api.util.ProtocolVersions.*;
 
 @Getter
 @Setter
@@ -28,7 +27,9 @@ import static dev.simplix.protocolize.api.util.ProtocolVersions.MINECRAFT_1_19_3
 public class UpdateTeamsPacket extends AbstractPacket {
 
     protected static final List<ProtocolIdMapping> MAPPINGS = List.of(
-            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_19, MINECRAFT_1_19_3, 0x56)
+            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_19, MINECRAFT_1_19, 0x55),
+            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_19_1, MINECRAFT_1_19_2, 0x58),
+            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_19_3, MINECRAFT_LATEST, 0x56)
     );
 
     private String teamName;

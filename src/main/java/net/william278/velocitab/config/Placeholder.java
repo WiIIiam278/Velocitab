@@ -26,7 +26,8 @@ public enum Placeholder {
     PING((plugin, player) -> Long.toString(player.getPlayer().getPing())),
     PREFIX((plugin, player) -> player.getRole().getPrefix().orElse("")),
     SUFFIX((plugin, player) -> player.getRole().getSuffix().orElse("")),
-    ROLE((plugin, player) -> player.getRole().getName().orElse(""));
+    ROLE((plugin, player) -> player.getRole().getName().orElse("")),
+    DEBUG_TEAM_NAME((plugin, player) -> player.getTeamName());
 
     private final BiFunction<Velocitab, TabPlayer, String> formatter;
 

@@ -30,16 +30,15 @@ public class LuckPermsHook {
     @NotNull
     public Role getPlayerRole(@NotNull Player player) {
         final CachedMetaData metaData = getUser(player.getUniqueId()).getCachedData().getMetaData();
-        final OptionalInt roleWeight = getWeight(metaData.getPrimaryGroup());
-        if (roleWeight.isPresent()) {
-            return new Role(
-                    roleWeight.getAsInt(),
-                    metaData.getPrimaryGroup(),
-                    metaData.getPrefix(),
-                    metaData.getSuffix()
-            );
+        if (metaData.getPrimaryGroup() == null) {
+            return Role.DEFAULT_ROLE;
         }
-        return Role.DEFAULT_ROLE;
+        return new Role(
+                getWeight(metaData.getPrimaryGroup()).orElse(0),
+                metaData.getPrimaryGroup(),
+                metaData.getPrefix(),
+                metaData.getSuffix()
+        );
     }
 
     @Subscribe

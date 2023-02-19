@@ -22,10 +22,10 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private final Role role;
     private final GameProfile profile;
 
-    public TabPlayer(@NotNull Player player, @NotNull Role role) {
+    public TabPlayer(@NotNull Player player, @NotNull Role role, int highestWeight) {
         this.player = player;
         this.role = role;
-        final String profileName = role.getStringComparableWeight() + "-" + getServerName() + "-" + player.getUsername();
+        final String profileName = role.getStringComparableWeight(highestWeight) + getServerName() + player.getUsername();
         this.profile = new GameProfile(
                 new UUID(0, new Random().nextLong()),
                 profileName.length() > 16 ? profileName.substring(0, 16) : profileName,

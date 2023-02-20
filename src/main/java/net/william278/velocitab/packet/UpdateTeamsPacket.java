@@ -55,7 +55,7 @@ public class UpdateTeamsPacket extends AbstractPacket {
         updateTeamsPacket.friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY));
         updateTeamsPacket.nameTagVisibility(NameTagVisibility.ALWAYS);
         updateTeamsPacket.collisionRule(CollisionRule.ALWAYS);
-        updateTeamsPacket.color(0);
+        updateTeamsPacket.color(15);
         updateTeamsPacket.prefix(getChatString(""));
         updateTeamsPacket.suffix(getChatString(""));
         updateTeamsPacket.entities(List.of(member));

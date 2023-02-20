@@ -1,6 +1,5 @@
 package net.william278.velocitab.luckperms;
 
-import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.proxy.Player;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
@@ -10,6 +9,7 @@ import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.Role;
+import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,17 +19,23 @@ import java.util.UUID;
 public class LuckPermsHook {
 
     private int highestWeight = Role.DEFAULT_WEIGHT;
+    private int lowestWeight = Role.DEFAULT_WEIGHT;
     private final Velocitab plugin;
     private final LuckPerms api;
 
     public LuckPermsHook(@NotNull Velocitab plugin) throws IllegalStateException {
         this.plugin = plugin;
         this.api = LuckPermsProvider.get();
+        api.getEventBus().subscribe(plugin, UserDataRecalculateEvent.class, this::onLuckPermsGroupUpdate);
     }
 
     @NotNull
     public Role getPlayerRole(@NotNull Player player) {
-        final CachedMetaData metaData = getUser(player.getUniqueId()).getCachedData().getMetaData();
+        return getRoleFromMetadata(getUser(player.getUniqueId()).getCachedData().getMetaData());
+    }
+
+    @NotNull
+    private Role getRoleFromMetadata(@NotNull CachedMetaData metaData) {
         if (metaData.getPrimaryGroup() == null) {
             return Role.DEFAULT_ROLE;
         }
@@ -41,10 +47,14 @@ public class LuckPermsHook {
         );
     }
 
-    @Subscribe
     public void onLuckPermsGroupUpdate(@NotNull UserDataRecalculateEvent event) {
         plugin.getServer().getPlayer(event.getUser().getUniqueId())
-                .ifPresent(player -> plugin.getTabList().updatePlayer(plugin.getTabPlayer(player)));
+                .ifPresent(player -> plugin.getTabList().updatePlayer(new TabPlayer(
+                        player,
+                        getRoleFromMetadata(event.getData().getMetaData()),
+                        getHighestWeight(),
+                        getLowestWeight()
+                )));
     }
 
     private OptionalInt getWeight(@Nullable String groupName) {
@@ -67,9 +77,22 @@ public class LuckPermsHook {
         return highestWeight;
     }
 
+    public int getLowestWeight() {
+        if (lowestWeight == Role.DEFAULT_WEIGHT) {
+            api.getGroupManager().getLoadedGroups().forEach(group -> {
+                final OptionalInt weight = group.getWeight();
+                if (weight.isPresent() && weight.getAsInt() < lowestWeight) {
+                    lowestWeight = weight.getAsInt();
+                }
+            });
+        }
+        return lowestWeight;
+    }
+
     private User getUser(@NotNull UUID uuid) {
         return api.getUserManager().getUser(uuid);
     }
+
 
 
 }

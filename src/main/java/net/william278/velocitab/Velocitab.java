@@ -92,7 +92,6 @@ public class Velocitab {
         // If LuckPerms is present, load the hook
         try {
             luckPerms = new LuckPermsHook(this);
-            server.getEventManager().register(this, luckPerms);
             logger.info("Successfully hooked into LuckPerms");
         } catch (IllegalArgumentException e) {
             logger.warn("LuckPerms was not loaded: " + e.getMessage(), e);
@@ -116,7 +115,7 @@ public class Velocitab {
 
     private void prepareTabList() {
         this.tabList = new PlayerTabList(this);
-        server.getEventManager().register(this, new PlayerTabList(this));
+        server.getEventManager().register(this, tabList);
     }
 
     @NotNull
@@ -126,6 +125,8 @@ public class Velocitab {
                 getLuckPerms().map(hook -> hook.getPlayerRole(player))
                         .orElse(Role.DEFAULT_ROLE),
                 getLuckPerms().map(LuckPermsHook::getHighestWeight)
+                        .orElse(0),
+                getLuckPerms().map(LuckPermsHook::getLowestWeight)
                         .orElse(0));
     }
 

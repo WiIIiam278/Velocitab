@@ -1,5 +1,6 @@
 package net.william278.velocitab.tab;
 
+import com.google.common.collect.ImmutableList;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
@@ -46,36 +47,39 @@ public class PlayerTabList {
         players.removeIf(player -> player.getPlayer().getUniqueId().equals(event.getPlayer().getUniqueId()));
 
         // Remove the player from the tab list of all other players
-        plugin.getScoreboardManager().removeTeam(event.getPlayer());
-        plugin.getServer().getAllPlayers().forEach(player -> {
-            if (player.getTabList().containsEntry(event.getPlayer().getUniqueId())) {
-                player.getTabList().removeEntry(event.getPlayer().getUniqueId());
-            }
-        });
+        plugin.getServer().getAllPlayers().forEach(player -> player.getTabList().removeEntry(event.getPlayer().getUniqueId()));
 
         // Update the tab list of all players
-        plugin.getServer().getScheduler().buildTask(plugin, this::updateList)
+        plugin.getServer().getScheduler().buildTask(plugin, () -> {
+                    plugin.getScoreboardManager().removeTeam(event.getPlayer());
+                    updateList();
+                })
                 .delay(500, TimeUnit.MILLISECONDS)
                 .schedule();
     }
 
     public void updatePlayer(@NotNull TabPlayer tabPlayer) {
-        // Remove the existing player from the tracking list
-        players.removeIf(player -> player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId()));
+        plugin.getServer().getScheduler()
+                .buildTask(plugin, () -> {
+                    // Remove the existing player from the tracking list
+                    players.replaceAll(player -> {
+                        if (player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId())) {
+                            return tabPlayer;
+                        }
+                        return player;
+                    });
 
-        // Add the player to the tracking list
-        players.add(tabPlayer);
+                    // Update the player's team sorting
+                    plugin.getScoreboardManager().setPlayerTeam(tabPlayer);
 
-        // Update the player's team sorting
-        plugin.getScoreboardManager().removeTeam(tabPlayer.getPlayer());
-
-        // Update the tab list of all players
-        plugin.getServer().getScheduler().buildTask(plugin, this::updateList)
+                    updateList();
+                })
                 .delay(500, TimeUnit.MILLISECONDS)
                 .schedule();
     }
 
     private void updateList() {
+        final ImmutableList<TabPlayer> players = ImmutableList.copyOf(this.players);
         players.forEach(player -> {
             player.sendHeaderAndFooter(this);
             player.getPlayer().getTabList().getEntries()

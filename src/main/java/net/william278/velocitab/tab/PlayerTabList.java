@@ -11,25 +11,21 @@ import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 public class PlayerTabList {
     private final Velocitab plugin;
-    private ImmutableList<TabPlayer> players;
+    private final ConcurrentLinkedQueue<TabPlayer> players;
 
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
-        this.players = ImmutableList.copyOf(plugin.getServer().getAllPlayers().stream()
-                .map(plugin::getTabPlayer)
-                .toList());
+        this.players = new ConcurrentLinkedQueue<>();
     }
 
     @SuppressWarnings("UnstableApiUsage")
     @Subscribe
     public void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
-        final ArrayList<TabPlayer> players = new ArrayList<>(this.players);
-
         // Remove the player from the tracking list if they are switching servers
         if (event.getPreviousServer() == null) {
             players.removeIf(player -> player.getPlayer().getUniqueId().equals(event.getPlayer().getUniqueId()));
@@ -37,7 +33,6 @@ public class PlayerTabList {
 
         // Add the player to the tracking list
         players.add(plugin.getTabPlayer(event.getPlayer()));
-        this.players = ImmutableList.copyOf(players);
 
         // Update the tab list of all players
         plugin.getServer().getScheduler().buildTask(plugin, this::updateList)
@@ -48,9 +43,7 @@ public class PlayerTabList {
     @Subscribe
     public void onPlayerQuit(@NotNull DisconnectEvent event) {
         // Remove the player from the tracking list
-        this.players = ImmutableList.copyOf(this.players.stream()
-                .filter(player -> !player.getPlayer().getUniqueId().equals(event.getPlayer().getUniqueId()))
-                .toList());
+        players.removeIf(player -> player.getPlayer().getUniqueId().equals(event.getPlayer().getUniqueId()));
 
         // Remove the player from the tab list of all other players
         plugin.getServer().getAllPlayers().forEach(player -> player.getTabList().removeEntry(event.getPlayer().getUniqueId()));
@@ -67,10 +60,10 @@ public class PlayerTabList {
     public void updatePlayer(@NotNull TabPlayer tabPlayer) {
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
-                    // Remove the existing player from the tracking list
-                    this.players = ImmutableList.copyOf(this.players.stream()
-                            .filter(player -> !player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId()))
-                            .toList());
+                    synchronized (this) {
+                        players.remove(tabPlayer);
+                        players.add(tabPlayer);
+                    }
 
                     // Update the player's team sorting
                     plugin.getScoreboardManager().setPlayerTeam(tabPlayer);
@@ -82,10 +75,11 @@ public class PlayerTabList {
     }
 
     private void updateList() {
-        this.players.forEach(player -> {
+        final ImmutableList<TabPlayer> players = ImmutableList.copyOf(this.players);
+        players.forEach(player -> {
             player.sendHeaderAndFooter(this);
             player.getPlayer().getTabList().getEntries()
-                    .forEach(entry -> this.players.stream()
+                    .forEach(entry -> players.stream()
                             .filter(p -> p.getPlayer().getGameProfile().getId().equals(entry.getProfile().getId()))
                             .findFirst().ifPresent(tabPlayer -> {
                                 entry.setDisplayName(tabPlayer.getDisplayName(plugin));

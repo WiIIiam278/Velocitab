@@ -59,4 +59,8 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         return roleDifference;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof TabPlayer other && player.getUniqueId().equals(other.player.getUniqueId());
+    }
 }

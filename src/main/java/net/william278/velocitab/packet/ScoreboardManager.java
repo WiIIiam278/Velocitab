@@ -8,18 +8,18 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ScoreboardManager {
 
     private final Velocitab plugin;
 
-    private final HashMap<UUID, String> fauxTeams;
+    private final ConcurrentHashMap<UUID, String> fauxTeams;
 
     public ScoreboardManager(@NotNull Velocitab velocitab) {
         this.plugin = velocitab;
-        this.fauxTeams = new HashMap<>();
+        this.fauxTeams = new ConcurrentHashMap<>();
     }
 
     public void registerPacket() {
@@ -48,14 +48,14 @@ public class ScoreboardManager {
 
     public void removeTeam(@NotNull Player member) {
         final UUID uuid = member.getUniqueId();
-        if (!fauxTeams.containsKey(uuid)) {
-            return;
+        final String teamName = fauxTeams.getOrDefault(uuid, null);
+        if (teamName != null) {
+            final UpdateTeamsPacket removeTeamPacket = UpdateTeamsPacket.remove(teamName);
+            plugin.getServer().getAllPlayers().stream()
+                    .map(Player::getUniqueId)
+                    .map(Protocolize.playerProvider()::player)
+                    .forEach(protocolPlayer -> protocolPlayer.sendPacket(removeTeamPacket));
         }
-        final UpdateTeamsPacket removeTeamPacket = UpdateTeamsPacket.remove(fauxTeams.get(uuid));
-        plugin.getServer().getAllPlayers().stream()
-                .map(Player::getUniqueId)
-                .map(Protocolize.playerProvider()::player)
-                .forEach(protocolPlayer -> protocolPlayer.sendPacket(removeTeamPacket));
         fauxTeams.remove(uuid);
     }
 

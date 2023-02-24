@@ -60,12 +60,10 @@ public class PlayerTabList {
     public void updatePlayer(@NotNull TabPlayer tabPlayer) {
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
-                    synchronized (this) {
-                        players.remove(tabPlayer);
-                        players.add(tabPlayer);
-                    }
-
                     // Update the player's team sorting
+                    players.remove(tabPlayer);
+                    players.add(tabPlayer);
+
                     plugin.getScoreboardManager().setPlayerTeam(tabPlayer);
 
                     updateList();

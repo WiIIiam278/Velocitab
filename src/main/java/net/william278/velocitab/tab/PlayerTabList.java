@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableList;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
+import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ServerConnection;
+import com.velocitypowered.api.proxy.server.ServerInfo;
 import de.themoep.minedown.adventure.MineDown;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
@@ -26,13 +29,22 @@ public class PlayerTabList {
     @SuppressWarnings("UnstableApiUsage")
     @Subscribe
     public void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
+        final Player joined = event.getPlayer();
         // Remove the player from the tracking list if they are switching servers
         if (event.getPreviousServer() == null) {
-            players.removeIf(player -> player.getPlayer().getUniqueId().equals(event.getPlayer().getUniqueId()));
+            players.removeIf(player -> player.getPlayer().getUniqueId().equals(joined.getUniqueId()));
+        }
+
+        // Don't set their list if they are on an excluded server
+        if (plugin.getSettings().isServerExcluded(joined.getCurrentServer()
+                .map(ServerConnection::getServerInfo)
+                .map(ServerInfo::getName)
+                .orElse("?"))) {
+            return;
         }
 
         // Add the player to the tracking list
-        players.add(plugin.getTabPlayer(event.getPlayer()));
+        players.add(plugin.getTabPlayer(joined));
 
         // Update the tab list of all players
         plugin.getServer().getScheduler().buildTask(plugin, this::updateList)

@@ -40,25 +40,10 @@ public class Role implements Comparable<Role> {
         return Optional.ofNullable(name);
     }
 
+    @NotNull
     public String getStringComparableWeight(int maximumPossibleWeight, int lowestPossibleWeight) {
-        // Calculate the weight range and the ratio of the input weight to the weight range
-        int weightRange = maximumPossibleWeight - lowestPossibleWeight;
-        double weightRatio = (double) (maximumPossibleWeight - weight) / weightRange;
-
-        // Convert the weight ratio to a string with 3 decimal places and remove the decimal point
-        String weightString = String.format("%.3f", weightRatio).replace(".", "");
-
-        // Pad the weight string with leading zeros to a length of 6 characters
-        weightString = String.format("%6s", weightString).replace(' ', '0');
-
-        // Prepend a minus sign for negative weights
-        if (weight < 0) {
-            weightString = "-" + weightString.substring(1);
-        } else {
-            // Reverse the weight string for non-negative weights
-            weightString = new StringBuilder(weightString).reverse().toString();
-        }
-
-        return weightString;
+        return String.format("%0" + String.valueOf(maximumPossibleWeight).length() + "d", weight - lowestPossibleWeight)
+                .replace(" ", "0")
+                .replace("-", "0");
     }
 }

@@ -19,7 +19,6 @@ import java.util.UUID;
 public class LuckPermsHook {
 
     private int highestWeight = Role.DEFAULT_WEIGHT;
-    private int lowestWeight = Role.DEFAULT_WEIGHT;
     private final Velocitab plugin;
     private final LuckPerms api;
 
@@ -52,8 +51,7 @@ public class LuckPermsHook {
                 .ifPresent(player -> plugin.getTabList().updatePlayer(new TabPlayer(
                         player,
                         getRoleFromMetadata(event.getData().getMetaData()),
-                        getHighestWeight(),
-                        getLowestWeight()
+                        getHighestWeight()
                 )));
     }
 
@@ -75,18 +73,6 @@ public class LuckPermsHook {
             });
         }
         return highestWeight;
-    }
-
-    public int getLowestWeight() {
-        if (lowestWeight == Role.DEFAULT_WEIGHT) {
-            api.getGroupManager().getLoadedGroups().forEach(group -> {
-                final OptionalInt weight = group.getWeight();
-                if (weight.isPresent() && weight.getAsInt() < lowestWeight) {
-                    lowestWeight = weight.getAsInt();
-                }
-            });
-        }
-        return lowestWeight;
     }
 
     private User getUser(@NotNull UUID uuid) {

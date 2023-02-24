@@ -12,13 +12,11 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private final Player player;
     private final Role role;
     private final int highestWeight;
-    private final int lowestWeight;
 
-    public TabPlayer(@NotNull Player player, @NotNull Role role, int highestWeight, int lowestWeight) {
+    public TabPlayer(@NotNull Player player, @NotNull Role role, int highestWeight) {
         this.player = player;
         this.role = role;
         this.highestWeight = highestWeight;
-        this.lowestWeight = lowestWeight;
     }
 
     @NotNull
@@ -45,7 +43,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
 
     @NotNull
     public String getTeamName() {
-        return role.getStringComparableWeight(highestWeight, lowestWeight) + "-" + getServerName() + "-" + player.getUsername();
+        return role.getStringComparableWeight(highestWeight) + "-" + getServerName() + "-" + player.getUsername();
     }
 
     public void sendHeaderAndFooter(@NotNull PlayerTabList tabList) {

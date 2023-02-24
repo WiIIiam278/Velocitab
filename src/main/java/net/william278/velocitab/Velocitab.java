@@ -1,8 +1,8 @@
 package net.william278.velocitab;
 
 import com.google.inject.Inject;
-import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Optional;
 
 @Plugin(
@@ -125,6 +126,13 @@ public class Velocitab {
                         .orElse(Role.DEFAULT_ROLE),
                 getLuckPerms().map(LuckPermsHook::getHighestWeight)
                         .orElse(0));
+    }
+
+    public void log(@NotNull String message, @NotNull Throwable... exceptions) {
+        Arrays.stream(exceptions).findFirst().ifPresentOrElse(
+                exception -> logger.error(message, exception),
+                () -> logger.warn(message)
+        );
     }
 
 }

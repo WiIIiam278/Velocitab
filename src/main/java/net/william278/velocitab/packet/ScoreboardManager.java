@@ -23,12 +23,16 @@ public class ScoreboardManager {
     }
 
     public void registerPacket() {
-        Protocolize.protocolRegistration().registerPacket(
-                UpdateTeamsPacket.MAPPINGS,
-                Protocol.PLAY,
-                PacketDirection.CLIENTBOUND,
-                UpdateTeamsPacket.class
-        );
+        try {
+            Protocolize.protocolRegistration().registerPacket(
+                    UpdateTeamsPacket.MAPPINGS,
+                    Protocol.PLAY,
+                    PacketDirection.CLIENTBOUND,
+                    UpdateTeamsPacket.class
+            );
+        } catch (Exception e) {
+            plugin.log("Failed to register UpdateTeamsPacket", e);
+        }
     }
 
     public void setPlayerTeam(@NotNull TabPlayer player) {
@@ -38,23 +42,31 @@ public class ScoreboardManager {
 
     private void createTeam(@NotNull String teamName, @NotNull Player member) {
         final UUID uuid = member.getUniqueId();
-        final UpdateTeamsPacket createTeamPacket = UpdateTeamsPacket.create(teamName, member.getUsername());
-        plugin.getServer().getAllPlayers().stream()
-                .map(Player::getUniqueId)
-                .map(Protocolize.playerProvider()::player)
-                .forEach(protocolPlayer -> protocolPlayer.sendPacket(createTeamPacket));
-        fauxTeams.put(uuid, teamName);
+        try {
+            final UpdateTeamsPacket createTeamPacket = UpdateTeamsPacket.create(teamName, member.getUsername());
+            fauxTeams.put(uuid, teamName);
+            plugin.getServer().getAllPlayers().stream()
+                    .map(Player::getUniqueId)
+                    .map(Protocolize.playerProvider()::player)
+                    .forEach(protocolPlayer -> protocolPlayer.sendPacket(createTeamPacket));
+        } catch (Exception e) {
+            plugin.log("Skipped setting team for " + member.getUsername());
+        }
     }
 
     public void removeTeam(@NotNull Player member) {
         final UUID uuid = member.getUniqueId();
-        final String teamName = fauxTeams.getOrDefault(uuid, null);
-        if (teamName != null) {
-            final UpdateTeamsPacket removeTeamPacket = UpdateTeamsPacket.remove(teamName);
-            plugin.getServer().getAllPlayers().stream()
-                    .map(Player::getUniqueId)
-                    .map(Protocolize.playerProvider()::player)
-                    .forEach(protocolPlayer -> protocolPlayer.sendPacket(removeTeamPacket));
+        try {
+            final String teamName = fauxTeams.getOrDefault(uuid, null);
+            if (teamName != null) {
+                final UpdateTeamsPacket removeTeamPacket = UpdateTeamsPacket.remove(teamName);
+                plugin.getServer().getAllPlayers().stream()
+                        .map(Player::getUniqueId)
+                        .map(Protocolize.playerProvider()::player)
+                        .forEach(protocolPlayer -> protocolPlayer.sendPacket(removeTeamPacket));
+            }
+        } catch (Exception e) {
+            plugin.log("Skipped removing team for " + member.getUsername());
         }
         fauxTeams.remove(uuid);
     }

@@ -108,8 +108,8 @@ public class UpdateTeamsPacket extends AbstractPacket {
             ProtocolUtil.writeString(byteBuf, suffix);
         }
         if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.ADD_PLAYERS || mode == UpdateMode.REMOVE_PLAYERS) {
-            ProtocolUtil.writeVarInt(byteBuf, entities.size());
-            for (String entity : entities) {
+            ProtocolUtil.writeVarInt(byteBuf, entities != null ? entities.size() : 0);
+            for (String entity : entities != null ? entities : new ArrayList<String>()) {
                 ProtocolUtil.writeString(byteBuf, entity);
             }
         }

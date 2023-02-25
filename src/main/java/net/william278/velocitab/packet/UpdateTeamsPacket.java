@@ -129,23 +129,23 @@ public class UpdateTeamsPacket extends AbstractPacket {
     }
 
     public enum UpdateMode {
-        CREATE(0),
-        REMOVE(1),
-        UPDATE_INFO(2),
-        ADD_PLAYERS(3),
-        REMOVE_PLAYERS(4);
+        CREATE((byte) 0),
+        REMOVE((byte) 1),
+        UPDATE_INFO((byte) 2),
+        ADD_PLAYERS((byte) 3),
+        REMOVE_PLAYERS((byte) 4);
 
-        private final int id;
+        private final byte id;
 
-        UpdateMode(int id) {
+        UpdateMode(byte id) {
             this.id = id;
         }
 
-        public int id() {
+        public byte id() {
             return id;
         }
 
-        public static UpdateMode byId(int id) {
+        public static UpdateMode byId(byte id) {
             return Arrays.stream(values())
                     .filter(mode -> mode.id == id)
                     .findFirst()

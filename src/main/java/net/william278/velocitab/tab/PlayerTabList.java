@@ -101,7 +101,7 @@ public class PlayerTabList {
                         () -> player.getPlayer().getTabList().addEntry(TabListEntry.builder()
                                 .profile(listedPlayer.getPlayer().getGameProfile())
                                 .displayName(listedPlayer.getDisplayName(plugin))
-                                .latency((int) listedPlayer.getPlayer().getPing())
+                                .latency(0)
                                 .tabList(player.getPlayer().getTabList())
                                 .build()));
                 plugin.getScoreboardManager().setPlayerTeam(listedPlayer);

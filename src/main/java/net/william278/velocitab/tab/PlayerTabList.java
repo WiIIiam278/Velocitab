@@ -102,6 +102,7 @@ public class PlayerTabList {
                                 .profile(listedPlayer.getPlayer().getGameProfile())
                                 .displayName(listedPlayer.getDisplayName(plugin))
                                 .latency((int) listedPlayer.getPlayer().getPing())
+                                .tabList(player.getPlayer().getTabList())
                                 .build()));
                 plugin.getScoreboardManager().setPlayerTeam(listedPlayer);
             });

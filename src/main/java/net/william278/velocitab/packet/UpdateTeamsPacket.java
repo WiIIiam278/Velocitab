@@ -46,42 +46,34 @@ public class UpdateTeamsPacket extends AbstractPacket {
 
     @NotNull
     public static UpdateTeamsPacket create(@NotNull String teamName, @NotNull String member) {
-        if (teamName.length() > 16) {
-            teamName = teamName.substring(0, 16);
-        }
-        final UpdateTeamsPacket updateTeamsPacket = new UpdateTeamsPacket();
-        updateTeamsPacket.teamName(teamName);
-        updateTeamsPacket.mode(UpdateMode.CREATE);
-        updateTeamsPacket.displayName(getChatString(teamName));
-        updateTeamsPacket.friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY));
-        updateTeamsPacket.nameTagVisibility(NameTagVisibility.ALWAYS);
-        updateTeamsPacket.collisionRule(CollisionRule.ALWAYS);
-        updateTeamsPacket.color(15);
-        updateTeamsPacket.prefix(getChatString(""));
-        updateTeamsPacket.suffix(getChatString(""));
-        updateTeamsPacket.entities(List.of(member));
-        return updateTeamsPacket;
+        return new UpdateTeamsPacket()
+                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .mode(UpdateMode.CREATE_TEAM)
+                .displayName(getChatString(teamName))
+                .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
+                .nameTagVisibility(NameTagVisibility.ALWAYS)
+                .collisionRule(CollisionRule.ALWAYS)
+                .color(15)
+                .prefix(getChatString(""))
+                .suffix(getChatString(""))
+                .entities(List.of(member));
     }
 
     @NotNull
     public static UpdateTeamsPacket remove(@NotNull String teamName) {
-        if (teamName.length() > 16) {
-            teamName = teamName.substring(0, 16);
-        }
-        final UpdateTeamsPacket updateTeamsPacket = new UpdateTeamsPacket();
-        updateTeamsPacket.teamName(teamName);
-        updateTeamsPacket.mode(UpdateMode.REMOVE);
-        return updateTeamsPacket;
+        return new UpdateTeamsPacket()
+                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .mode(UpdateMode.REMOVE_TEAM);
     }
 
     @Override
     public void read(ByteBuf byteBuf, PacketDirection packetDirection, int i) {
         teamName = ProtocolUtil.readString(byteBuf);
         mode = UpdateMode.byId(byteBuf.readByte());
-        if (mode == UpdateMode.REMOVE) {
+        if (mode == UpdateMode.REMOVE_TEAM) {
             return;
         }
-        if (mode == UpdateMode.CREATE || mode == UpdateMode.UPDATE_INFO) {
+        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.UPDATE_INFO) {
             displayName = ProtocolUtil.readString(byteBuf);
             friendlyFlags = FriendlyFlag.fromBitMask(byteBuf.readByte());
             nameTagVisibility = NameTagVisibility.byId(ProtocolUtil.readString(byteBuf));
@@ -90,7 +82,7 @@ public class UpdateTeamsPacket extends AbstractPacket {
             prefix = ProtocolUtil.readString(byteBuf);
             suffix = ProtocolUtil.readString(byteBuf);
         }
-        if (mode == UpdateMode.CREATE || mode == UpdateMode.ADD_PLAYERS || mode == UpdateMode.REMOVE_PLAYERS) {
+        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.ADD_PLAYERS || mode == UpdateMode.REMOVE_PLAYERS) {
             int entityCount = ProtocolUtil.readVarInt(byteBuf);
             entities = new ArrayList<>(entityCount);
             for (int j = 0; j < entityCount; j++) {
@@ -103,10 +95,10 @@ public class UpdateTeamsPacket extends AbstractPacket {
     public void write(ByteBuf byteBuf, PacketDirection packetDirection, int i) {
         ProtocolUtil.writeString(byteBuf, teamName);
         byteBuf.writeByte(mode.id());
-        if (mode == UpdateMode.REMOVE) {
+        if (mode == UpdateMode.REMOVE_TEAM) {
             return;
         }
-        if (mode == UpdateMode.CREATE || mode == UpdateMode.UPDATE_INFO) {
+        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.UPDATE_INFO) {
             ProtocolUtil.writeString(byteBuf, displayName);
             byteBuf.writeByte(FriendlyFlag.toBitMask(friendlyFlags));
             ProtocolUtil.writeString(byteBuf, nameTagVisibility.id());
@@ -115,7 +107,7 @@ public class UpdateTeamsPacket extends AbstractPacket {
             ProtocolUtil.writeString(byteBuf, prefix);
             ProtocolUtil.writeString(byteBuf, suffix);
         }
-        if (mode == UpdateMode.CREATE || mode == UpdateMode.ADD_PLAYERS || mode == UpdateMode.REMOVE_PLAYERS) {
+        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.ADD_PLAYERS || mode == UpdateMode.REMOVE_PLAYERS) {
             ProtocolUtil.writeVarInt(byteBuf, entities.size());
             for (String entity : entities) {
                 ProtocolUtil.writeString(byteBuf, entity);
@@ -129,8 +121,8 @@ public class UpdateTeamsPacket extends AbstractPacket {
     }
 
     public enum UpdateMode {
-        CREATE((byte) 0),
-        REMOVE((byte) 1),
+        CREATE_TEAM((byte) 0),
+        REMOVE_TEAM((byte) 1),
         UPDATE_INFO((byte) 2),
         ADD_PLAYERS((byte) 3),
         REMOVE_PLAYERS((byte) 4);

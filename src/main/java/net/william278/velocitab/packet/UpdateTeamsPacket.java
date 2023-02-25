@@ -11,6 +11,7 @@ import lombok.experimental.Accessors;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -91,6 +92,7 @@ public class UpdateTeamsPacket extends AbstractPacket {
         }
         if (mode == UpdateMode.CREATE || mode == UpdateMode.ADD_PLAYERS || mode == UpdateMode.REMOVE_PLAYERS) {
             int entityCount = ProtocolUtil.readVarInt(byteBuf);
+            entities = new ArrayList<>(entityCount);
             for (int j = 0; j < entityCount; j++) {
                 entities.add(ProtocolUtil.readString(byteBuf));
             }

@@ -6,6 +6,7 @@ import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
+import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import de.themoep.minedown.adventure.MineDown;
 import net.kyori.adventure.text.Component;
@@ -14,6 +15,7 @@ import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -88,13 +90,27 @@ public class PlayerTabList {
         final ImmutableList<TabPlayer> players = ImmutableList.copyOf(this.players);
         players.forEach(player -> {
             player.sendHeaderAndFooter(this);
-            player.getPlayer().getTabList().getEntries()
-                    .forEach(entry -> players.stream()
-                            .filter(p -> p.getPlayer().getGameProfile().getId().equals(entry.getProfile().getId()))
-                            .findFirst().ifPresent(tabPlayer -> {
-                                entry.setDisplayName(tabPlayer.getDisplayName(plugin));
-                                plugin.getScoreboardManager().setPlayerTeam(tabPlayer);
-                            }));
+
+            // Fill the tab list with the players
+            players.forEach(listedPlayer -> {
+                final Optional<TabListEntry> current = player.getPlayer().getTabList().getEntries().stream()
+                        .filter(entry -> entry.getProfile().getId().equals(listedPlayer.getPlayer().getUniqueId()))
+                        .findFirst();
+                current.ifPresentOrElse(
+                        entry -> entry.setDisplayName(listedPlayer.getDisplayName(plugin)),
+                        () -> player.getPlayer().getTabList().addEntry(TabListEntry.builder()
+                                .profile(listedPlayer.getPlayer().getGameProfile())
+                                .displayName(listedPlayer.getDisplayName(plugin))
+                                .latency((int) listedPlayer.getPlayer().getPing())
+                                .build()));
+                plugin.getScoreboardManager().setPlayerTeam(listedPlayer);
+            });
+
+            // Remove players in the tab list that are not in the players list
+            player.getPlayer().getTabList().getEntries().stream()
+                    .filter(entry -> players.stream()
+                            .noneMatch(listedPlayer -> listedPlayer.getPlayer().getUniqueId().equals(entry.getProfile().getId())))
+                    .forEach(entry -> player.getPlayer().getTabList().removeEntry(entry.getProfile().getId()));
         });
     }
 

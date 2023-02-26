@@ -56,9 +56,9 @@ public class PlayerTabList {
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
                     final TabList tabList = joined.getTabList();
-                    final Map<Player, String> playerRoles = new HashMap<>();
+                    final Map<String, String> playerRoles = new HashMap<>();
                     players.forEach(player -> {
-                        playerRoles.put(player.getPlayer(), tabPlayer.getTeamName());
+                        playerRoles.put(player.getPlayer().getUsername(), player.getTeamName());
                         tabList.getEntries().stream()
                                 .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
                                 .ifPresentOrElse(
@@ -68,7 +68,7 @@ public class PlayerTabList {
                         addPlayerToTabList(player, tabPlayer);
                         player.sendHeaderAndFooter(this);
                     });
-                    plugin.getScoreboardManager().sendTeamPackets(joined, playerRoles);
+                    plugin.getScoreboardManager().setRoles(joined, playerRoles);
                 })
                 .delay(500, TimeUnit.MILLISECONDS)
                 .schedule();

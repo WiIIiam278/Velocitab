@@ -27,11 +27,11 @@ public class ScoreboardManager {
         roleMappings.remove(player.getUniqueId());
     }
 
-    public void sendTeamPackets(@NotNull Player player, @NotNull Map<Player, String> playerRoles) {
+    public void setRoles(@NotNull Player player, @NotNull Map<String, String> playerRoles) {
         playerRoles.entrySet().stream()
                 .collect(Collectors.groupingBy(
                         Map.Entry::getValue,
-                        Collectors.mapping(entry -> entry.getKey().getUsername(), Collectors.toList())
+                        Collectors.mapping(Map.Entry::getKey, Collectors.toList())
                 ))
                 .forEach((role, players) -> updateRoles(player, role, players.toArray(new String[0])));
     }

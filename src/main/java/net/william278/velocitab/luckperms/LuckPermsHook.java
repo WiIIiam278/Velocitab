@@ -48,7 +48,7 @@ public class LuckPermsHook {
 
     public void onLuckPermsGroupUpdate(@NotNull UserDataRecalculateEvent event) {
         plugin.getServer().getPlayer(event.getUser().getUniqueId())
-                .ifPresent(player -> plugin.getTabList().updatePlayer(new TabPlayer(
+                .ifPresent(player -> plugin.getTabList().onPlayerRoleUpdate(new TabPlayer(
                         player,
                         getRoleFromMetadata(event.getData().getMetaData()),
                         getHighestWeight()
@@ -78,7 +78,6 @@ public class LuckPermsHook {
     private User getUser(@NotNull UUID uuid) {
         return api.getUserManager().getUser(uuid);
     }
-
 
 
 }

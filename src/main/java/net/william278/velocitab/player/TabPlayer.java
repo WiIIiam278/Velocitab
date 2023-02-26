@@ -43,7 +43,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
 
     @NotNull
     public String getTeamName() {
-        return role.getStringComparableWeight(highestWeight) + "-" + getServerName() + "-" + player.getUsername();
+        return role.getWeightString(highestWeight) + role.getName().map(name -> "-" + name).orElse("");
     }
 
     public void sendHeaderAndFooter(@NotNull PlayerTabList tabList) {

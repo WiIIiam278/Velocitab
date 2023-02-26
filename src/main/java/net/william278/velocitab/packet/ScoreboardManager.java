@@ -5,21 +5,54 @@ import dev.simplix.protocolize.api.PacketDirection;
 import dev.simplix.protocolize.api.Protocol;
 import dev.simplix.protocolize.api.Protocolize;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ScoreboardManager {
 
     private final Velocitab plugin;
-
-    private final ConcurrentHashMap<UUID, String> fauxTeams;
+    private final Map<UUID, List<String>> createdTeams;
+    private final Map<UUID, Map<String, String>> roleMappings;
 
     public ScoreboardManager(@NotNull Velocitab velocitab) {
         this.plugin = velocitab;
-        this.fauxTeams = new ConcurrentHashMap<>();
+        this.createdTeams = new HashMap<>();
+        this.roleMappings = new HashMap<>();
+    }
+
+    public void resetCache(@NotNull Player player) {
+        createdTeams.remove(player.getUniqueId());
+        roleMappings.remove(player.getUniqueId());
+    }
+
+    public void sendTeamPackets(@NotNull Player player, @NotNull Map<Player, String> playerRoles) {
+        playerRoles.entrySet().stream()
+                .collect(Collectors.groupingBy(
+                        Map.Entry::getValue,
+                        Collectors.mapping(entry -> entry.getKey().getUsername(), Collectors.toList())
+                ))
+                .forEach((role, players) -> updateRoles(player, role, players.toArray(new String[0])));
+    }
+
+    public void updateRoles(@NotNull Player player, @NotNull String role, @NotNull String... playerNames) {
+        if (!createdTeams.getOrDefault(player.getUniqueId(), List.of()).contains(role)) {
+            dispatchPacket(UpdateTeamsPacket.create(role, playerNames), player);
+            createdTeams.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>()).add(role);
+        } else {
+            roleMappings.getOrDefault(player.getUniqueId(), Map.of())
+                    .entrySet().stream()
+                    .filter((entry) -> List.of(playerNames).contains(entry.getKey()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                    .forEach((playerName, oldRole) -> dispatchPacket(UpdateTeamsPacket.removeFromTeam(oldRole, playerName), player));
+            dispatchPacket(UpdateTeamsPacket.addToTeam(role, playerNames), player);
+            roleMappings.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).put(player.getUsername(), role);
+        }
+    }
+
+    private void dispatchPacket(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
+        Protocolize.playerProvider().player(player.getUniqueId()).sendPacket(packet);
     }
 
     public void registerPacket() {
@@ -35,40 +68,5 @@ public class ScoreboardManager {
         }
     }
 
-    public void setPlayerTeam(@NotNull TabPlayer player) {
-        removeTeam(player.getPlayer());
-        createTeam(player.getTeamName(), player.getPlayer());
-    }
-
-    private void createTeam(@NotNull String teamName, @NotNull Player member) {
-        final UUID uuid = member.getUniqueId();
-        try {
-            final UpdateTeamsPacket createTeamPacket = UpdateTeamsPacket.create(teamName, member.getUsername());
-            fauxTeams.put(uuid, teamName);
-            plugin.getServer().getAllPlayers().stream()
-                    .map(Player::getUniqueId)
-                    .map(Protocolize.playerProvider()::player)
-                    .forEach(protocolPlayer -> protocolPlayer.sendPacket(createTeamPacket));
-        } catch (Exception e) {
-            plugin.log("Skipped setting team for " + member.getUsername());
-        }
-    }
-
-    public void removeTeam(@NotNull Player member) {
-        final UUID uuid = member.getUniqueId();
-        try {
-            final String teamName = fauxTeams.getOrDefault(uuid, null);
-            if (teamName != null) {
-                final UpdateTeamsPacket removeTeamPacket = UpdateTeamsPacket.remove(teamName);
-                plugin.getServer().getAllPlayers().stream()
-                        .map(Player::getUniqueId)
-                        .map(Protocolize.playerProvider()::player)
-                        .forEach(protocolPlayer -> protocolPlayer.sendPacket(removeTeamPacket));
-            }
-        } catch (Exception e) {
-            plugin.log("Skipped removing team for " + member.getUsername());
-        }
-        fauxTeams.remove(uuid);
-    }
 
 }

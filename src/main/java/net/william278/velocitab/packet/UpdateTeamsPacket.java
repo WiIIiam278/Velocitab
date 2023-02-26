@@ -45,7 +45,7 @@ public class UpdateTeamsPacket extends AbstractPacket {
     private List<String> entities;
 
     @NotNull
-    public static UpdateTeamsPacket create(@NotNull String teamName, @NotNull String member) {
+    public static UpdateTeamsPacket create(@NotNull String teamName, @NotNull String... teamMembers) {
         return new UpdateTeamsPacket()
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.CREATE_TEAM)
@@ -56,14 +56,23 @@ public class UpdateTeamsPacket extends AbstractPacket {
                 .color(15)
                 .prefix(getChatString(""))
                 .suffix(getChatString(""))
-                .entities(List.of(member));
+                .entities(Arrays.asList(teamMembers));
     }
 
     @NotNull
-    public static UpdateTeamsPacket remove(@NotNull String teamName) {
+    public static UpdateTeamsPacket addToTeam(@NotNull String teamName, @NotNull String... teamMembers) {
         return new UpdateTeamsPacket()
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
-                .mode(UpdateMode.REMOVE_TEAM);
+                .mode(UpdateMode.ADD_PLAYERS)
+                .entities(Arrays.asList(teamMembers));
+    }
+
+    @NotNull
+    public static UpdateTeamsPacket removeFromTeam(@NotNull String teamName, @NotNull String... teamMembers) {
+        return new UpdateTeamsPacket()
+                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .mode(UpdateMode.REMOVE_PLAYERS)
+                .entities(Arrays.asList(teamMembers));
     }
 
     @Override

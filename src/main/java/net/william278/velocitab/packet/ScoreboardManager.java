@@ -40,6 +40,7 @@ public class ScoreboardManager {
         if (!createdTeams.getOrDefault(player.getUniqueId(), List.of()).contains(role)) {
             dispatchPacket(UpdateTeamsPacket.create(role, playerNames), player);
             createdTeams.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>()).add(role);
+            roleMappings.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).put(player.getUsername(), role);
         } else {
             roleMappings.getOrDefault(player.getUniqueId(), Map.of())
                     .entrySet().stream()

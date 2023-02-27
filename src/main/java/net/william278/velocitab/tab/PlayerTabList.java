@@ -43,7 +43,7 @@ public class PlayerTabList {
         }
 
         // Get the servers in the group from the joined server name
-        Optional<List<String>> serversInGroup = plugin.getSettings().getServerGroup(joined.getCurrentServer()
+        Optional<List<String>> serversInGroup = plugin.getSettings().getBrotherServers(joined.getCurrentServer()
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
                 .orElse("?"));
@@ -143,12 +143,12 @@ public class PlayerTabList {
 
     @NotNull
     public Component getHeader(@NotNull TabPlayer player) {
-        return new MineDown(Placeholder.format(plugin.getSettings().getHeader(), plugin, player)).toComponent();
+        return new MineDown(Placeholder.format(plugin.getSettings().getHeader(plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)).toComponent();
     }
 
     @NotNull
     public Component getFooter(@NotNull TabPlayer player) {
-        return new MineDown(Placeholder.format(plugin.getSettings().getFooter(), plugin, player)).toComponent();
+        return new MineDown(Placeholder.format(plugin.getSettings().getFooter(plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)).toComponent();
     }
 
 }

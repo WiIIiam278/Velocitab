@@ -47,7 +47,7 @@ public class PlayerTabList {
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
                 .orElse("?"));
-        if(serversInGroup.isEmpty()) return;
+        if (serversInGroup.isEmpty()) return;
 
         // Add the player to the tracking list
         final TabPlayer tabPlayer = plugin.getTabPlayer(joined);
@@ -60,7 +60,9 @@ public class PlayerTabList {
                     final Map<String, String> playerRoles = new HashMap<>();
 
                     for (TabPlayer player : players) {
-                        if(!serversInGroup.get().contains(player.getServerName())) continue; // Skip players on other servers
+                        if (!serversInGroup.get().contains(player.getServerName())) {
+                            continue; // Skip players on other servers
+                        }
                         playerRoles.put(player.getPlayer().getUsername(), player.getTeamName());
                         tabList.getEntries().stream()
                                 .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()

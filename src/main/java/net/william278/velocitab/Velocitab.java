@@ -8,7 +8,8 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
-import net.william278.annotaml.Annotaml;
+import de.exlll.configlib.YamlConfigurationProperties;
+import de.exlll.configlib.YamlConfigurations;
 import net.william278.velocitab.config.Settings;
 import net.william278.velocitab.luckperms.LuckPermsHook;
 import net.william278.velocitab.packet.ScoreboardManager;
@@ -18,9 +19,6 @@ import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
@@ -74,11 +72,17 @@ public class Velocitab {
     }
 
     private void loadSettings() {
-        try {
-            settings = Annotaml.create(new File(dataDirectory.toFile(), "config.yml"), Settings.class).get();
-        } catch (IOException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-            logger.error("Failed to load config file: " + e.getMessage(), e);
-        }
+        settings = YamlConfigurations.update(dataDirectory.resolve("config.yml"), Settings.class,
+                YamlConfigurationProperties.newBuilder()
+                        .header(
+                                """
+                                        ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+                                        ┃       Velocitab Config       ┃
+                                        ┃    Developed by William278   ┃
+                                        ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+                                        ┗╸ Placeholders: %players_online%, %max_players_online%, %local_players_online%, %current_date%, %current_time%, %username%, %server%, %ping%, %prefix%, %suffix%, %role%"""
+                        )
+                        .build());
     }
 
     public Optional<LuckPermsHook> getLuckPerms() {

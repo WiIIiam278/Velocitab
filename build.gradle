@@ -6,13 +6,14 @@ plugins {
 
 group = 'net.william278'
 version = "1.0-${versionMetadata()}"
-
-repositories {
-    mavenCentral()
-    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
-    maven { url = 'https://jitpack.io' }
-    maven { url = 'https://repo.minebench.de/' }
-    maven { url = 'https://mvn.exceptionflug.de/repository/exceptionflug-public/' }
+allprojects {
+    repositories {
+        mavenCentral()
+        maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+        maven { url = 'https://jitpack.io' }
+        maven { url = 'https://repo.minebench.de/' }
+        maven { url = 'https://mvn.exceptionflug.de/repository/exceptionflug-public/' }
+    }
 }
 
 dependencies {
@@ -22,8 +23,7 @@ dependencies {
     compileOnly 'io.netty:netty-codec-http:4.1.89.Final'
 
     implementation 'org.apache.commons:commons-text:1.10.0'
-    implementation 'net.william278:Annotaml:2.0.1'
-    implementation 'dev.dejvokep:boosted-yaml:1.3.1'
+    implementation 'com.github.Exlll.ConfigLib:configlib-velocity:v4.2.0'
     implementation 'de.themoep:minedown-adventure:1.7.2-SNAPSHOT'
     implementation 'org.projectlombok:lombok:1.18.26'
 
@@ -44,7 +44,7 @@ shadowJar {
     }
 }
 
-def targetJavaVersion = 16
+def targetJavaVersion = 17
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion

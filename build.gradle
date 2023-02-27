@@ -6,14 +6,13 @@ plugins {
 
 group = 'net.william278'
 version = "1.0-${versionMetadata()}"
-allprojects {
-    repositories {
-        mavenCentral()
-        maven { url = 'https://repo.papermc.io/repository/maven-public/' }
-        maven { url = 'https://jitpack.io' }
-        maven { url = 'https://repo.minebench.de/' }
-        maven { url = 'https://mvn.exceptionflug.de/repository/exceptionflug-public/' }
-    }
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url = 'https://jitpack.io' }
+    maven { url = 'https://repo.minebench.de/' }
+    maven { url = 'https://mvn.exceptionflug.de/repository/exceptionflug-public/' }
 }
 
 dependencies {

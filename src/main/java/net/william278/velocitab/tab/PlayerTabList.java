@@ -16,7 +16,9 @@ import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -40,13 +42,12 @@ public class PlayerTabList {
             players.removeIf(player -> player.getPlayer().getUniqueId().equals(joined.getUniqueId()));
         }
 
-        // Don't set their list if they are on an excluded server
-        if (plugin.getSettings().isServerExcluded(joined.getCurrentServer()
+        // Get the servers in the group from the joined server name
+        Optional<List<String>> serversInGroup = plugin.getSettings().getServerGroup(joined.getCurrentServer()
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
-                .orElse("?"))) {
-            return;
-        }
+                .orElse("?"));
+        if(serversInGroup.isEmpty()) return;
 
         // Add the player to the tracking list
         final TabPlayer tabPlayer = plugin.getTabPlayer(joined);
@@ -57,7 +58,9 @@ public class PlayerTabList {
                 .buildTask(plugin, () -> {
                     final TabList tabList = joined.getTabList();
                     final Map<String, String> playerRoles = new HashMap<>();
-                    players.forEach(player -> {
+
+                    for (TabPlayer player : players) {
+                        if(!serversInGroup.get().contains(player.getServerName())) continue; // Skip players on other servers
                         playerRoles.put(player.getPlayer().getUsername(), player.getTeamName());
                         tabList.getEntries().stream()
                                 .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
@@ -67,7 +70,8 @@ public class PlayerTabList {
                                 );
                         addPlayerToTabList(player, tabPlayer);
                         player.sendHeaderAndFooter(this);
-                    });
+                    }
+
                     plugin.getScoreboardManager().setRoles(joined, playerRoles);
                 })
                 .delay(500, TimeUnit.MILLISECONDS)

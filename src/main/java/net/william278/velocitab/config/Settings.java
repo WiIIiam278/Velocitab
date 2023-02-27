@@ -6,7 +6,9 @@ import net.william278.velocitab.BuildConstants;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @YamlFile(header = """
         ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -22,8 +24,8 @@ public class Settings {
     private String footer = "[There are currently %players_online%/%max_players_online% players online](gray)";
     @YamlKey("format")
     private String format = "&7[%server%] &f%prefix%%username%";
-    @YamlKey("excluded_servers")
-    private ArrayList<String> excludedServers = new ArrayList<>();
+    @YamlKey("server_groups")
+    private Map<String, List<String>> serverGroups = Map.of("lobbies", List.of("lobby1", "lobby2", "lobby3"));
 
     private Settings() {
     }
@@ -43,8 +45,9 @@ public class Settings {
         return StringEscapeUtils.unescapeJava(format);
     }
 
-    public boolean isServerExcluded(@NotNull String serverName) {
-        return excludedServers.contains(serverName);
+    @NotNull
+    public Optional<List<String>> getServerGroup(String serverName) {
+        return serverGroups.values().stream().filter(servers -> servers.contains(serverName)).findFirst();
     }
 
 }

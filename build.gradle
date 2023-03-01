@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'net.william278'
-version = "1.0-${versionMetadata()}"
+version = "1.0.1-${versionMetadata()}"
 
 repositories {
     mavenCentral()

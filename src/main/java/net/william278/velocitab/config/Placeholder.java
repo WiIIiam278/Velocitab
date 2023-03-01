@@ -21,13 +21,13 @@ public enum Placeholder {
             .orElse("")),
     CURRENT_DATE((plugin, player) -> DateTimeFormatter.ofPattern("dd MMM yyyy").format(LocalDateTime.now())),
     CURRENT_TIME((plugin, player) -> DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.now())),
-    USERNAME((plugin, player) -> player.getPlayer().getUsername()),
+    USERNAME((plugin, player) -> escape(player.getPlayer().getUsername())),
     SERVER((plugin, player) -> player.getServerName()),
     PING((plugin, player) -> Long.toString(player.getPlayer().getPing())),
     PREFIX((plugin, player) -> player.getRole().getPrefix().orElse("")),
     SUFFIX((plugin, player) -> player.getRole().getSuffix().orElse("")),
     ROLE((plugin, player) -> player.getRole().getName().orElse("")),
-    DEBUG_TEAM_NAME((plugin, player) -> player.getTeamName());
+    DEBUG_TEAM_NAME((plugin, player) -> escape(player.getTeamName()));
 
     private final BiFunction<Velocitab, TabPlayer, String> formatter;
 
@@ -40,7 +40,12 @@ public enum Placeholder {
         for (Placeholder placeholder : values()) {
             format = format.replace("%" + placeholder.name().toLowerCase() + "%", placeholder.formatter.apply(plugin, player));
         }
+
         return format;
     }
 
+    private static String escape(String replace) {
+        // Replace __ so that it is not seen as underline when the string is formatted.
+        return replace.replace("__", "_\\_");
+    }
 }

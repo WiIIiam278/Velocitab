@@ -27,6 +27,11 @@ public class PlayerTabList {
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
         this.players = new ConcurrentLinkedQueue<>();
+
+        // If the update time is set to 0 do not schedule the updater
+        if (plugin.getSettings().getUpdateRate() != 0) {
+            updateTimer(plugin.getSettings().getUpdateRate());
+        }
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -122,7 +127,7 @@ public class PlayerTabList {
                 .schedule();
     }
 
-    public void onPlayerRoleUpdate(@NotNull TabPlayer tabPlayer) {
+    public void onUpdate(@NotNull TabPlayer tabPlayer) {
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> players.forEach(player -> {
                     player.getPlayer().getTabList().getEntries().stream()
@@ -145,4 +150,14 @@ public class PlayerTabList {
         return new MineDown(Placeholder.format(plugin.getSettings().getFooter(), plugin, player)).toComponent();
     }
 
+    private void updateTimer(int updateRate) {
+        plugin.getServer().getScheduler()
+                .buildTask(plugin, () -> {
+                    if (!players.isEmpty()){
+                        players.forEach(this::onUpdate);
+                    }
+                })
+                .repeat(updateRate, TimeUnit.MILLISECONDS)
+                .schedule();
+    }
 }

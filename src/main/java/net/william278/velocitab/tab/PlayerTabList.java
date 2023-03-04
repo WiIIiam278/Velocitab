@@ -29,7 +29,7 @@ public class PlayerTabList {
         this.players = new ConcurrentLinkedQueue<>();
 
         // If the update time is set to 0 do not schedule the updater
-        if (plugin.getSettings().getUpdateRate() != 0) {
+        if (plugin.getSettings().getUpdateRate() > 0) {
             updateTimer(plugin.getSettings().getUpdateRate());
         }
     }

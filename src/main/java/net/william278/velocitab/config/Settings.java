@@ -49,5 +49,7 @@ public class Settings {
         return excludedServers.contains(serverName);
     }
 
-    public int getUpdateRate() {return updateRate;}
+    public int getUpdateRate() {
+        return updateRate;
+    }
 }

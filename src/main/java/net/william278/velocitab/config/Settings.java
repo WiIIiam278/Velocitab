@@ -24,6 +24,8 @@ public class Settings {
     private String format = "&7[%server%] &f%prefix%%username%";
     @YamlKey("excluded_servers")
     private ArrayList<String> excludedServers = new ArrayList<>();
+    @YamlKey(("update_rate"))
+    private int updateRate = 0;
 
     private Settings() {
     }
@@ -47,4 +49,7 @@ public class Settings {
         return excludedServers.contains(serverName);
     }
 
+    public int getUpdateRate() {
+        return updateRate;
+    }
 }

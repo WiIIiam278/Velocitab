@@ -52,7 +52,7 @@ public class PlayerTabList {
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
                 .orElse("?"));
-        if (serversInGroup.isEmpty()){
+        if (serversInGroup.isEmpty()) {
             event.getPlayer().sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
             return;
         }
@@ -162,7 +162,7 @@ public class PlayerTabList {
     private void updateTimer(int updateRate) {
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
-                    if (!players.isEmpty()){
+                    if (!players.isEmpty()) {
                         players.forEach(this::onUpdate);
                     }
                 })

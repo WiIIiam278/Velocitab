@@ -1,11 +1,11 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'com.github.johnrengelman.shadow' version '8.1.0'
     id 'org.ajoberstar.grgit' version '5.0.0'
 }
 
 group = 'net.william278'
-version = "1.0-${versionMetadata()}"
+version = "1.0.1-${versionMetadata()}"
 
 repositories {
     mavenCentral()

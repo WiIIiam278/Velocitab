@@ -18,7 +18,6 @@ import java.util.Optional;
         ┗╸ Placeholders: %players_online%, %max_players_online%, %local_players_online%, %current_date%, %current_time%, %username%, %server%, %ping%, %prefix%, %suffix%, %role%""")
 public class Settings {
 
-
     @YamlKey("headers")
     private Map<String, String> headers = Map.of("default", "&rainbow&Running Velocitab v" + BuildConstants.VERSION + " by William278");
     @YamlKey("footers")
@@ -27,9 +26,8 @@ public class Settings {
     private Map<String, String> formats = Map.of("default", "&7[%server%] &f%prefix%%username%");
     @YamlKey("server_groups")
     private Map<String, List<String>> serverGroups = Map.of("default", List.of("lobby1", "lobby2", "lobby3"));
-    @YamlKey(("update_rate"))
+    @YamlKey("update_rate")
     private int updateRate = 0;
-
 
     private Settings() {
     }

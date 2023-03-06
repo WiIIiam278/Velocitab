@@ -1,4 +1,4 @@
-package net.william278.velocitab.luckperms;
+package net.william278.velocitab.hook;
 
 import com.velocitypowered.api.proxy.Player;
 import net.luckperms.api.LuckPerms;

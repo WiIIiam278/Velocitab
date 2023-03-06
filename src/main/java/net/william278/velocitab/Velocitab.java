@@ -10,7 +10,8 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.william278.annotaml.Annotaml;
 import net.william278.velocitab.config.Settings;
-import net.william278.velocitab.luckperms.LuckPermsHook;
+import net.william278.velocitab.hook.LuckPermsHook;
+import net.william278.velocitab.hook.PapiHook;
 import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
@@ -34,7 +35,8 @@ import java.util.Optional;
         authors = {"William278"},
         dependencies = {
                 @Dependency(id = "protocolize"),
-                @Dependency(id = "luckperms", optional = true)
+                @Dependency(id = "luckperms", optional = true),
+                @Dependency(id = "papiproxybridge", optional = true)
         }
 )
 public class Velocitab {
@@ -45,6 +47,7 @@ public class Velocitab {
     private final Path dataDirectory;
     private PlayerTabList tabList;
     private LuckPermsHook luckPerms;
+    private PapiHook papiHook;
     private ScoreboardManager scoreboardManager;
 
     @Inject
@@ -85,17 +88,29 @@ public class Velocitab {
         return Optional.ofNullable(luckPerms);
     }
 
+    public Optional<PapiHook> getPapiHook() {
+        return Optional.ofNullable(papiHook);
+    }
+
     private void loadHooks() {
-        if (server.getPluginManager().getPlugin("luckperms").isEmpty()) {
-            return;
+        // If LuckPerms is present, load the hook
+        if (server.getPluginManager().getPlugin("luckperms").isPresent()) {
+            try {
+                luckPerms = new LuckPermsHook(this);
+                logger.info("Successfully hooked into LuckPerms");
+            } catch (IllegalArgumentException e) {
+                logger.warn("LuckPerms was not loaded: " + e.getMessage(), e);
+            }
         }
 
-        // If LuckPerms is present, load the hook
-        try {
-            luckPerms = new LuckPermsHook(this);
-            logger.info("Successfully hooked into LuckPerms");
-        } catch (IllegalArgumentException e) {
-            logger.warn("LuckPerms was not loaded: " + e.getMessage(), e);
+        // If PAPIProxyBridge is present, load the hook
+        if (server.getPluginManager().getPlugin("papiproxybridge").isPresent()) {
+            try {
+                papiHook = new PapiHook();
+                logger.info("Successfully hooked into PAPIProxyBridge");
+            } catch (IllegalArgumentException e) {
+                logger.warn("PAPIProxyBridge was not loaded: " + e.getMessage(), e);
+            }
         }
     }
 

@@ -18,19 +18,14 @@ import java.util.Optional;
         ┗╸ Placeholders: %players_online%, %max_players_online%, %local_players_online%, %current_date%, %current_time%, %username%, %server%, %ping%, %prefix%, %suffix%, %role%""")
 public class Settings {
 
-    @YamlKey("header")
-    private String defaultHeader = "&rainbow&Running Velocitab v" + BuildConstants.VERSION + " by William278";
-    @YamlKey("footer")
-    private String defaultFooter = "[There are currently %players_online%/%max_players_online% players online](gray)";
-    @YamlKey("format")
-    private String defaultFormat = "&7[%server%] &f%prefix%%username%";
-    @YamlKey("group_format")
-    private Map<String, Map<String, String>> groupFormat = Map.of("lobbies",
-            Map.of("header", "&rainbow&Running Velocitab v" + BuildConstants.VERSION + " by William278",
-                    "footer", "[There are currently %players_online%/%max_players_online% players online](gray)",
-                    "format", "&7[%server%] &f%prefix%%username%"));
+    @YamlKey("headers")
+    private Map<String, String> headers = Map.of("default", "&rainbow&Running Velocitab v" + BuildConstants.VERSION + " by William278");
+    @YamlKey("footers")
+    private Map<String, String> footers = Map.of("default", "[There are currently %players_online%/%max_players_online% players online](gray)");
+    @YamlKey("formats")
+    private Map<String, String> formats = Map.of("default", "&7[%server%] &f%prefix%%username%");
     @YamlKey("server_groups")
-    private Map<String, List<String>> serverGroups = Map.of("lobbies", List.of("lobby1", "lobby2", "lobby3"));
+    private Map<String, List<String>> serverGroups = Map.of("default", List.of("lobby1", "lobby2", "lobby3"));
 
     private Settings() {
     }
@@ -38,26 +33,31 @@ public class Settings {
     @NotNull
     public String getHeader(String serverGroup) {
         return StringEscapeUtils.unescapeJava(
-                groupFormat.getOrDefault(serverGroup, Map.of("header", defaultHeader))
-                        .getOrDefault("header", defaultHeader));
+                headers.getOrDefault(serverGroup, "&rainbow&Running Velocitab v" + BuildConstants.VERSION + " by William278"));
     }
 
     @NotNull
     public String getFooter(String serverGroup) {
         return StringEscapeUtils.unescapeJava(
-                groupFormat.getOrDefault(serverGroup, Map.of("footer", defaultFooter))
-                        .getOrDefault("footer", defaultFooter));
+                footers.getOrDefault(serverGroup, "[There are currently %players_online%/%max_players_online% players online](gray)"));
     }
 
     @NotNull
     public String getFormat(String serverGroup) {
         return StringEscapeUtils.unescapeJava(
-                groupFormat.getOrDefault(serverGroup, Map.of("format", defaultFormat))
-                        .getOrDefault("format", defaultFormat));
+                formats.getOrDefault(serverGroup, "&7[%server%] &f%prefix%%username%"));
     }
 
+    /**
+     * Get the server group that a server is in
+     *
+     * @param serverName The name of the server
+     * @return The server group that the server is in, or "default" if the server is not in a group
+     */
     public String getServerGroup(String serverName) {
-        return serverGroups.entrySet().stream().filter(entry -> entry.getValue().contains(serverName)).findFirst().map(Map.Entry::getKey).orElse(null);
+        return serverGroups.entrySet().stream()
+                .filter(entry -> entry.getValue().contains(serverName)).findFirst()
+                .map(Map.Entry::getKey).orElse("default");
     }
 
     @NotNull

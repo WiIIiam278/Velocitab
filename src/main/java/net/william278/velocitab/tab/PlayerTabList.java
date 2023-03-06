@@ -52,7 +52,10 @@ public class PlayerTabList {
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
                 .orElse("?"));
-        if (serversInGroup.isEmpty()) return;
+        if (serversInGroup.isEmpty()){
+            event.getPlayer().sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
+            return;
+        }
 
         // Add the player to the tracking list
         final TabPlayer tabPlayer = plugin.getTabPlayer(joined);

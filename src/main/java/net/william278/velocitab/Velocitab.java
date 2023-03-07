@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
@@ -75,7 +76,20 @@ public class Velocitab {
 
     private void loadSettings() {
         try {
-            settings = Annotaml.create(new File(dataDirectory.toFile(), "config.yml"), Settings.class).get();
+            File configFile = new File(dataDirectory.toAbsolutePath() + File.separator + "config.yml");
+            if (!configFile.exists()) {
+                configFile.getParentFile().mkdirs();
+                configFile.createNewFile();
+
+                Annotaml<Settings> settingsAnnotaml = Annotaml.create(new Settings(this), new FileInputStream(configFile));
+                settingsAnnotaml.save(configFile);
+                settings = settingsAnnotaml.get();
+                System.out.println(settings.getUpdateRate());
+
+
+                return;
+            }
+            Annotaml.create(configFile, Settings.class).get();
         } catch (IOException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             logger.error("Failed to load config file: " + e.getMessage(), e);
         }

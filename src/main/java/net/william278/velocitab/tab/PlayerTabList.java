@@ -48,10 +48,11 @@ public class PlayerTabList {
         }
 
         // Get the servers in the group from the joined server name
+        // If the server is not in a group, use fallback
         Optional<List<String>> serversInGroup = plugin.getSettings().getBrotherServers(joined.getCurrentServer()
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
-                .orElse("?"));
+                .orElse("?")); // TODO: check behaviour of "?"
         if (serversInGroup.isEmpty()) {
             event.getPlayer().sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
             return;

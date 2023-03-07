@@ -104,7 +104,7 @@ public class Velocitab {
         }
 
         // If PAPIProxyBridge is present, load the hook
-        if (server.getPluginManager().getPlugin("papiproxybridge").isPresent()) {
+        if (settings.isPapiHookEnabled() && server.getPluginManager().getPlugin("papiproxybridge").isPresent()) {
             try {
                 papiHook = new PapiHook();
                 logger.info("Successfully hooked into PAPIProxyBridge");

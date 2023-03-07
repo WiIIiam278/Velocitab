@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 
 public enum Placeholder {
@@ -35,17 +36,20 @@ public enum Placeholder {
         this.formatter = formatter;
     }
 
-    @NotNull
-    public static String format(@NotNull String format, @NotNull Velocitab plugin, @NotNull TabPlayer player) {
+    public static CompletableFuture<String> format(@NotNull String format, @NotNull Velocitab plugin, @NotNull TabPlayer player) {
         for (Placeholder placeholder : values()) {
             format = format.replace("%" + placeholder.name().toLowerCase() + "%", placeholder.formatter.apply(plugin, player));
         }
+        final String replaced = format;
 
-        return format;
+        return plugin.getPapiHook()
+                .map(hook -> hook.formatPapiPlaceholders(replaced, player.getPlayer()))
+                .orElse(CompletableFuture.completedFuture(replaced));
     }
 
+    // Replace __ so that it is not seen as underline when the string is formatted.
+    @NotNull
     private static String escape(String replace) {
-        // Replace __ so that it is not seen as underline when the string is formatted.
         return replace.replace("__", "_\\_");
     }
 }

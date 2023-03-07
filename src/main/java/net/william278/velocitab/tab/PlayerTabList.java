@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -62,8 +63,8 @@ public class PlayerTabList {
                         tabList.getEntries().stream()
                                 .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
                                 .ifPresentOrElse(
-                                        entry -> entry.setDisplayName(player.getDisplayName(plugin)),
-                                        () -> tabList.addEntry(createEntry(player, tabList))
+                                        entry -> player.getDisplayName(plugin).thenAccept(entry::setDisplayName),
+                                        () -> createEntry(player, tabList).thenAccept(tabList::addEntry)
                                 );
                         addPlayerToTabList(player, tabPlayer);
                         player.sendHeaderAndFooter(this);
@@ -75,13 +76,13 @@ public class PlayerTabList {
     }
 
     @NotNull
-    private TabListEntry createEntry(@NotNull TabPlayer player, @NotNull TabList tabList) {
-        return TabListEntry.builder()
+    private CompletableFuture<TabListEntry> createEntry(@NotNull TabPlayer player, @NotNull TabList tabList) {
+        return player.getDisplayName(plugin).thenApply(name -> TabListEntry.builder()
                 .profile(player.getPlayer().getGameProfile())
-                .displayName(player.getDisplayName(plugin))
+                .displayName(name)
                 .latency(0)
                 .tabList(tabList)
-                .build();
+                .build());
     }
 
     private void addPlayerToTabList(@NotNull TabPlayer player, @NotNull TabPlayer newPlayer) {
@@ -93,9 +94,9 @@ public class PlayerTabList {
                 .getTabList().getEntries().stream()
                 .filter(e -> e.getProfile().getId().equals(newPlayer.getPlayer().getUniqueId())).findFirst()
                 .ifPresentOrElse(
-                        entry -> entry.setDisplayName(newPlayer.getDisplayName(plugin)),
-                        () -> player.getPlayer().getTabList()
-                                .addEntry(createEntry(newPlayer, player.getPlayer().getTabList()))
+                        entry -> newPlayer.getDisplayName(plugin).thenAccept(entry::setDisplayName),
+                        () -> createEntry(newPlayer, player.getPlayer().getTabList())
+                                .thenAccept(entry -> player.getPlayer().getTabList().addEntry(entry))
                 );
         plugin.getScoreboardManager().updateRoles(
                 player.getPlayer(),
@@ -124,25 +125,26 @@ public class PlayerTabList {
 
     public void onPlayerRoleUpdate(@NotNull TabPlayer tabPlayer) {
         plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> players.forEach(player -> {
+                .buildTask(plugin, () -> players.forEach(player -> tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
                     player.getPlayer().getTabList().getEntries().stream()
                             .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
-                            .ifPresent(entry -> entry.setDisplayName(tabPlayer.getDisplayName(plugin)));
+                            .ifPresent(entry -> entry.setDisplayName(displayName));
                     plugin.getScoreboardManager().updateRoles(player.getPlayer(),
                             tabPlayer.getTeamName(), tabPlayer.getPlayer().getUsername());
-                }))
+                })))
                 .delay(500, TimeUnit.MILLISECONDS)
                 .schedule();
     }
 
-    @NotNull
-    public Component getHeader(@NotNull TabPlayer player) {
-        return new MineDown(Placeholder.format(plugin.getSettings().getHeader(), plugin, player)).toComponent();
+    public CompletableFuture<Component> getHeader(@NotNull TabPlayer player) {
+        return Placeholder.format(plugin.getSettings().getHeader(), plugin, player)
+                .thenApply(header -> new MineDown(header).toComponent());
+
     }
 
-    @NotNull
-    public Component getFooter(@NotNull TabPlayer player) {
-        return new MineDown(Placeholder.format(plugin.getSettings().getFooter(), plugin, player)).toComponent();
+    public CompletableFuture<Component> getFooter(@NotNull TabPlayer player) {
+        return Placeholder.format(plugin.getSettings().getFooter(), plugin, player)
+                .thenApply(header -> new MineDown(header).toComponent());
     }
 
 }

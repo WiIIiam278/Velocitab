@@ -1,5 +1,6 @@
 package net.william278.velocitab.config;
 
+import net.william278.annotaml.YamlComment;
 import net.william278.annotaml.YamlFile;
 import net.william278.annotaml.YamlKey;
 import net.william278.velocitab.BuildConstants;
@@ -22,6 +23,9 @@ public class Settings {
     private String footer = "[There are currently %players_online%/%max_players_online% players online](gray)";
     @YamlKey("format")
     private String format = "&7[%server%] &f%prefix%%username%";
+    @YamlComment("Enable the PlaceholderAPI hook (requires PAPIProxyBridge to be installed on proxy & spigot servers)")
+    @YamlKey("enable_papi_hook")
+    private boolean enablePapiHook = true;
     @YamlKey("excluded_servers")
     private ArrayList<String> excludedServers = new ArrayList<>();
 
@@ -45,6 +49,10 @@ public class Settings {
 
     public boolean isServerExcluded(@NotNull String serverName) {
         return excludedServers.contains(serverName);
+    }
+
+    public boolean isPapiHookEnabled() {
+        return enablePapiHook;
     }
 
 }

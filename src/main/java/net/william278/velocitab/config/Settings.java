@@ -1,5 +1,6 @@
 package net.william278.velocitab.config;
 
+
 import lombok.Getter;
 import net.william278.annotaml.YamlComment;
 import net.william278.annotaml.YamlFile;
@@ -20,6 +21,7 @@ import java.util.Map;
         ┗╸ Placeholders: %players_online%, %max_players_online%, %local_players_online%, %current_date%, %current_time%, %username%, %server%, %ping%, %prefix%, %suffix%, %role%""")
 public class Settings {
 
+
     @YamlKey("headers")
     private Map<String, String> headers = Map.of("default", "&rainbow&Running Velocitab v" + BuildConstants.VERSION + " by William278");
     @YamlKey("footers")
@@ -38,7 +40,9 @@ public class Settings {
     @YamlKey("fallback_group")
     @YamlComment("The format to use for the fallback group.")
     private String fallbackGroup = "default";
-    @YamlKey("update_rate")
+    @YamlKey("enable_papi_hook")
+    private boolean enablePapiHook = true;
+    @YamlKey(("update_rate"))
     private int updateRate = 0;
 
     public Settings(@NotNull Velocitab plugin) {
@@ -79,6 +83,9 @@ public class Settings {
                 .map(Map.Entry::getKey).orElse(fallbackGroup);
     }
 
+    public boolean isPapiHookEnabled() {
+        return enablePapiHook;
+    }
 
     public int getUpdateRate() {
         return updateRate;

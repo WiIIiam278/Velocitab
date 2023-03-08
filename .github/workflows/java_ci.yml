@@ -45,6 +45,7 @@ jobs:
           dependencies: |
             protocolize | depends | 2.2.5
             luckperms | suggests | *
+            papiproxybridge | suggests | *
           game-versions: |
             1.19
             1.19.2

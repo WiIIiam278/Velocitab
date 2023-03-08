@@ -8,6 +8,8 @@ import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.CompletableFuture;
+
 public final class TabPlayer implements Comparable<TabPlayer> {
     private final Player player;
     private final Role role;
@@ -37,8 +39,10 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     @NotNull
-    public Component getDisplayName(@NotNull Velocitab plugin) {
-        return new MineDown(Placeholder.format(plugin.getSettings().getFormat(plugin.getSettings().getServerGroup(getServerName())), plugin, this)).toComponent();
+    public CompletableFuture<Component> getDisplayName(@NotNull Velocitab plugin) {
+        return Placeholder.format(plugin.getSettings().getFormat(plugin.getSettings().getServerGroup(getServerName())), plugin, this)
+                .thenApply(formatted -> new MineDown(formatted).toComponent());
+
     }
 
     @NotNull
@@ -47,7 +51,8 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     public void sendHeaderAndFooter(@NotNull PlayerTabList tabList) {
-        this.player.sendPlayerListHeaderAndFooter(tabList.getHeader(this), tabList.getFooter(this));
+        tabList.getHeader(this).thenAccept(header -> tabList.getFooter(this)
+                .thenAccept(footer -> player.sendPlayerListHeaderAndFooter(header, footer)));
     }
 
     @Override

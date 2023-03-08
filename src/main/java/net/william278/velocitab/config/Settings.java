@@ -38,7 +38,7 @@ public class Settings {
     private boolean fallbackEnabled = true;
     @Getter
     @YamlKey("fallback_group")
-    @YamlComment("The format to use for the fallback group.")
+    @YamlComment("The formats to use for the fallback group.")
     private String fallbackGroup = "default";
     @YamlKey("enable_papi_hook")
     private boolean enablePapiHook = true;

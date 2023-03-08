@@ -1,7 +1,6 @@
 package net.william278.velocitab.config;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import net.william278.annotaml.YamlComment;
 import net.william278.annotaml.YamlFile;
 import net.william278.annotaml.YamlKey;
@@ -13,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 
-@NoArgsConstructor
 @YamlFile(header = """
         ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
         ┃       Velocitab Config       ┃
@@ -23,17 +21,14 @@ import java.util.Map;
 public class Settings {
 
     @YamlKey("headers")
-    @YamlComment("The header to display on the tab list per group.")
     private Map<String, String> headers = Map.of("default", "&rainbow&Running Velocitab v" + BuildConstants.VERSION + " by William278");
     @YamlKey("footers")
-    @YamlComment("The footer to display on the tab list per group.")
     private Map<String, String> footers = Map.of("default", "[There are currently %players_online%/%max_players_online% players online](gray)");
     @YamlKey("formats")
-    @YamlComment("How the player will appear on the tab list per group.")
     private Map<String, String> formats = Map.of("default", "&7[%server%] &f%prefix%%username%");
     @Getter
     @YamlKey("server_groups")
-    @YamlComment("The servers in each group\nAll servers not defined in a group will be excluded from Velocitab")
+    @YamlComment("The servers in each group of servers")
     private Map<String, List<String>> serverGroups = Map.of("default", List.of("lobby1", "lobby2", "lobby3"));
     @Getter
     @YamlKey("fallback_enabled")
@@ -51,6 +46,8 @@ public class Settings {
                 plugin.getServer().getAllServers().stream().map(server -> server.getServerInfo().getName()).toList()
         );
     }
+    @SuppressWarnings("unused")
+    public Settings(){}
 
     @NotNull
     public String getHeader(String serverGroup) {

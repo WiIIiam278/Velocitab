@@ -51,7 +51,7 @@ public class PlayerTabList {
 
         // Get the servers in the group from the joined server name
         // If the server is not in a group, use fallback
-        Optional<List<String>> serversInGroup = getBrotherServers(joined.getCurrentServer()
+        Optional<List<String>> serversInGroup = getSiblings(joined.getCurrentServer()
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
                 .orElse("?"));
@@ -156,12 +156,14 @@ public class PlayerTabList {
 
     @NotNull
     public Component getHeader(@NotNull TabPlayer player) {
-        return new MineDown(Placeholder.format(plugin.getSettings().getHeader(plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)).toComponent();
+        return new MineDown(Placeholder.format(plugin.getSettings().getHeader(
+                plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)).toComponent();
     }
 
     @NotNull
     public Component getFooter(@NotNull TabPlayer player) {
-        return new MineDown(Placeholder.format(plugin.getSettings().getFooter(plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)).toComponent();
+        return new MineDown(Placeholder.format(plugin.getSettings().getFooter(
+                plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)).toComponent();
     }
 
     private void updateTimer(int updateRate) {
@@ -175,18 +177,25 @@ public class PlayerTabList {
                 .schedule();
     }
 
+    /**
+     * Get the servers in the same group as the given server
+     * If the server is not in a group, use fallback
+     * If fallback is disabled, return empty
+     * @param serverName The server name
+     * @return The servers in the same group as the given server, empty if the server is not in a group and fallback is disabled
+     */
     @NotNull
-    public Optional<List<String>> getBrotherServers(String serverName) {
+    public Optional<List<String>> getSiblings(String serverName) {
         return plugin.getSettings().getServerGroups().values().stream()
-                .filter(servers -> servers.contains(serverName))// Find siblings of the server
+                .filter(servers -> servers.contains(serverName))
                 .findFirst()
                 .or(() -> {
-                    if (!plugin.getSettings().isFallbackEnabled()) {// If the fallback group is disabled, return empty
+                    if (!plugin.getSettings().isFallbackEnabled()) {
                         return Optional.empty();
                     }
 
                     if (!this.fallbackServers.contains(serverName)) {
-                        this.fallbackServers.add(serverName); // Add the server to the fallback group
+                        this.fallbackServers.add(serverName);
                     }
                     return Optional.of(this.fallbackServers.stream().toList());
                 });

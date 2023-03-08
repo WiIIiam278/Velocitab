@@ -43,6 +43,7 @@ public class Settings {
     @YamlKey("enable_papi_hook")
     private boolean enablePapiHook = true;
     @YamlKey("update_rate")
+    @YamlComment("How often to periodically update the TAB list, including header and footer, for all users.\nWill only update on player join/leave if set to 0.")
     private int updateRate = 0;
 
     public Settings(@NotNull Velocitab plugin) {

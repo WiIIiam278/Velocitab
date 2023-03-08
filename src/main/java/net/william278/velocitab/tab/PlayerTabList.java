@@ -157,14 +157,14 @@ public class PlayerTabList {
 
     public CompletableFuture<Component> getHeader(@NotNull TabPlayer player) {
         return Placeholder.format(plugin.getSettings().getHeader(
-                plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)
+                        plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)
                 .thenApply(header -> new MineDown(header).toComponent());
 
     }
 
     public CompletableFuture<Component> getFooter(@NotNull TabPlayer player) {
         return Placeholder.format(plugin.getSettings().getFooter(
-                plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)
+                        plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)
                 .thenApply(header -> new MineDown(header).toComponent());
 
     }
@@ -184,6 +184,7 @@ public class PlayerTabList {
      * Get the servers in the same group as the given server
      * If the server is not in a group, use fallback
      * If fallback is disabled, return empty
+     *
      * @param serverName The server name
      * @return The servers in the same group as the given server, empty if the server is not in a group and fallback is disabled
      */

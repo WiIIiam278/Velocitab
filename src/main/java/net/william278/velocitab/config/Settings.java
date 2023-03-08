@@ -1,5 +1,6 @@
 package net.william278.velocitab.config;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.william278.annotaml.YamlComment;
 import net.william278.annotaml.YamlFile;
@@ -11,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @NoArgsConstructor
 @YamlFile(header = """
@@ -31,11 +31,17 @@ public class Settings {
     @YamlKey("formats")
     @YamlComment("How the player will appear on the tab list per group.")
     private Map<String, String> formats = Map.of("default", "&7[%server%] &f%prefix%%username%");
+    @Getter
     @YamlKey("server_groups")
     @YamlComment("The servers in each group\nAll servers not defined in a group will be excluded from Velocitab")
     private Map<String, List<String>> serverGroups = Map.of("default", List.of("lobby1", "lobby2", "lobby3"));
+    @Getter
+    @YamlKey("fallback_enabled")
+    @YamlComment("All servers which are not in other groups will be put in the fallback group.\n\"false\" will exclude them from Velocitab.")
+    private boolean fallbackEnabled = true;
+    @Getter
     @YamlKey("fallback_group")
-    @YamlComment("The group of servers that not defined in server_groups. \"excluded\" will exclude them from Velocitab.")
+    @YamlComment("The format to use for the fallback group.")
     private String fallbackGroup = "default";
     @YamlKey("update_rate")
     private int updateRate = 0;
@@ -76,31 +82,6 @@ public class Settings {
                 .map(Map.Entry::getKey).orElse(fallbackGroup);
     }
 
-    @NotNull
-    public Optional<List<String>> getBrotherServers(String serverName) {
-        return serverGroups.entrySet().stream()
-                .filter(entry -> !entry.getKey().equals(fallbackGroup))// Exclude the fallback group
-                .map(Map.Entry::getValue)// Get the members of each group
-                .filter(servers -> servers.contains(serverName))// Find siblings of the server
-                .findFirst()
-                .or(() -> {
-                    if (fallbackGroup.equals("excluded")) {// If the fallback group is excluded, return empty
-                        return Optional.empty();
-                    }
-                    serverGroups.compute(fallbackGroup, (k, v) -> {
-                        if (v == null) {// If the fallback group is empty, create it
-                            return List.of(serverName);
-                        }
-                        if (!v.contains(serverName)) {
-                            v.add(serverName);
-                            return v; // If the fallback group is not empty, add the server to it
-                        }
-                        return v;
-                    });
-
-                    return Optional.of(serverGroups.get(fallbackGroup));
-                });
-    }
 
     public int getUpdateRate() {
         return updateRate;

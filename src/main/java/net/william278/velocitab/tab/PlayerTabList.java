@@ -25,10 +25,12 @@ import java.util.concurrent.TimeUnit;
 public class PlayerTabList {
     private final Velocitab plugin;
     private final ConcurrentLinkedQueue<TabPlayer> players;
+    private final ConcurrentLinkedQueue<String> fallbackServers;
 
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
         this.players = new ConcurrentLinkedQueue<>();
+        this.fallbackServers = new ConcurrentLinkedQueue<>();
 
         // If the update time is set to 0 do not schedule the updater
         if (plugin.getSettings().getUpdateRate() > 0) {
@@ -49,11 +51,13 @@ public class PlayerTabList {
 
         // Get the servers in the group from the joined server name
         // If the server is not in a group, use fallback
-        Optional<List<String>> serversInGroup = plugin.getSettings().getBrotherServers(joined.getCurrentServer()
+        Optional<List<String>> serversInGroup = getBrotherServers(joined.getCurrentServer()
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
-                .orElse("?")); // TODO: check behaviour of "?"
-        if (serversInGroup.isEmpty()) {
+                .orElse("?"));
+        // If the server is not in a group, use fallback.
+        // If fallback is disabled, permit the player to switch excluded servers without header or footer override
+        if (serversInGroup.isEmpty() && !this.fallbackServers.contains(event.getPreviousServer().getServerInfo().getName())) {
             event.getPlayer().sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
             return;
         }
@@ -169,5 +173,22 @@ public class PlayerTabList {
                 })
                 .repeat(updateRate, TimeUnit.MILLISECONDS)
                 .schedule();
+    }
+
+    @NotNull
+    public Optional<List<String>> getBrotherServers(String serverName) {
+        return plugin.getSettings().getServerGroups().values().stream()
+                .filter(servers -> servers.contains(serverName))// Find siblings of the server
+                .findFirst()
+                .or(() -> {
+                    if (!plugin.getSettings().isFallbackEnabled()) {// If the fallback group is disabled, return empty
+                        return Optional.empty();
+                    }
+
+                    if (!this.fallbackServers.contains(serverName)) {
+                        this.fallbackServers.add(serverName); // Add the server to the fallback group
+                    }
+                    return Optional.of(this.fallbackServers.stream().toList());
+                });
     }
 }

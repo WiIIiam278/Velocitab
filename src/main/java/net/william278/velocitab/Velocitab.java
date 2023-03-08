@@ -78,7 +78,10 @@ public class Velocitab {
 
     private void loadSettings() {
         try {
-            settings = Annotaml.create(new File(dataDirectory.toFile(), "config.yml"), Settings.class).get();
+            settings = Annotaml.create(
+                    new File(dataDirectory.toFile(), "config.yml"),
+                    new Settings(this)
+            ).get();
         } catch (IOException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             logger.error("Failed to load config file: " + e.getMessage(), e);
         }

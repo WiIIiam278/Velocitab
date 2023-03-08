@@ -16,7 +16,9 @@ import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -24,10 +26,12 @@ import java.util.concurrent.TimeUnit;
 public class PlayerTabList {
     private final Velocitab plugin;
     private final ConcurrentLinkedQueue<TabPlayer> players;
+    private final ConcurrentLinkedQueue<String> fallbackServers;
 
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
         this.players = new ConcurrentLinkedQueue<>();
+        this.fallbackServers = new ConcurrentLinkedQueue<>();
 
         // If the update time is set to 0 do not schedule the updater
         if (plugin.getSettings().getUpdateRate() > 0) {
@@ -46,11 +50,16 @@ public class PlayerTabList {
             players.removeIf(player -> player.getPlayer().getUniqueId().equals(joined.getUniqueId()));
         }
 
-        // Don't set their list if they are on an excluded server
-        if (plugin.getSettings().isServerExcluded(joined.getCurrentServer()
+        // Get the servers in the group from the joined server name
+        // If the server is not in a group, use fallback
+        Optional<List<String>> serversInGroup = getSiblings(joined.getCurrentServer()
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
-                .orElse("?"))) {
+                .orElse("?"));
+        // If the server is not in a group, use fallback.
+        // If fallback is disabled, permit the player to switch excluded servers without header or footer override
+        if (serversInGroup.isEmpty() && !this.fallbackServers.contains(event.getPreviousServer().getServerInfo().getName())) {
+            event.getPlayer().sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
             return;
         }
 
@@ -63,7 +72,11 @@ public class PlayerTabList {
                 .buildTask(plugin, () -> {
                     final TabList tabList = joined.getTabList();
                     final Map<String, String> playerRoles = new HashMap<>();
-                    players.forEach(player -> {
+
+                    for (TabPlayer player : players) {
+                        if (!serversInGroup.get().contains(player.getServerName())) {
+                            continue; // Skip players on other servers
+                        }
                         playerRoles.put(player.getPlayer().getUsername(), player.getTeamName());
                         tabList.getEntries().stream()
                                 .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
@@ -73,7 +86,8 @@ public class PlayerTabList {
                                 );
                         addPlayerToTabList(player, tabPlayer);
                         player.sendHeaderAndFooter(this);
-                    });
+                    }
+
                     plugin.getScoreboardManager().setRoles(joined, playerRoles);
                 })
                 .delay(500, TimeUnit.MILLISECONDS)
@@ -142,24 +156,52 @@ public class PlayerTabList {
     }
 
     public CompletableFuture<Component> getHeader(@NotNull TabPlayer player) {
-        return Placeholder.format(plugin.getSettings().getHeader(), plugin, player)
+        return Placeholder.format(plugin.getSettings().getHeader(
+                        plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)
                 .thenApply(header -> new MineDown(header).toComponent());
 
     }
 
     public CompletableFuture<Component> getFooter(@NotNull TabPlayer player) {
-        return Placeholder.format(plugin.getSettings().getFooter(), plugin, player)
+        return Placeholder.format(plugin.getSettings().getFooter(
+                        plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)
                 .thenApply(header -> new MineDown(header).toComponent());
+
     }
 
     private void updateTimer(int updateRate) {
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
-                    if (!players.isEmpty()){
+                    if (!players.isEmpty()) {
                         players.forEach(this::onUpdate);
                     }
                 })
                 .repeat(updateRate, TimeUnit.MILLISECONDS)
                 .schedule();
+    }
+
+    /**
+     * Get the servers in the same group as the given server
+     * If the server is not in a group, use fallback
+     * If fallback is disabled, return empty
+     *
+     * @param serverName The server name
+     * @return The servers in the same group as the given server, empty if the server is not in a group and fallback is disabled
+     */
+    @NotNull
+    public Optional<List<String>> getSiblings(String serverName) {
+        return plugin.getSettings().getServerGroups().values().stream()
+                .filter(servers -> servers.contains(serverName))
+                .findFirst()
+                .or(() -> {
+                    if (!plugin.getSettings().isFallbackEnabled()) {
+                        return Optional.empty();
+                    }
+
+                    if (!this.fallbackServers.contains(serverName)) {
+                        this.fallbackServers.add(serverName);
+                    }
+                    return Optional.of(this.fallbackServers.stream().toList());
+                });
     }
 }

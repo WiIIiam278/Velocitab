@@ -42,7 +42,7 @@ public class Settings {
     private String fallbackGroup = "default";
     @YamlKey("enable_papi_hook")
     private boolean enablePapiHook = true;
-    @YamlKey(("update_rate"))
+    @YamlKey("update_rate")
     private int updateRate = 0;
 
     public Settings(@NotNull Velocitab plugin) {

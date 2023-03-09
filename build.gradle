@@ -33,8 +33,10 @@ dependencies {
 }
 
 shadowJar {
-    relocate 'org.apache.commons.text', 'net.william278.husktowns.libraries.commons.text'
-    relocate 'org.apache.commons.lang3', 'net.william278.husktowns.libraries.commons.lang3'
+    relocate 'org.apache.commons.text', 'net.william278.velocitab.libraries.commons.text'
+    relocate 'org.apache.commons.lang3', 'net.william278.velocitab.libraries.commons.lang3'
+    relocate 'org.jetbrains', 'net.william278.velocitab.libraries'
+    relocate 'org.intellij', 'net.william278.velocitab.libraries'
     relocate 'de.themoep', 'net.william278.velocitab.libraries'
     relocate 'dev.dejvokep.boostedyaml', 'net.william278.velocitab.libraries'
     relocate 'net.william278.annotaml', 'net.william278.velocitab.libraries.annotaml'

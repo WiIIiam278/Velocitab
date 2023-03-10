@@ -35,7 +35,7 @@ jobs:
           modrinth-id: Q10irTG0
           modrinth-featured: false
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          files-primary: build/libs/Velocitab-*-all.jar
+          path: target/Velocitab-*.jar
           name: Velocitab v${{ env.version_name }}
           version: ${{ env.version_name }}
           version-type: alpha
@@ -47,7 +47,9 @@ jobs:
             luckperms | suggests | *
             papiproxybridge | suggests | *
           game-versions: |
-            1.19
+            1.16.5
+            1.17.1
+            1.18.2
             1.19.2
             1.19.3
           java: 16
@@ -55,4 +57,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: Velocitab Plugin
-          path: build/libs/Velocitab-*-all.jar
+          path: target/Velocitab-*.jar

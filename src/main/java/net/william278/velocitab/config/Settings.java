@@ -5,7 +5,6 @@ import lombok.Getter;
 import net.william278.annotaml.YamlComment;
 import net.william278.annotaml.YamlFile;
 import net.william278.annotaml.YamlKey;
-import net.william278.velocitab.BuildConstants;
 import net.william278.velocitab.Velocitab;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +21,7 @@ import java.util.Map;
 public class Settings {
 
     @YamlKey("headers")
-    private Map<String, String> headers = Map.of("default", "&rainbow&Running Velocitab v" + BuildConstants.VERSION + " by William278");
+    private Map<String, String> headers = Map.of("default", "&rainbow&Running Velocitab by William278");
 
     @YamlKey("footers")
     private Map<String, String> footers = Map.of("default", "[There are currently %players_online%/%max_players_online% players online](gray)");
@@ -74,7 +73,7 @@ public class Settings {
     @NotNull
     public String getHeader(String serverGroup) {
         return StringEscapeUtils.unescapeJava(
-                headers.getOrDefault(serverGroup, "&rainbow&Running Velocitab v" + BuildConstants.VERSION + " by William278"));
+                headers.getOrDefault(serverGroup, "&rainbow&Running Velocitab by William278"));
     }
 
     @NotNull

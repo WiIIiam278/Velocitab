@@ -3,7 +3,6 @@ package net.william278.velocitab;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
-import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
@@ -33,20 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-@Plugin(
-        id = "velocitab",
-        name = "Velocitab",
-        version = BuildConstants.VERSION,
-        description = "Simple velocity TAB menu plugin",
-        url = "https://william278.net/",
-        authors = {"William278"},
-        dependencies = {
-                @Dependency(id = "protocolize"),
-                @Dependency(id = "luckperms", optional = true),
-                @Dependency(id = "papiproxybridge", optional = true),
-                @Dependency(id = "miniplaceholders", optional = true)
-        }
-)
+@Plugin(id = "velocitab")
 public class Velocitab {
 
     private Settings settings;
@@ -70,7 +56,7 @@ public class Velocitab {
         loadHooks();
         prepareScoreboardManager();
         prepareTabList();
-        logger.info("Successfully enabled Velocitab v" + BuildConstants.VERSION);
+        logger.info("Successfully enabled Velocitab");
     }
 
     @NotNull

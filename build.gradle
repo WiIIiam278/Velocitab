@@ -1,11 +1,17 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 plugins {
-    id 'java'
     id 'com.github.johnrengelman.shadow' version '8.1.0'
     id 'org.ajoberstar.grgit' version '5.0.0'
+    id 'java'
 }
 
-group = 'net.william278'
-version = "1.1-${versionMetadata()}"
+group 'net.william278'
+version "$ext.plugin_version-${versionMetadata()}"
+
+ext {
+    set 'version', version.toString()
+}
 
 repositories {
     mavenCentral()
@@ -22,17 +28,28 @@ dependencies {
     compileOnly 'io.netty:netty-codec-http:4.1.89.Final'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.0.0'
     compileOnly 'net.william278:PAPIProxyBridge:1.0'
+    compileOnly 'org.projectlombok:lombok:1.18.26'
 
     implementation 'org.apache.commons:commons-text:1.10.0'
     implementation 'net.william278:Annotaml:2.0.1'
     implementation 'dev.dejvokep:boosted-yaml:1.3.1'
     implementation 'de.themoep:minedown-adventure:1.7.2-SNAPSHOT'
     implementation 'net.kyori:adventure-text-minimessage:4.12.0'
-    implementation 'org.projectlombok:lombok:1.18.26'
 
-    annotationProcessor 'com.velocitypowered:velocity-api:3.1.1'
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
 }
+
+processResources {
+    filesMatching(['**/*.json', '**/*.yml']) {
+        filter ReplaceTokens as Class, beginToken: '${', endToken: '}',
+                tokens: rootProject.ext.properties
+    }
+}
+
+logger.lifecycle("Building PAPIProxyBridge ${version} by William278")
+
+version rootProject.version
+archivesBaseName = "${rootProject.name}"
 
 shadowJar {
     relocate 'org.apache.commons.text', 'net.william278.velocitab.libraries.commons.text'
@@ -47,41 +64,22 @@ shadowJar {
         //noinspection GroovyAssignabilityCheck
         exclude dependency(':slf4j-api')
     }
-}
 
-def targetJavaVersion = 16
-java {
-    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
-    }
+    destinationDirectory.set(file("$rootDir/target"))
+    archiveClassifier.set('')
 }
-
 jar.dependsOn shadowJar
-
-tasks.withType(JavaCompile).configureEach {
-    options.release = targetJavaVersion
-}
-
-def templateSource = file('src/main/templates')
-def templateDest = layout.buildDirectory.dir('generated/sources/templates')
-def generateTemplates = tasks.register('generateTemplates', Copy) { task ->
-    def props = [
-            'version': project.version
-    ]
-    task.inputs.properties props
-
-    task.from templateSource
-    task.into templateDest
-    task.expand props
-}
-
-sourceSets.main.java.srcDir(generateTemplates.map { it.outputs })
+clean.delete "$rootDir/target"
 
 @SuppressWarnings('GrMethodMayBeStatic')
 def versionMetadata() {
+    // Get if there is a tag for this commit
+    def tag = grgit.tag.list().find { it.commit.id == grgit.head().id }
+    if (tag != null) {
+        return ''
+    }
+
+    // Otherwise, get the last commit hash and if it's a clean head
     if (grgit == null) {
         return System.getenv("GITHUB_RUN_NUMBER") ? 'build.' + System.getenv("GITHUB_RUN_NUMBER") : 'unknown'
     }

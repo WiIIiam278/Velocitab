@@ -28,7 +28,10 @@ import static dev.simplix.protocolize.api.util.ProtocolVersions.*;
 public class UpdateTeamsPacket extends AbstractPacket {
 
     protected static final List<ProtocolIdMapping> MAPPINGS = List.of(
-            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_19, MINECRAFT_1_19, 0x55),
+            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_13, MINECRAFT_1_13_2, 0x47),
+            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_14, MINECRAFT_1_14_4, 0x4B),
+            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_15, MINECRAFT_1_16_5, 0x4C),
+            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_17, MINECRAFT_1_19, 0x55),
             AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_19_1, MINECRAFT_1_19_2, 0x58),
             AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_19_3, MINECRAFT_LATEST, 0x56)
     );

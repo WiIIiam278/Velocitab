@@ -74,7 +74,7 @@ public class PlayerTabList {
                     final Map<String, String> playerRoles = new HashMap<>();
 
                     for (TabPlayer player : players) {
-                        if (!serversInGroup.get().contains(player.getServerName())) {
+                        if (serversInGroup.isPresent() && !serversInGroup.get().contains(player.getServerName())) {
                             continue; // Skip players on other servers
                         }
                         playerRoles.put(player.getPlayer().getUsername(), player.getTeamName());
@@ -158,14 +158,14 @@ public class PlayerTabList {
     public CompletableFuture<Component> getHeader(@NotNull TabPlayer player) {
         return Placeholder.format(plugin.getSettings().getHeader(
                         plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)
-                .thenApply(header -> new MineDown(header).toComponent());
+                .thenApply(header -> plugin.formatText(header, player));
 
     }
 
     public CompletableFuture<Component> getFooter(@NotNull TabPlayer player) {
         return Placeholder.format(plugin.getSettings().getFooter(
                         plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)
-                .thenApply(header -> new MineDown(header).toComponent());
+                .thenApply(footer -> plugin.formatText(footer, player));
 
     }
 

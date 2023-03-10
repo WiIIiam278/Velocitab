@@ -16,14 +16,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.OptionalInt;
 import java.util.UUID;
 
-public class LuckPermsHook {
+public class LuckPermsHook extends Hook {
 
     private int highestWeight = Role.DEFAULT_WEIGHT;
-    private final Velocitab plugin;
     private final LuckPerms api;
 
     public LuckPermsHook(@NotNull Velocitab plugin) throws IllegalStateException {
-        this.plugin = plugin;
+        super(plugin);
         this.api = LuckPermsProvider.get();
         api.getEventBus().subscribe(plugin, UserDataRecalculateEvent.class, this::onLuckPermsGroupUpdate);
     }

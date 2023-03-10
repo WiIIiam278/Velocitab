@@ -21,27 +21,42 @@ import java.util.Map;
         ┗╸ Placeholders: %players_online%, %max_players_online%, %local_players_online%, %current_date%, %current_time%, %username%, %server%, %ping%, %prefix%, %suffix%, %role%""")
 public class Settings {
 
-
     @YamlKey("headers")
     private Map<String, String> headers = Map.of("default", "&rainbow&Running Velocitab v" + BuildConstants.VERSION + " by William278");
+
     @YamlKey("footers")
     private Map<String, String> footers = Map.of("default", "[There are currently %players_online%/%max_players_online% players online](gray)");
+
     @YamlKey("formats")
     private Map<String, String> formats = Map.of("default", "&7[%server%] &f%prefix%%username%");
+
+    @Getter
+    @YamlComment("Which text formatter to use (MINEDOWN or MINIMESSAGE)")
+    @YamlKey("formatting_type")
+    private Formatter formatter = Formatter.MINEDOWN;
+
     @Getter
     @YamlKey("server_groups")
     @YamlComment("The servers in each group of servers")
     private Map<String, List<String>> serverGroups = Map.of("default", List.of("lobby1", "lobby2", "lobby3"));
+
     @Getter
     @YamlKey("fallback_enabled")
     @YamlComment("All servers which are not in other groups will be put in the fallback group.\n\"false\" will exclude them from Velocitab.")
     private boolean fallbackEnabled = true;
+
     @Getter
     @YamlKey("fallback_group")
     @YamlComment("The formats to use for the fallback group.")
     private String fallbackGroup = "default";
+
     @YamlKey("enable_papi_hook")
     private boolean enablePapiHook = true;
+
+    @YamlKey("enable_miniplaceholders_hook")
+    @YamlComment("If you are using MINIMESSAGE formatting, enable this to support MiniPlaceholders in formatting.")
+    private boolean enableMiniPlaceholdersHook = true;
+
     @YamlKey("update_rate")
     @YamlComment("How often to periodically update the TAB list, including header and footer, for all users.\nWill only update on player join/leave if set to 0.")
     private int updateRate = 0;
@@ -51,8 +66,10 @@ public class Settings {
                 plugin.getServer().getAllServers().stream().map(server -> server.getServerInfo().getName()).toList()
         );
     }
+
     @SuppressWarnings("unused")
-    public Settings(){}
+    public Settings() {
+    }
 
     @NotNull
     public String getHeader(String serverGroup) {
@@ -88,7 +105,19 @@ public class Settings {
         return enablePapiHook;
     }
 
+    public boolean isMiniPlaceholdersHookEnabled() {
+        return enableMiniPlaceholdersHook;
+    }
+
     public int getUpdateRate() {
         return updateRate;
+    }
+
+    /**
+     * Different formatting markup options for the TAB list
+     */
+    public enum Formatter {
+        MINEDOWN,
+        MINIMESSAGE
     }
 }

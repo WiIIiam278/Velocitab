@@ -1,7 +1,6 @@
 package net.william278.velocitab.player;
 
 import com.velocitypowered.api.proxy.Player;
-import de.themoep.minedown.adventure.MineDown;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
@@ -40,10 +39,9 @@ public final class TabPlayer implements Comparable<TabPlayer> {
 
     @NotNull
     public CompletableFuture<Component> getDisplayName(@NotNull Velocitab plugin) {
-        return Placeholder.format(plugin.getSettings().getFormat(
-                        plugin.getSettings().getServerGroup(getServerName())
-                ), plugin, this)
-                .thenApply(formatted -> new MineDown(formatted).toComponent());
+        final String serverGroup = plugin.getSettings().getServerGroup(getServerName());
+        return Placeholder.format(plugin.getSettings().getFormat(serverGroup), plugin, this)
+                .thenApply(formatted -> plugin.formatText(formatted, this));
 
     }
 

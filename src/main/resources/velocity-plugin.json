@@ -1,0 +1,25 @@
+{
+  "id": "velocitab",
+  "name": "Velocitab",
+  "version": "${version}",
+  "description": "A super-simple (sorted!) Velocity TAB menu plugin",
+  "url": "https://william278.net",
+  "authors": [
+    "William278"
+  ],
+  "dependencies": [
+    {
+      "id": "protocolize",
+      "optional": false
+    },
+    {
+      "id": "luckperms",
+      "optional": true
+    },
+    {
+      "id": "papiproxybridge",
+      "optional": true
+    }
+  ],
+  "main": "net.william278.papiproxybridge.VelocityPAPIProxyBridge"
+}

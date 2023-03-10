@@ -44,10 +44,10 @@ You can include placeholders in the header, footer and player name format of the
 
 ## Building
 To build Velocitab, simply run the following in the root of the repository:
-```
+```bash
 ./gradlew clean build
 ```
-The build will be output as `/build/lib/Velocitab-X.XX-all.jar`.
+The build will be output as `/target/Velocitab-x.xx.jar`.
 
 ### License
 Velocitab is licensed under the Apache 2.0 license.

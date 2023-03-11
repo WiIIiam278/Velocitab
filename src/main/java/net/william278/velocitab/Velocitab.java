@@ -7,9 +7,14 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import de.themoep.minedown.adventure.MineDown;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.william278.annotaml.Annotaml;
 import net.william278.velocitab.config.Settings;
+import net.william278.velocitab.hook.Hook;
 import net.william278.velocitab.hook.LuckPermsHook;
+import net.william278.velocitab.hook.MiniPlaceholdersHook;
 import net.william278.velocitab.hook.PapiHook;
 import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.player.Role;
@@ -22,12 +27,12 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
-@Plugin(
-        id = "velocitab"
-)
+@Plugin(id = "velocitab")
 public class Velocitab {
 
     private Settings settings;
@@ -35,8 +40,7 @@ public class Velocitab {
     private final Logger logger;
     private final Path dataDirectory;
     private PlayerTabList tabList;
-    private LuckPermsHook luckPerms;
-    private PapiHook papiHook;
+    private List<Hook> hooks;
     private ScoreboardManager scoreboardManager;
 
     @Inject
@@ -76,34 +80,38 @@ public class Velocitab {
         }
     }
 
+    private <H extends Hook> Optional<H> getHook(@NotNull Class<H> hookType) {
+        return hooks.stream()
+                .filter(hook -> hook.getClass().equals(hookType))
+                .map(hookType::cast)
+                .findFirst();
+    }
+
     public Optional<LuckPermsHook> getLuckPerms() {
-        return Optional.ofNullable(luckPerms);
+        return getHook(LuckPermsHook.class);
     }
 
     public Optional<PapiHook> getPapiHook() {
-        return Optional.ofNullable(papiHook);
+        return getHook(PapiHook.class);
+    }
+
+    public Optional<MiniPlaceholdersHook> getMiniPlaceholdersHook() {
+        return getHook(MiniPlaceholdersHook.class);
     }
 
     private void loadHooks() {
-        // If LuckPerms is present, load the hook
-        if (server.getPluginManager().getPlugin("luckperms").isPresent()) {
-            try {
-                luckPerms = new LuckPermsHook(this);
-                logger.info("Successfully hooked into LuckPerms");
-            } catch (IllegalArgumentException e) {
-                logger.warn("LuckPerms was not loaded: " + e.getMessage(), e);
-            }
-        }
+        this.hooks = new ArrayList<>();
+        Hook.AVAILABLE.forEach(availableHook -> availableHook.apply(this).ifPresent(hooks::add));
+    }
 
-        // If PAPIProxyBridge is present, load the hook
-        if (settings.isPapiHookEnabled() && server.getPluginManager().getPlugin("papiproxybridge").isPresent()) {
-            try {
-                papiHook = new PapiHook();
-                logger.info("Successfully hooked into PAPIProxyBridge");
-            } catch (IllegalArgumentException e) {
-                logger.warn("PAPIProxyBridge was not loaded: " + e.getMessage(), e);
-            }
-        }
+    @NotNull
+    public Component formatText(@NotNull String text, @NotNull TabPlayer player) {
+        return switch (getSettings().getFormatter()) {
+            case MINEDOWN -> new MineDown(text).toComponent();
+            case MINIMESSAGE -> getMiniPlaceholdersHook()
+                    .map(hook -> hook.format(text, player.getPlayer()))
+                    .orElse(MiniMessage.miniMessage().deserialize(text));
+        };
     }
 
     private void prepareScoreboardManager() {

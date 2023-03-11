@@ -53,7 +53,11 @@ public class ScoreboardManager {
     }
 
     private void dispatchPacket(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
-        Protocolize.playerProvider().player(player.getUniqueId()).sendPacket(packet);
+        try {
+            Protocolize.playerProvider().player(player.getUniqueId()).sendPacket(packet);
+        } catch (Exception e) {
+            plugin.log("Failed to dispatch packet (is the client or server modded or using an illegal version?)", e);
+        }
     }
 
     public void registerPacket() {

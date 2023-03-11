@@ -46,6 +46,7 @@ jobs:
             protocolize | depends | 2.2.5
             luckperms | suggests | *
             papiproxybridge | suggests | *
+            miniplaceholders | suggests | *
           game-versions: |
             1.16.5
             1.17.1

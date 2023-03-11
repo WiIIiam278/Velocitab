@@ -19,6 +19,10 @@
     {
       "id": "papiproxybridge",
       "optional": true
+    },
+    {
+      "id": "miniplaceholders",
+      "optional": true
     }
   ],
   "main": "net.william278.velocitab.Velocitab"

@@ -34,7 +34,7 @@ public class PlayerTabList {
 
         // If the update time is set to 0 do not schedule the updater
         if (plugin.getSettings().getUpdateRate() > 0) {
-            updateTimer(plugin.getSettings().getUpdateRate());
+            this.updatePeriodically(plugin.getSettings().getUpdateRate());
         }
     }
 
@@ -142,16 +142,13 @@ public class PlayerTabList {
     }
 
     public void onUpdate(@NotNull TabPlayer tabPlayer) {
-        plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> players.forEach(player -> tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
-                    player.getPlayer().getTabList().getEntries().stream()
-                            .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
-                            .ifPresent(entry -> entry.setDisplayName(displayName));
-                    plugin.getScoreboardManager().updateRoles(player.getPlayer(),
-                            tabPlayer.getTeamName(), tabPlayer.getPlayer().getUsername());
-                })))
-                .delay(500, TimeUnit.MILLISECONDS)
-                .schedule();
+        players.forEach(player -> tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
+            player.getPlayer().getTabList().getEntries().stream()
+                    .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
+                    .ifPresent(entry -> entry.setDisplayName(displayName));
+            plugin.getScoreboardManager().updateRoles(player.getPlayer(),
+                    tabPlayer.getTeamName(), tabPlayer.getPlayer().getUsername());
+        }));
     }
 
     public CompletableFuture<Component> getHeader(@NotNull TabPlayer player) {
@@ -168,12 +165,17 @@ public class PlayerTabList {
 
     }
 
-    private void updateTimer(int updateRate) {
+    // Update the tab list periodically
+    private void updatePeriodically(int updateRate) {
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
-                    if (!players.isEmpty()) {
-                        players.forEach(this::onUpdate);
+                    if (players.isEmpty()) {
+                        return;
                     }
+                    players.forEach(player -> {
+                        this.onUpdate(player);
+                        player.sendHeaderAndFooter(this);
+                    });
                 })
                 .repeat(updateRate, TimeUnit.MILLISECONDS)
                 .schedule();

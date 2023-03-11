@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.OptionalInt;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class LuckPermsHook extends Hook {
 
@@ -47,11 +48,15 @@ public class LuckPermsHook extends Hook {
 
     public void onLuckPermsGroupUpdate(@NotNull UserDataRecalculateEvent event) {
         plugin.getServer().getPlayer(event.getUser().getUniqueId())
-                .ifPresent(player -> plugin.getTabList().onUpdate(new TabPlayer(
-                        player,
-                        getRoleFromMetadata(event.getData().getMetaData()),
-                        getHighestWeight()
-                )));
+                .ifPresent(player -> plugin.getServer().getScheduler()
+                        .buildTask(plugin, () -> plugin.getTabList()
+                                .onUpdate(new TabPlayer(
+                                        player,
+                                        getRoleFromMetadata(event.getData().getMetaData()),
+                                        getHighestWeight()
+                                )))
+                        .delay(500, TimeUnit.MILLISECONDS)
+                        .schedule());
     }
 
     private OptionalInt getWeight(@Nullable String groupName) {

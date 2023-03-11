@@ -44,7 +44,7 @@ processResources {
     }
 }
 
-logger.lifecycle("Building PAPIProxyBridge ${version} by William278")
+logger.lifecycle("Building Velocitab ${version} by William278")
 
 version rootProject.version
 archivesBaseName = "${rootProject.name}"

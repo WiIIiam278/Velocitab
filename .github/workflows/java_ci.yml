@@ -35,7 +35,7 @@ jobs:
           modrinth-id: Q10irTG0
           modrinth-featured: false
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          path: target/Velocitab-*.jar
+          files: target/Velocitab-*.jar
           name: Velocitab v${{ env.version_name }}
           version: ${{ env.version_name }}
           version-type: alpha

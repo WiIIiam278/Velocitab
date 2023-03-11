@@ -172,7 +172,10 @@ public class PlayerTabList {
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
                     if (!players.isEmpty()) {
-                        players.forEach(this::onUpdate);
+                        players.forEach(tabPlayer -> {
+                            onUpdate(tabPlayer);
+                            tabPlayer.sendHeaderAndFooter(this);
+                        });
                     }
                 })
                 .repeat(updateRate, TimeUnit.MILLISECONDS)

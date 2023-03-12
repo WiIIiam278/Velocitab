@@ -152,16 +152,16 @@ public class PlayerTabList {
     }
 
     public CompletableFuture<Component> getHeader(@NotNull TabPlayer player) {
-        return Placeholder.format(plugin.getSettings().getHeader(
+        return Placeholder.replace(plugin.getSettings().getHeader(
                         plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)
-                .thenApply(header -> plugin.getSettings().getFormatter().format(header, player, plugin));
+                .thenApply(header -> plugin.getFormatter().format(header, player, plugin));
 
     }
 
     public CompletableFuture<Component> getFooter(@NotNull TabPlayer player) {
-        return Placeholder.format(plugin.getSettings().getFooter(
+        return Placeholder.replace(plugin.getSettings().getFooter(
                         plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)
-                .thenApply(footer -> plugin.getSettings().getFormatter().format(footer, player, plugin));
+                .thenApply(footer -> plugin.getFormatter().format(footer, player, plugin));
 
     }
 

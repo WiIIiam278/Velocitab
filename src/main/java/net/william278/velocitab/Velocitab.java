@@ -8,6 +8,7 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.william278.annotaml.Annotaml;
+import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.config.Settings;
 import net.william278.velocitab.hook.Hook;
 import net.william278.velocitab.hook.LuckPermsHook;
@@ -64,6 +65,11 @@ public class Velocitab {
     @NotNull
     public Settings getSettings() {
         return settings;
+    }
+
+    @NotNull
+    public Formatter getFormatter() {
+        return getSettings().getFormatter();
     }
 
     private void loadSettings() {

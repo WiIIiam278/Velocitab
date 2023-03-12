@@ -22,23 +22,26 @@ public enum Placeholder {
             .orElse("")),
     CURRENT_DATE((plugin, player) -> DateTimeFormatter.ofPattern("dd MMM yyyy").format(LocalDateTime.now())),
     CURRENT_TIME((plugin, player) -> DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.now())),
-    USERNAME((plugin, player) -> escape(player.getPlayer().getUsername())),
+    USERNAME((plugin, player) -> plugin.getFormatter().escape(player.getPlayer().getUsername())),
     SERVER((plugin, player) -> player.getServerName()),
     PING((plugin, player) -> Long.toString(player.getPlayer().getPing())),
     PREFIX((plugin, player) -> player.getRole().getPrefix().orElse("")),
     SUFFIX((plugin, player) -> player.getRole().getSuffix().orElse("")),
     ROLE((plugin, player) -> player.getRole().getName().orElse("")),
-    DEBUG_TEAM_NAME((plugin, player) -> escape(player.getTeamName()));
+    DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getTeamName()));
 
-    private final BiFunction<Velocitab, TabPlayer, String> formatter;
+    /**
+     * Function to replace placeholders with a real value
+     */
+    private final BiFunction<Velocitab, TabPlayer, String> replacer;
 
-    Placeholder(@NotNull BiFunction<Velocitab, TabPlayer, String> formatter) {
-        this.formatter = formatter;
+    Placeholder(@NotNull BiFunction<Velocitab, TabPlayer, String> replacer) {
+        this.replacer = replacer;
     }
 
-    public static CompletableFuture<String> format(@NotNull String format, @NotNull Velocitab plugin, @NotNull TabPlayer player) {
+    public static CompletableFuture<String> replace(@NotNull String format, @NotNull Velocitab plugin, @NotNull TabPlayer player) {
         for (Placeholder placeholder : values()) {
-            format = format.replace("%" + placeholder.name().toLowerCase() + "%", placeholder.formatter.apply(plugin, player));
+            format = format.replace("%" + placeholder.name().toLowerCase() + "%", placeholder.replacer.apply(plugin, player));
         }
         final String replaced = format;
 
@@ -47,9 +50,4 @@ public enum Placeholder {
                 .orElse(CompletableFuture.completedFuture(replaced));
     }
 
-    // Replace __ so that it is not seen as underline when the string is formatted.
-    @NotNull
-    private static String escape(String replace) {
-        return replace.replace("__", "_\\_");
-    }
 }

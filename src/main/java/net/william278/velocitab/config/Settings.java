@@ -1,16 +1,11 @@
 package net.william278.velocitab.config;
 
 
-import de.themoep.minedown.adventure.MineDown;
 import lombok.Getter;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.william278.annotaml.YamlComment;
 import net.william278.annotaml.YamlFile;
 import net.william278.annotaml.YamlKey;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.player.TabPlayer;
-import org.apache.commons.lang3.function.TriFunction;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -117,25 +112,4 @@ public class Settings {
         return updateRate;
     }
 
-    /**
-     * Different formatting markup options for the TAB list
-     */
-    @SuppressWarnings("unused")
-    public enum Formatter {
-        MINEDOWN((text, player, plugin) -> new MineDown(text).toComponent()),
-        MINIMESSAGE((text, player, plugin) -> plugin.getMiniPlaceholdersHook()
-                .map(hook -> hook.format(text, player.getPlayer()))
-                .orElse(MiniMessage.miniMessage().deserialize(text)));
-
-        private final TriFunction<String, TabPlayer, Velocitab, Component> formatter;
-
-        Formatter(@NotNull TriFunction<String, TabPlayer, Velocitab, Component> formatter) {
-            this.formatter = formatter;
-        }
-
-        @NotNull
-        public Component format(@NotNull String text, @NotNull TabPlayer player, @NotNull Velocitab plugin) {
-            return formatter.apply(text, player, plugin);
-        }
-    }
 }

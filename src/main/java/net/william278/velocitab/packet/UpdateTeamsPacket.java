@@ -10,6 +10,7 @@ import lombok.*;
 import lombok.experimental.Accessors;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -191,19 +192,21 @@ public class UpdateTeamsPacket extends AbstractPacket {
 
         private final String id;
 
-        NameTagVisibility(String id) {
+        NameTagVisibility(@NotNull String id) {
             this.id = id;
         }
 
+        @NotNull
         public String id() {
             return id;
         }
 
-        public static NameTagVisibility byId(String id) {
-            return Arrays.stream(values())
+        @NotNull
+        public static NameTagVisibility byId(@Nullable String id) {
+            return id == null ? ALWAYS : Arrays.stream(values())
                     .filter(visibility -> visibility.id.equals(id))
                     .findFirst()
-                    .orElse(null);
+                    .orElse(ALWAYS);
         }
     }
 
@@ -215,19 +218,21 @@ public class UpdateTeamsPacket extends AbstractPacket {
 
         private final String id;
 
-        CollisionRule(String id) {
+        CollisionRule(@NotNull String id) {
             this.id = id;
         }
 
+        @NotNull
         public String id() {
             return id;
         }
 
-        public static CollisionRule byId(String id) {
-            return Arrays.stream(values())
+        @NotNull
+        public static CollisionRule byId(@Nullable String id) {
+            return id == null ? ALWAYS : Arrays.stream(values())
                     .filter(rule -> rule.id.equals(id))
                     .findFirst()
-                    .orElse(null);
+                    .orElse(ALWAYS);
         }
     }
 }

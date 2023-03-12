@@ -7,9 +7,6 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
-import de.themoep.minedown.adventure.MineDown;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.william278.annotaml.Annotaml;
 import net.william278.velocitab.config.Settings;
 import net.william278.velocitab.hook.Hook;
@@ -102,16 +99,6 @@ public class Velocitab {
     private void loadHooks() {
         this.hooks = new ArrayList<>();
         Hook.AVAILABLE.forEach(availableHook -> availableHook.apply(this).ifPresent(hooks::add));
-    }
-
-    @NotNull
-    public Component formatText(@NotNull String text, @NotNull TabPlayer player) {
-        return switch (getSettings().getFormatter()) {
-            case MINEDOWN -> new MineDown(text).toComponent();
-            case MINIMESSAGE -> getMiniPlaceholdersHook()
-                    .map(hook -> hook.format(text, player.getPlayer()))
-                    .orElse(MiniMessage.miniMessage().deserialize(text));
-        };
     }
 
     private void prepareScoreboardManager() {

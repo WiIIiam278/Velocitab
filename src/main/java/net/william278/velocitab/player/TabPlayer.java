@@ -41,7 +41,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     public CompletableFuture<Component> getDisplayName(@NotNull Velocitab plugin) {
         final String serverGroup = plugin.getSettings().getServerGroup(getServerName());
         return Placeholder.format(plugin.getSettings().getFormat(serverGroup), plugin, this)
-                .thenApply(formatted -> plugin.formatText(formatted, this));
+                .thenApply(formatted -> plugin.getSettings().getFormatter().format(formatted, this, plugin));
 
     }
 

@@ -11,7 +11,9 @@
     </a>
 </p>
 <br/>
-A super-simple Velocity TAB menu plugin that uses scoreboard team client-bound packets to actually sort player lists without the need for a backend plugin.
+**Velocitab** is a super-simple Velocity TAB menu plugin that uses scoreboard team client-bound packets to actually sort player lists without the need for a backend plugin.
+
+![showcase.png](images/showcase.png)
 
 ## Setup
 Requires [Protocolize](https://github.com/Exceptionflug/protocolize) v2.2.5 to be installed on your proxy. [LuckPerms](https://luckperms.net) is also strongly recommended for prefix/suffix/role (and sorting) support.

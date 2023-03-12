@@ -71,21 +71,21 @@ public class Settings {
     }
 
     @NotNull
-    public String getHeader(String serverGroup) {
+    public String getHeader(@NotNull String serverGroup) {
         return StringEscapeUtils.unescapeJava(
-                headers.getOrDefault(serverGroup, "&rainbow&Running Velocitab by William278"));
+                headers.getOrDefault(serverGroup, ""));
     }
 
     @NotNull
-    public String getFooter(String serverGroup) {
+    public String getFooter(@NotNull String serverGroup) {
         return StringEscapeUtils.unescapeJava(
-                footers.getOrDefault(serverGroup, "[There are currently %players_online%/%max_players_online% players online](gray)"));
+                footers.getOrDefault(serverGroup, ""));
     }
 
     @NotNull
-    public String getFormat(String serverGroup) {
+    public String getFormat(@NotNull String serverGroup) {
         return StringEscapeUtils.unescapeJava(
-                formats.getOrDefault(serverGroup, "&7[%server%] &f%prefix%%username%"));
+                formats.getOrDefault(serverGroup, "%username%"));
     }
 
     /**
@@ -94,6 +94,7 @@ public class Settings {
      * @param serverName The name of the server
      * @return The server group that the server is in, or "default" if the server is not in a group
      */
+    @NotNull
     public String getServerGroup(String serverName) {
         return serverGroups.entrySet().stream()
                 .filter(entry -> entry.getValue().contains(serverName)).findFirst()

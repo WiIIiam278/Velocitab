@@ -17,18 +17,18 @@
 ![showcase.png](images/showcase.png)
 
 ## Setup
-Requires [Protocolize](https://github.com/Exceptionflug/protocolize) v2.2.5 to be installed on your proxy. [LuckPerms](https://luckperms.net) is also strongly recommended for prefix/suffix/role (and sorting) support.
+Requires [Protocolize](https://www.spigotmc.org/resources/protocolize-protocollib-for-bungeecord-waterfall-velocity.63778/) v2.2.5 to be installed on your proxy. [LuckPerms](https://luckperms.net) is also strongly recommended for prefix/suffix/role (and sorting) support.
 
 Simply download the latest release and place it in your Velocity plugins folder (along with Protocolize).
 
 ## Configuration
-Velocitab has a simple config file that lets you define a header, footer and format for the player list, as well as a set of servers you do not want to have the custom player list appear on (i.e. if you want certain backend servers to manage the tab list instead of the proxy).
+Velocitab has a simple config file that lets you define a header, footer and format for the player list. You can additionally configure [groups of servers](https://william278.net/docs/velocitab/server-groups) to display different formats in the TAB menu depending on which server the player is viewing it from.
 
 ### Formatting
-Formatting is handled through [MineDown](https://github.com/Phoenix616/MineDown), supporting the full range of RGB colors and gradients. If you use my other plugin using MineDown, HuskChat, you'll feel right at home.
+Velocitab [supports](https://william278.net/docs/velocitab/formatting) the full range of RGB colors and gradients, with options to use either MineDown (_default_) or MiniMessage formatting.
 
 ### Placeholders
-You can include placeholders in the header, footer and player name format of the TAB list. The following placeholders are supported:
+You can include [placeholders](https://william278.net/docs/velocitab/placeholders) in the header, footer and player name format of the TAB list. The following placeholders are supported:
 
 | Placeholder              | Description                                   | Example            |
 |--------------------------|-----------------------------------------------|--------------------|
@@ -44,6 +44,8 @@ You can include placeholders in the header, footer and player name format of the
 | `%suffix%`               | The player's suffix (from LuckPerms)          | `&c `              |
 | `%role%`                 | The player's primary LuckPerms group          | `admin`            |
 | `%debug_team_name%`      | Internal team value, used for list sorting    | `1_alpha_William2` |
+
+Additionally, support for PlaceholderAPI (via PAPIProxyBridge) and MiniPlaceholders (for MiniMessage formatting users) is available.
 
 ## Building
 To build Velocitab, simply run the following in the root of the repository:

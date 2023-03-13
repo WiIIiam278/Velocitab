@@ -45,7 +45,7 @@ You can include [placeholders](https://william278.net/docs/velocitab/placeholder
 | `%role%`                 | The player's primary LuckPerms group          | `admin`            |
 | `%debug_team_name%`      | Internal team value, used for list sorting    | `1_alpha_William2` |
 
-Additionally, support for PlaceholderAPI (via PAPIProxyBridge) and MiniPlaceholders (for MiniMessage formatting users) is available.
+PlaceholderAPI placeholders are also supported. To use them, just install [PAPIProxyBridge](https://modrinth.com/plugin/papiproxybridge) on your Velocity proxy and backend Spigot servers. Additionally, a hook for MiniPlaceholders is supported for servers using the MiniMessage formatter.
 
 ## Building
 To build Velocitab, simply run the following in the root of the repository:

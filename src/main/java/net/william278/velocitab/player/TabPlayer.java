@@ -8,6 +8,8 @@ import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 public final class TabPlayer implements Comparable<TabPlayer> {
     private final Player player;
@@ -34,7 +36,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     public String getServerName() {
         return player.getCurrentServer()
                 .map(serverConnection -> serverConnection.getServerInfo().getName())
-                .orElse("Unknown");
+                .orElse("unknown");
     }
 
     @NotNull
@@ -46,8 +48,10 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     @NotNull
-    public String getTeamName() {
-        return role.getWeightString(highestWeight) + role.getName().map(name -> "-" + name).orElse("");
+    public String getTeamName(@NotNull Velocitab plugin) {
+        return plugin.getSettings().getSortingElementList().stream()
+                .map(element -> element.resolve(this, plugin))
+                .collect(Collectors.joining("-"));
     }
 
     public void sendHeaderAndFooter(@NotNull PlayerTabList tabList) {
@@ -68,4 +72,28 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     public boolean equals(Object obj) {
         return obj instanceof TabPlayer other && player.getUniqueId().equals(other.player.getUniqueId());
     }
+
+    /**
+     * Elements for sorting players
+     */
+    @SuppressWarnings("unused")
+    public enum SortableElement {
+        ROLE_WEIGHT((player, plugin) -> player.getRole().getWeightString(player.highestWeight)),
+        ROLE_NAME((player, plugin) -> player.getRole().getName()
+                .map(name -> name.length() > 3 ? name.substring(0, 3) : name)
+                .orElse("")),
+        SERVER_NAME((player, plugin) -> player.getServerName());
+
+        private final BiFunction<TabPlayer, Velocitab, String> elementResolver;
+
+        SortableElement(@NotNull BiFunction<TabPlayer, Velocitab, String> elementResolver) {
+            this.elementResolver = elementResolver;
+        }
+
+        @NotNull
+        private String resolve(@NotNull TabPlayer tabPlayer, @NotNull Velocitab plugin) {
+            return elementResolver.apply(tabPlayer, plugin);
+        }
+    }
+
 }

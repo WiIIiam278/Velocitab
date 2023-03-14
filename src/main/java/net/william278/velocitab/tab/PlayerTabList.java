@@ -76,7 +76,7 @@ public class PlayerTabList {
                         if (serversInGroup.isPresent() && !serversInGroup.get().contains(player.getServerName())) {
                             continue; // Skip players on other servers
                         }
-                        playerRoles.put(player.getPlayer().getUsername(), player.getTeamName());
+                        playerRoles.put(player.getPlayer().getUsername(), player.getTeamName(plugin));
                         tabList.getEntries().stream()
                                 .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
                                 .ifPresentOrElse(
@@ -118,7 +118,7 @@ public class PlayerTabList {
                 );
         plugin.getScoreboardManager().updateRoles(
                 player.getPlayer(),
-                newPlayer.getTeamName(),
+                newPlayer.getTeamName(plugin),
                 newPlayer.getPlayer().getUsername()
         );
     }
@@ -147,7 +147,7 @@ public class PlayerTabList {
                     .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
                     .ifPresent(entry -> entry.setDisplayName(displayName));
             plugin.getScoreboardManager().updateRoles(player.getPlayer(),
-                    tabPlayer.getTeamName(), tabPlayer.getPlayer().getUsername());
+                    tabPlayer.getTeamName(plugin), tabPlayer.getPlayer().getUsername());
         }));
     }
 

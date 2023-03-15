@@ -1,11 +1,11 @@
 package net.william278.velocitab.config;
 
-
 import lombok.Getter;
 import net.william278.annotaml.YamlComment;
 import net.william278.annotaml.YamlFile;
 import net.william278.annotaml.YamlKey;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.player.TabPlayer;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,6 +55,13 @@ public class Settings {
     @YamlKey("enable_miniplaceholders_hook")
     @YamlComment("If you are using MINIMESSAGE formatting, enable this to support MiniPlaceholders in formatting.")
     private boolean enableMiniPlaceholdersHook = true;
+
+    @YamlKey("sort_players_by")
+    @YamlComment("Ordered list of elements by which players should be sorted. (ROLE_WEIGHT, ROLE_NAME and SERVER are supported)")
+    private List<TabPlayer.SortableElement> sortPlayersBy = List.of(
+            TabPlayer.SortableElement.ROLE_WEIGHT,
+            TabPlayer.SortableElement.ROLE_NAME
+    );
 
     @YamlKey("update_rate")
     @YamlComment("How often to periodically update the TAB list, including header and footer, for all users.\nWill only update on player join/leave if set to 0.")
@@ -107,6 +114,11 @@ public class Settings {
 
     public boolean isMiniPlaceholdersHookEnabled() {
         return enableMiniPlaceholdersHook;
+    }
+
+    @NotNull
+    public List<TabPlayer.SortableElement> getSortingElementList() {
+        return sortPlayersBy;
     }
 
     public int getUpdateRate() {

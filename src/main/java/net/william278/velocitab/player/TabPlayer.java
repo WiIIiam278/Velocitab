@@ -7,6 +7,8 @@ import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -93,6 +95,10 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         @NotNull
         private String resolve(@NotNull TabPlayer tabPlayer, @NotNull Velocitab plugin) {
             return elementResolver.apply(tabPlayer, plugin);
+        }
+
+        public static Optional<SortableElement> parse(@NotNull String s) {
+            return Arrays.stream(values()).filter(element -> element.name().equalsIgnoreCase(s)).findFirst();
         }
     }
 

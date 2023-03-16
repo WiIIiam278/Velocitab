@@ -58,9 +58,9 @@ public class Settings {
 
     @YamlKey("sort_players_by")
     @YamlComment("Ordered list of elements by which players should be sorted. (ROLE_WEIGHT, ROLE_NAME and SERVER are supported)")
-    private List<TabPlayer.SortableElement> sortPlayersBy = List.of(
-            TabPlayer.SortableElement.ROLE_WEIGHT,
-            TabPlayer.SortableElement.ROLE_NAME
+    private List<String> sortPlayersBy = List.of(
+            TabPlayer.SortableElement.ROLE_WEIGHT.name(),
+            TabPlayer.SortableElement.ROLE_NAME.name()
     );
 
     @YamlKey("update_rate")
@@ -118,7 +118,10 @@ public class Settings {
 
     @NotNull
     public List<TabPlayer.SortableElement> getSortingElementList() {
-        return sortPlayersBy;
+        return sortPlayersBy.stream()
+                .map(p -> TabPlayer.SortableElement.parse(p).orElseThrow(() ->
+                        new IllegalArgumentException("Invalid sorting element set in config file: " + p)))
+                .toList();
     }
 
     public int getUpdateRate() {

@@ -141,7 +141,14 @@ public class PlayerTabList {
                 .schedule();
     }
 
-    public void onUpdate(@NotNull TabPlayer tabPlayer) {
+    // Replace a player in the tab list
+    public void replacePlayer(@NotNull TabPlayer tabPlayer) {
+        players.removeIf(player -> player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId()));
+        players.add(tabPlayer);
+    }
+
+    // Update a player's name in the tab list
+    public void updatePlayer(@NotNull TabPlayer tabPlayer) {
         players.forEach(player -> tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
             player.getPlayer().getTabList().getEntries().stream()
                     .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
@@ -173,7 +180,7 @@ public class PlayerTabList {
                         return;
                     }
                     players.forEach(player -> {
-                        this.onUpdate(player);
+                        this.updatePlayer(player);
                         player.sendHeaderAndFooter(this);
                     });
                 })

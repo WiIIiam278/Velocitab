@@ -10,6 +10,7 @@ import net.luckperms.api.model.user.User;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,14 +48,18 @@ public class LuckPermsHook extends Hook {
     }
 
     public void onLuckPermsGroupUpdate(@NotNull UserDataRecalculateEvent event) {
+        final PlayerTabList tabList = plugin.getTabList();
         plugin.getServer().getPlayer(event.getUser().getUniqueId())
                 .ifPresent(player -> plugin.getServer().getScheduler()
-                        .buildTask(plugin, () -> plugin.getTabList()
-                                .onUpdate(new TabPlayer(
-                                        player,
-                                        getRoleFromMetadata(event.getData().getMetaData()),
-                                        getHighestWeight()
-                                )))
+                        .buildTask(plugin, () -> {
+                            final TabPlayer updatedPlayer = new TabPlayer(
+                                    player,
+                                    getRoleFromMetadata(event.getData().getMetaData()),
+                                    getHighestWeight()
+                            );
+                            tabList.replacePlayer(updatedPlayer);
+                            tabList.updatePlayer(updatedPlayer);
+                        })
                         .delay(500, TimeUnit.MILLISECONDS)
                         .schedule());
     }

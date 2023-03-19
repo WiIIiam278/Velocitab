@@ -25,7 +25,7 @@ dependencies {
     compileOnly 'com.velocitypowered:velocity-api:3.1.1'
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'dev.simplix:protocolize-api:2.2.6'
-    compileOnly 'io.netty:netty-codec-http:4.1.89.Final'
+    compileOnly 'io.netty:netty-codec-http:4.1.90.Final'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.0.0'
     compileOnly 'net.william278:PAPIProxyBridge:1.0'
     compileOnly 'org.projectlombok:lombok:1.18.26'

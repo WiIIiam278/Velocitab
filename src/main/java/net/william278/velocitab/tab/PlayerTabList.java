@@ -26,8 +26,8 @@ public class PlayerTabList {
     private final Velocitab plugin;
     private final ConcurrentLinkedQueue<TabPlayer> players;
     private final ConcurrentLinkedQueue<String> fallbackServers;
-    private int indexheader = 0;
-    private int indexFooter= 0;
+    private int headerIndex = 0;
+    private int footerIndex= 0;
 
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
@@ -161,26 +161,26 @@ public class PlayerTabList {
     }
 
     public CompletableFuture<Component> getHeader(@NotNull TabPlayer player) {
-        if (indexheader >= plugin.getSettings().getHeaderListSize(plugin.getSettings().getServerGroup(player.getServerName()))){
-            indexheader = 0;
+        if (headerIndex >= plugin.getSettings().getHeaderListSize(plugin.getSettings().getServerGroup(player.getServerName()))){
+            headerIndex = 0;
         }
-        CompletableFuture<Component> headercomponent = Placeholder.replace(plugin.getSettings().getHeader(
-                        plugin.getSettings().getServerGroup(player.getServerName()), indexheader), plugin, player)
+        CompletableFuture<Component> headerComponent = Placeholder.replace(plugin.getSettings().getHeader(
+                        plugin.getSettings().getServerGroup(player.getServerName()), headerIndex), plugin, player)
                 .thenApply(header -> plugin.getFormatter().format(header, player, plugin));
-        ++ indexheader;
-        return headercomponent;
+        headerIndex++;
+        return headerComponent;
 
     }
 
     public CompletableFuture<Component> getFooter(@NotNull TabPlayer player) {
-        if (indexFooter >= plugin.getSettings().getFooterListSize(plugin.getSettings().getServerGroup(player.getServerName()))){
-            indexFooter = 0;
+        if (footerIndex >= plugin.getSettings().getFooterListSize(plugin.getSettings().getServerGroup(player.getServerName()))){
+            footerIndex = 0;
         }
-        CompletableFuture<Component> footercomponent = Placeholder.replace(plugin.getSettings().getFooter(
-                        plugin.getSettings().getServerGroup(player.getServerName()), indexFooter), plugin, player)
+        CompletableFuture<Component> footerComponent = Placeholder.replace(plugin.getSettings().getFooter(
+                        plugin.getSettings().getServerGroup(player.getServerName()), footerIndex), plugin, player)
                 .thenApply(footer -> plugin.getFormatter().format(footer, player, plugin));
-        ++ indexFooter;
-        return footercomponent;
+        footerIndex++;
+        return footerComponent;
 
     }
 

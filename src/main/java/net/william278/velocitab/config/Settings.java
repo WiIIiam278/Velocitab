@@ -21,11 +21,11 @@ import java.util.Map;
 public class Settings {
 
     @YamlKey("headers")
-    @YamlComment("List of Headers to rotate through.")
+    @YamlComment("Header(s) to display above the TAB list for each server group.\\nList multiple headers and set update_rate to the number of ticks between frames for basic animations")
     private Map<String, List<String>> headers = Map.of("default", List.of("&rainbow&Running Velocitab by William278"));
 
     @YamlKey("footers")
-    @YamlComment("List of Footers to rotate through.")
+    @YamlComment("Footer(s) to display below the TAB list for each server group, same as headers.")
     private Map<String, List<String>> footers = Map.of("default", List.of("[There are currently %players_online%/%max_players_online% players online](gray)"));
 
     @YamlKey("formats")

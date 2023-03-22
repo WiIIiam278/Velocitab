@@ -27,7 +27,7 @@ public class PlayerTabList {
     private final ConcurrentLinkedQueue<TabPlayer> players;
     private final ConcurrentLinkedQueue<String> fallbackServers;
     private int headerIndex = 0;
-    private int footerIndex= 0;
+    private int footerIndex = 0;
 
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;

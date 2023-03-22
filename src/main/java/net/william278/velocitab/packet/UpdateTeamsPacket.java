@@ -34,7 +34,8 @@ public class UpdateTeamsPacket extends AbstractPacket {
             AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_15, MINECRAFT_1_16_5, 0x4C),
             AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_17, MINECRAFT_1_19, 0x55),
             AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_19_1, MINECRAFT_1_19_2, 0x58),
-            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_19_3, MINECRAFT_LATEST, 0x56)
+            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_19_3, MINECRAFT_1_19_3, 0x56),
+            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_19_4, MINECRAFT_LATEST, 0x5A)
     );
 
     private String teamName;

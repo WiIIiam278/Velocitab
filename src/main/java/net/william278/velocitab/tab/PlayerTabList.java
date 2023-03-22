@@ -26,6 +26,8 @@ public class PlayerTabList {
     private final Velocitab plugin;
     private final ConcurrentLinkedQueue<TabPlayer> players;
     private final ConcurrentLinkedQueue<String> fallbackServers;
+    private int headerIndex = 0;
+    private int footerIndex = 0;
 
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
@@ -159,16 +161,26 @@ public class PlayerTabList {
     }
 
     public CompletableFuture<Component> getHeader(@NotNull TabPlayer player) {
-        return Placeholder.replace(plugin.getSettings().getHeader(
-                        plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)
+        if (headerIndex >= plugin.getSettings().getHeaderListSize(plugin.getSettings().getServerGroup(player.getServerName()))){
+            headerIndex = 0;
+        }
+        CompletableFuture<Component> headerComponent = Placeholder.replace(plugin.getSettings().getHeader(
+                        plugin.getSettings().getServerGroup(player.getServerName()), headerIndex), plugin, player)
                 .thenApply(header -> plugin.getFormatter().format(header, player, plugin));
+        headerIndex++;
+        return headerComponent;
 
     }
 
     public CompletableFuture<Component> getFooter(@NotNull TabPlayer player) {
-        return Placeholder.replace(plugin.getSettings().getFooter(
-                        plugin.getSettings().getServerGroup(player.getServerName())), plugin, player)
+        if (footerIndex >= plugin.getSettings().getFooterListSize(plugin.getSettings().getServerGroup(player.getServerName()))){
+            footerIndex = 0;
+        }
+        CompletableFuture<Component> footerComponent = Placeholder.replace(plugin.getSettings().getFooter(
+                        plugin.getSettings().getServerGroup(player.getServerName()), footerIndex), plugin, player)
                 .thenApply(footer -> plugin.getFormatter().format(footer, player, plugin));
+        footerIndex++;
+        return footerComponent;
 
     }
 

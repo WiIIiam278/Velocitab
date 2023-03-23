@@ -21,10 +21,12 @@ import java.util.Map;
 public class Settings {
 
     @YamlKey("headers")
-    private Map<String, String> headers = Map.of("default", "&rainbow&Running Velocitab by William278");
+    @YamlComment("Header(s) to display above the TAB list for each server group.\nList multiple headers and set update_rate to the number of ticks between frames for basic animations")
+    private Map<String, List<String>> headers = Map.of("default", List.of("&rainbow&Running Velocitab by William278"));
 
     @YamlKey("footers")
-    private Map<String, String> footers = Map.of("default", "[There are currently %players_online%/%max_players_online% players online](gray)");
+    @YamlComment("Footer(s) to display below the TAB list for each server group, same as headers.")
+    private Map<String, List<String>> footers = Map.of("default", List.of("[There are currently %players_online%/%max_players_online% players online](gray)"));
 
     @YamlKey("formats")
     private Map<String, String> formats = Map.of("default", "&7[%server%] &f%prefix%%username%");
@@ -83,15 +85,23 @@ public class Settings {
     }
 
     @NotNull
-    public String getHeader(@NotNull String serverGroup) {
+    public String getHeader(@NotNull String serverGroup, @NotNull int index) {
         return StringEscapeUtils.unescapeJava(
-                headers.getOrDefault(serverGroup, ""));
+                headers.getOrDefault(serverGroup, List.of("")).get(index));
     }
 
     @NotNull
-    public String getFooter(@NotNull String serverGroup) {
+    public String getFooter(@NotNull String serverGroup, @NotNull int index) {
         return StringEscapeUtils.unescapeJava(
-                footers.getOrDefault(serverGroup, ""));
+                footers.getOrDefault(serverGroup, List.of("")).get(index));
+    }
+
+    public int getHeaderListSize(@NotNull String serverGroup) {
+        return headers.getOrDefault(serverGroup, List.of("")).size();
+    }
+
+    public int getFooterListSize(@NotNull String serverGroup) {
+        return footers.getOrDefault(serverGroup, List.of("")).size();
     }
 
     @NotNull

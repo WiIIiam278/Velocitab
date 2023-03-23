@@ -49,6 +49,11 @@ public class Settings {
     @YamlComment("The formats to use for the fallback group.")
     private String fallbackGroup = "default";
 
+    @Getter
+    @YamlKey("only_list_players_in_same_group")
+    @YamlComment("Only show other players on a server that is part of the same server group as the player.")
+    private boolean onlyListPlayersInSameGroup = true;
+
     @YamlKey("enable_papi_hook")
     private boolean enablePapiHook = true;
 

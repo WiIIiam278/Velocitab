@@ -73,9 +73,12 @@ public class PlayerTabList {
                     final Map<String, String> playerRoles = new HashMap<>();
 
                     for (TabPlayer player : players) {
-                        if (serversInGroup.isPresent() && !serversInGroup.get().contains(player.getServerName())) {
-                            continue; // Skip players on other servers
+                        // Skip players on other servers if the setting is enabled
+                        if (plugin.getSettings().isOnlyListPlayersInSameGroup() && serversInGroup.isPresent()
+                            && !serversInGroup.get().contains(player.getServerName())) {
+                            continue;
                         }
+
                         playerRoles.put(player.getPlayer().getUsername(), player.getTeamName(plugin));
                         tabList.getEntries().stream()
                                 .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()

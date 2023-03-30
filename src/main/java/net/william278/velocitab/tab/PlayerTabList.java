@@ -154,6 +154,9 @@ public class PlayerTabList {
 
     // Update a player's name in the tab list
     public void updatePlayer(@NotNull TabPlayer tabPlayer) {
+        if (!tabPlayer.getPlayer().isActive()) {
+            return;
+        }
         players.forEach(player -> tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
             player.getPlayer().getTabList().getEntries().stream()
                     .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()

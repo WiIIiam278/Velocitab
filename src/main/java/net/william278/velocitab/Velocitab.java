@@ -4,10 +4,12 @@ import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
+import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.william278.annotaml.Annotaml;
+import net.william278.velocitab.commands.VelocitabCommand;
 import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.config.Settings;
 import net.william278.velocitab.hook.Hook;
@@ -25,10 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Plugin(id = "velocitab")
 public class Velocitab {
@@ -54,6 +53,7 @@ public class Velocitab {
         loadHooks();
         prepareScoreboardManager();
         prepareTabList();
+        registerCommands();
         logger.info("Successfully enabled Velocitab");
     }
 
@@ -72,7 +72,7 @@ public class Velocitab {
         return getSettings().getFormatter();
     }
 
-    private void loadSettings() {
+    public void loadSettings() {
         try {
             settings = Annotaml.create(
                     new File(dataDirectory.toFile(), "config.yml"),
@@ -143,4 +143,13 @@ public class Velocitab {
         );
     }
 
+    public PluginDescription getDescription() {
+        return server.getPluginManager().getPlugin("velocitab").get().getDescription();
+    }
+
+    private void registerCommands() {
+        server.getCommandManager().register(
+                server.getCommandManager().metaBuilder("velocitab").build(),
+                new VelocitabCommand(this));
+    }
 }

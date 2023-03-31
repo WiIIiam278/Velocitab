@@ -8,6 +8,7 @@ import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.player.TabList;
 import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.proxy.server.ServerInfo;
+import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
@@ -26,6 +27,7 @@ public class PlayerTabList {
     private final Velocitab plugin;
     private final ConcurrentLinkedQueue<TabPlayer> players;
     private final ConcurrentLinkedQueue<String> fallbackServers;
+    private ScheduledTask updateTask;
 
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
@@ -183,7 +185,7 @@ public class PlayerTabList {
 
     // Update the tab list periodically
     private void updatePeriodically(int updateRate) {
-        plugin.getServer().getScheduler()
+        updateTask = plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
                     if (players.isEmpty()) {
                         return;
@@ -195,6 +197,27 @@ public class PlayerTabList {
                 })
                 .repeat(updateRate, TimeUnit.MILLISECONDS)
                 .schedule();
+    }
+
+    // Update all players since there was a reload of the config
+    public void reloadUpdate() {
+        if (players.isEmpty()) {
+            return;
+        }
+
+        if (updateTask != null) {
+            updateTask.cancel();
+        }
+        // If the update time is set to 0 do not schedule the updater
+        if (plugin.getSettings().getUpdateRate() > 0) {
+            this.updatePeriodically(plugin.getSettings().getUpdateRate());
+        } else {
+            players.forEach(player -> {
+                this.updatePlayer(player);
+                player.sendHeaderAndFooter(this);
+            });
+        }
+
     }
 
     /**

@@ -17,17 +17,17 @@ public class VelocitabCommand implements SimpleCommand {
     public VelocitabCommand(Velocitab plugin) {
         this.plugin = plugin;
         aboutMenu = AboutMenu.create("Velocitab")
-                .withDescription("Velocitab is a super-simple Velocity TAB menu plugin that uses scoreboard team client-bound packets to actually sort player lists without the need for a backend plugin.")
-                .withVersion(Version.fromString(plugin.getVersion(), "-"))
+                .withDescription(plugin.getDescription().getDescription().get())
+                .withVersion(Version.fromString(plugin.getDescription().getVersion().get(), "-"))
                 .addAttribution("Author",
                         AboutMenu.Credit.of("William278").withDescription("Click to visit website").withUrl("https://william278.net"))
                 .addAttribution("Contributors",
                         AboutMenu.Credit.of("Ironboundred").withDescription("Coding"),
                         AboutMenu.Credit.of("Emibergo02").withDescription("Coding"))
                 .addButtons(
-                        AboutMenu.Link.of("https://william278.net/docs/velocitab").withText(" Wiki").withIcon("⛏"),
-                        AboutMenu.Link.of("https://discord.gg/tVYhJfyDWG").withText(" Discord").withIcon("⭐").withColor("#6773f5"),
-                        AboutMenu.Link.of("https://modrinth.com/plugin/velocitab").withText(" Modrinth").withIcon("X").withColor("#589143"));
+                        AboutMenu.Link.of("https://william278.net/docs/velocitab").withText("Docs").withIcon("⛏"),
+                        AboutMenu.Link.of("https://discord.gg/tVYhJfyDWG").withText("Discord").withIcon("⭐").withColor("#6773f5"),
+                        AboutMenu.Link.of("https://modrinth.com/plugin/velocitab").withText("Modrinth").withIcon("X").withColor("#589143"));
     }
 
     @Override
@@ -46,7 +46,7 @@ public class VelocitabCommand implements SimpleCommand {
     public List<String> suggest(Invocation invocation) {
         if (invocation.source().hasPermission("velocitab.command.reload")) {
             return List.of("about", "reload");
-        }else {
+        } else {
             return List.of("about");
         }
     }
@@ -60,7 +60,7 @@ public class VelocitabCommand implements SimpleCommand {
             plugin.loadSettings();
             plugin.getTabList().reloadUpdate();
             source.sendMessage(Component.text("Velocitab has been reloaded!").color(TextColor.color(255, 199, 31)));
-        }else {
+        } else {
             source.sendMessage(Component.text("You do not have permission to use this command"));
         }
     }

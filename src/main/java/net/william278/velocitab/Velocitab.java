@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
+import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
@@ -142,8 +143,8 @@ public class Velocitab {
         );
     }
 
-    public String getVersion() {
-        return server.getPluginManager().getPlugin("velocitab").get().getDescription().getVersion().get();
+    public PluginDescription getDescription() {
+        return server.getPluginManager().getPlugin("velocitab").get().getDescription();
     }
 
     private void registerCommands() {

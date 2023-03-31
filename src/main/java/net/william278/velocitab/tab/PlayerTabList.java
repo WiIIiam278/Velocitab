@@ -211,7 +211,7 @@ public class PlayerTabList {
         // If the update time is set to 0 do not schedule the updater
         if (plugin.getSettings().getUpdateRate() > 0) {
             this.updatePeriodically(plugin.getSettings().getUpdateRate());
-        }else {
+        } else {
             players.forEach(player -> {
                 this.updatePlayer(player);
                 player.sendHeaderAndFooter(this);

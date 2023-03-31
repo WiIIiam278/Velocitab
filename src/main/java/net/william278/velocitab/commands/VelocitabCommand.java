@@ -26,7 +26,8 @@ public class VelocitabCommand implements SimpleCommand {
                         AboutMenu.Credit.of("Emibergo02").withDescription("Coding"))
                 .addButtons(
                         AboutMenu.Link.of("https://william278.net/docs/velocitab").withText(" Wiki").withIcon("⛏"),
-                        AboutMenu.Link.of("https://discord.gg/tVYhJfyDWG").withText(" Discord").withIcon("⭐").withColor("#6773f5"));
+                        AboutMenu.Link.of("https://discord.gg/tVYhJfyDWG").withText(" Discord").withIcon("⭐").withColor("#6773f5"),
+                        AboutMenu.Link.of("https://modrinth.com/plugin/velocitab").withText(" Modrinth").withIcon("X").withColor("#589143"));
     }
 
     @Override

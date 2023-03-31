@@ -8,8 +8,7 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.william278.annotaml.Annotaml;
-import net.william278.velocitab.commands.AboutCommand;
-import net.william278.velocitab.commands.ReloadCommand;
+import net.william278.velocitab.commands.VelocitabCommand;
 import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.config.Settings;
 import net.william278.velocitab.hook.Hook;
@@ -150,9 +149,6 @@ public class Velocitab {
     private void registerCommands() {
         server.getCommandManager().register(
                 server.getCommandManager().metaBuilder("velocitab").build(),
-                new AboutCommand(this));
-        server.getCommandManager().register(
-                server.getCommandManager().metaBuilder("velocitabreload").build(),
-                new ReloadCommand(this));
+                new VelocitabCommand(this));
     }
 }

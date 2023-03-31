@@ -96,11 +96,10 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     public void incrementHeaderIndex(@NotNull Velocitab plugin) {
+        headerIndex++;
         if (headerIndex >= plugin.getSettings().getHeaderListSize(getServerGroup(plugin))) {
             headerIndex = 0;
-            return;
         }
-        headerIndex++;
     }
 
     public int getFooterIndex() {
@@ -108,11 +107,10 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     public void incrementFooterIndex(@NotNull Velocitab plugin) {
+        footerIndex++;
         if (footerIndex >= plugin.getSettings().getFooterListSize(getServerGroup(plugin))) {
             footerIndex = 0;
-            return;
         }
-        footerIndex++;
     }
 
     @Override

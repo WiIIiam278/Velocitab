@@ -91,13 +91,13 @@ public class Settings {
     }
 
     @NotNull
-    public String getHeader(@NotNull String serverGroup, @NotNull int index) {
+    public String getHeader(@NotNull String serverGroup, int index) {
         return StringEscapeUtils.unescapeJava(
                 headers.getOrDefault(serverGroup, List.of("")).get(index));
     }
 
     @NotNull
-    public String getFooter(@NotNull String serverGroup, @NotNull int index) {
+    public String getFooter(@NotNull String serverGroup, int index) {
         return StringEscapeUtils.unescapeJava(
                 footers.getOrDefault(serverGroup, List.of("")).get(index));
     }

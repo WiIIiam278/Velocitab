@@ -56,6 +56,12 @@ public class Settings {
     @YamlComment("Only show other players on a server that is part of the same server group as the player.")
     private boolean onlyListPlayersInSameGroup = true;
 
+    @Getter
+    @YamlKey("server_display_names")
+    @YamlComment("Define custom names to be shown in the TAB list for specific server names.\n" +
+                 "If no custom display name is provided for a server, its original name will be used.")
+    private Map<String, String> serverDisplayNames = Map.of("very-long-server-name", "VLSN");
+
     @YamlKey("enable_papi_hook")
     private boolean enablePapiHook = true;
 
@@ -108,6 +114,17 @@ public class Settings {
     public String getFormat(@NotNull String serverGroup) {
         return StringEscapeUtils.unescapeJava(
                 formats.getOrDefault(serverGroup, "%username%"));
+    }
+
+    /**
+     * Get display name for the server
+     *
+     * @param serverName The server name
+     * @return The display name, or the server name if no display name is defined
+     */
+    @NotNull
+    public String getServerDisplayName(@NotNull String serverName) {
+        return serverDisplayNames.getOrDefault(serverName, serverName);
     }
 
     /**

@@ -34,11 +34,29 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         return role;
     }
 
+    /**
+     * Get the server name the player is currently on.
+     * Isn't affected by server aliases defined in the config.
+     *
+     * @return The server name
+     */
     @NotNull
     public String getServerName() {
         return player.getCurrentServer()
                 .map(serverConnection -> serverConnection.getServerInfo().getName())
                 .orElse("unknown");
+    }
+
+    /**
+     * Get the display name of the server the player is currently on.
+     * Affected by server aliases defined in the config.
+     *
+     * @param plugin The plugin instance
+     * @return The display name of the server
+     */
+    @NotNull
+    public String getServerDisplayName(@NotNull Velocitab plugin) {
+        return plugin.getSettings().getServerDisplayName(getServerName());
     }
 
     @NotNull

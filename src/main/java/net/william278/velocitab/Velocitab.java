@@ -8,6 +8,7 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.william278.annotaml.Annotaml;
+import net.william278.velocitab.commands.AboutCommand;
 import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.config.Settings;
 import net.william278.velocitab.hook.Hook;
@@ -25,10 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Plugin(id = "velocitab")
 public class Velocitab {
@@ -54,6 +52,9 @@ public class Velocitab {
         loadHooks();
         prepareScoreboardManager();
         prepareTabList();
+        server.getCommandManager().register(
+                server.getCommandManager().metaBuilder("velocitab").build(),
+                new AboutCommand(this));
         logger.info("Successfully enabled Velocitab");
     }
 
@@ -143,4 +144,7 @@ public class Velocitab {
         );
     }
 
+    public String getVersion() {
+        return server.getPluginManager().getPlugin("velocitab").get().getDescription().getVersion().get();
+    }
 }

@@ -17,6 +17,8 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private final Player player;
     private final Role role;
     private final int highestWeight;
+    private int headerIndex = 0;
+    private int footerIndex = 0;
 
     public TabPlayer(@NotNull Player player, @NotNull Role role, int highestWeight) {
         this.player = player;
@@ -45,6 +47,16 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         return player.getCurrentServer()
                 .map(serverConnection -> serverConnection.getServerInfo().getName())
                 .orElse("unknown");
+    }
+
+    /**
+     * Get the TAB server group this player is connected to
+     * @param plugin instance of the {@link Velocitab} plugin
+     * @return the name of the server group the player is on
+     */
+    @NotNull
+    public String getServerGroup(@NotNull Velocitab plugin) {
+        return plugin.getSettings().getServerGroup(this.getServerName());
     }
 
     /**
@@ -77,6 +89,30 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     public void sendHeaderAndFooter(@NotNull PlayerTabList tabList) {
         tabList.getHeader(this).thenAccept(header -> tabList.getFooter(this)
                 .thenAccept(footer -> player.sendPlayerListHeaderAndFooter(header, footer)));
+    }
+
+    public int getHeaderIndex() {
+        return headerIndex;
+    }
+
+    public void incrementHeaderIndex(@NotNull Velocitab plugin) {
+        if (headerIndex >= plugin.getSettings().getHeaderListSize(getServerGroup(plugin))) {
+            headerIndex = 0;
+            return;
+        }
+        headerIndex++;
+    }
+
+    public int getFooterIndex() {
+        return footerIndex;
+    }
+
+    public void incrementFooterIndex(@NotNull Velocitab plugin) {
+        if (footerIndex >= plugin.getSettings().getFooterListSize(getServerGroup(plugin))) {
+            footerIndex = 0;
+            return;
+        }
+        footerIndex++;
     }
 
     @Override

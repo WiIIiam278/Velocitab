@@ -26,8 +26,6 @@ public class PlayerTabList {
     private final Velocitab plugin;
     private final ConcurrentLinkedQueue<TabPlayer> players;
     private final ConcurrentLinkedQueue<String> fallbackServers;
-    private int headerIndex = 0;
-    private int footerIndex = 0;
 
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
@@ -77,7 +75,7 @@ public class PlayerTabList {
                     for (TabPlayer player : players) {
                         // Skip players on other servers if the setting is enabled
                         if (plugin.getSettings().isOnlyListPlayersInSameGroup() && serversInGroup.isPresent()
-                            && !serversInGroup.get().contains(player.getServerName())) {
+                                && !serversInGroup.get().contains(player.getServerName())) {
                             continue;
                         }
 
@@ -157,6 +155,7 @@ public class PlayerTabList {
         if (!tabPlayer.getPlayer().isActive()) {
             return;
         }
+
         players.forEach(player -> tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
             player.getPlayer().getTabList().getEntries().stream()
                     .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
@@ -167,27 +166,19 @@ public class PlayerTabList {
     }
 
     public CompletableFuture<Component> getHeader(@NotNull TabPlayer player) {
-        if (headerIndex >= plugin.getSettings().getHeaderListSize(plugin.getSettings().getServerGroup(player.getServerName()))){
-            headerIndex = 0;
-        }
-        CompletableFuture<Component> headerComponent = Placeholder.replace(plugin.getSettings().getHeader(
-                        plugin.getSettings().getServerGroup(player.getServerName()), headerIndex), plugin, player)
-                .thenApply(header -> plugin.getFormatter().format(header, player, plugin));
-        headerIndex++;
-        return headerComponent;
+        final String header = plugin.getSettings().getHeader(player.getServerGroup(plugin), player.getHeaderIndex());
+        player.incrementHeaderIndex(plugin);
 
+        return Placeholder.replace(header, plugin, player)
+                .thenApply(replaced -> plugin.getFormatter().format(replaced, player, plugin));
     }
 
     public CompletableFuture<Component> getFooter(@NotNull TabPlayer player) {
-        if (footerIndex >= plugin.getSettings().getFooterListSize(plugin.getSettings().getServerGroup(player.getServerName()))){
-            footerIndex = 0;
-        }
-        CompletableFuture<Component> footerComponent = Placeholder.replace(plugin.getSettings().getFooter(
-                        plugin.getSettings().getServerGroup(player.getServerName()), footerIndex), plugin, player)
-                .thenApply(footer -> plugin.getFormatter().format(footer, player, plugin));
-        footerIndex++;
-        return footerComponent;
+        final String footer = plugin.getSettings().getFooter(player.getServerGroup(plugin), player.getFooterIndex());
+        player.incrementFooterIndex(plugin);
 
+        return Placeholder.replace(footer, plugin, player)
+                .thenApply(replaced -> plugin.getFormatter().format(replaced, player, plugin));
     }
 
     // Update the tab list periodically

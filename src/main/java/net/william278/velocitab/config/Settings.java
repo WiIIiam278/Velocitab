@@ -59,7 +59,7 @@ public class Settings {
     @Getter
     @YamlKey("server_display_names")
     @YamlComment("Define custom names to be shown in the TAB list for specific server names.\n" +
-                 "If no custom display name is provided for a server, its original name will be used.")
+            "If no custom display name is provided for a server, its original name will be used.")
     private Map<String, String> serverDisplayNames = Map.of("very-long-server-name", "VLSN");
 
     @YamlKey("enable_papi_hook")
@@ -77,7 +77,8 @@ public class Settings {
     );
 
     @YamlKey("update_rate")
-    @YamlComment("How often to periodically update the TAB list, including header and footer, for all users.\nWill only update on player join/leave if set to 0.")
+    @YamlComment("How often in milliseconds to periodically update the TAB list, including header and footer, for all users.\n" +
+            "If set to 0, TAB will be updated on player join/leave instead. (1s = 1000ms)")
     private int updateRate = 0;
 
     public Settings(@NotNull Velocitab plugin) {
@@ -92,14 +93,16 @@ public class Settings {
 
     @NotNull
     public String getHeader(@NotNull String serverGroup, int index) {
-        return StringEscapeUtils.unescapeJava(
-                headers.getOrDefault(serverGroup, List.of("")).get(index));
+        final List<String> groupHeaders = headers.getOrDefault(serverGroup, List.of(""));
+        return groupHeaders.isEmpty() ? "" : StringEscapeUtils.unescapeJava(groupHeaders
+                .get(Math.max(0, Math.min(index, getHeaderListSize(serverGroup) - 1))));
     }
 
     @NotNull
     public String getFooter(@NotNull String serverGroup, int index) {
-        return StringEscapeUtils.unescapeJava(
-                footers.getOrDefault(serverGroup, List.of("")).get(index));
+        final List<String> groupFooters = footers.getOrDefault(serverGroup, List.of(""));
+        return groupFooters.isEmpty() ? "" : StringEscapeUtils.unescapeJava(groupFooters
+                .get(Math.max(0, Math.min(index, getFooterListSize(serverGroup) - 1))));
     }
 
     public int getHeaderListSize(@NotNull String serverGroup) {
@@ -137,7 +140,8 @@ public class Settings {
     public String getServerGroup(String serverName) {
         return serverGroups.entrySet().stream()
                 .filter(entry -> entry.getValue().contains(serverName)).findFirst()
-                .map(Map.Entry::getKey).orElse(fallbackGroup);
+                .map(Map.Entry::getKey)
+                .orElse(fallbackGroup);
     }
 
     public boolean isPapiHookEnabled() {

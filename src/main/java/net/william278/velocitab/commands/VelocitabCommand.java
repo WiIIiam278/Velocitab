@@ -16,7 +16,7 @@ public class VelocitabCommand implements SimpleCommand {
 
     public VelocitabCommand(Velocitab plugin) {
         this.plugin = plugin;
-        aboutMenu = AboutMenu.create("Velocitab")
+        this.aboutMenu = AboutMenu.create("Velocitab")
                 .withDescription(plugin.getDescription().getDescription().get())
                 .withVersion(Version.fromString(plugin.getDescription().getVersion().get(), "-"))
                 .addAttribution("Author",

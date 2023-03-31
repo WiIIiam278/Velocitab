@@ -9,6 +9,7 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.william278.annotaml.Annotaml;
 import net.william278.velocitab.commands.AboutCommand;
+import net.william278.velocitab.commands.ReloadCommand;
 import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.config.Settings;
 import net.william278.velocitab.hook.Hook;
@@ -52,9 +53,7 @@ public class Velocitab {
         loadHooks();
         prepareScoreboardManager();
         prepareTabList();
-        server.getCommandManager().register(
-                server.getCommandManager().metaBuilder("velocitab").build(),
-                new AboutCommand(this));
+        registerCommands();
         logger.info("Successfully enabled Velocitab");
     }
 
@@ -73,7 +72,7 @@ public class Velocitab {
         return getSettings().getFormatter();
     }
 
-    private void loadSettings() {
+    public void loadSettings() {
         try {
             settings = Annotaml.create(
                     new File(dataDirectory.toFile(), "config.yml"),
@@ -146,5 +145,14 @@ public class Velocitab {
 
     public String getVersion() {
         return server.getPluginManager().getPlugin("velocitab").get().getDescription().getVersion().get();
+    }
+
+    private void registerCommands() {
+        server.getCommandManager().register(
+                server.getCommandManager().metaBuilder("velocitab").build(),
+                new AboutCommand(this));
+        server.getCommandManager().register(
+                server.getCommandManager().metaBuilder("velocitabreload").build(),
+                new ReloadCommand(this));
     }
 }

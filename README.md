@@ -47,7 +47,7 @@ You can include [placeholders](https://william278.net/docs/velocitab/placeholder
 
 PlaceholderAPI placeholders are also supported. To use them, just install [PAPIProxyBridge](https://modrinth.com/plugin/papiproxybridge) on your Velocity proxy and backend Spigot servers. Additionally, a hook for MiniPlaceholders is supported for servers using the MiniMessage formatter.
 
-## Command
+### Command
 You can use the `/velocitab reload` command to reload the plugin config file (permission: `velocitab.command.reload`) 
 
 ## Building

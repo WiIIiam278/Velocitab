@@ -3,6 +3,7 @@ package net.william278.velocitab.tab;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
+import com.velocitypowered.api.event.proxy.ProxyReloadEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.player.TabList;
@@ -10,6 +11,7 @@ import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
@@ -243,5 +245,12 @@ public class PlayerTabList {
                     }
                     return Optional.of(this.fallbackServers.stream().toList());
                 });
+    }
+
+    @Subscribe
+    public void proxyReload(@NotNull ProxyReloadEvent event) {
+        plugin.loadSettings();
+        reloadUpdate();
+        plugin.getServer().getConsoleCommandSource().sendMessage(Component.text("Velocitab has been reloaded!").color(TextColor.color(255, 199, 31)));
     }
 }

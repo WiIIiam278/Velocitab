@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 public class PlayerTabList {
     private final Velocitab plugin;
@@ -251,6 +252,6 @@ public class PlayerTabList {
     public void proxyReload(@NotNull ProxyReloadEvent event) {
         plugin.loadSettings();
         reloadUpdate();
-        plugin.getServer().getConsoleCommandSource().sendMessage(Component.text("Velocitab has been reloaded!").color(TextColor.color(255, 199, 31)));
+        plugin.log("Velocitab has been reloaded!");
     }
 }

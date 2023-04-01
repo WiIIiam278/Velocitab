@@ -1,9 +1,11 @@
 package net.william278.velocitab;
 
 import com.google.inject.Inject;
+import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
+import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
@@ -36,6 +38,8 @@ public class Velocitab {
     private final ProxyServer server;
     private final Logger logger;
     private final Path dataDirectory;
+    @Inject
+    private PluginContainer pluginContainer;
     private PlayerTabList tabList;
     private List<Hook> hooks;
     private ScoreboardManager scoreboardManager;
@@ -144,12 +148,14 @@ public class Velocitab {
     }
 
     public PluginDescription getDescription() {
-        return server.getPluginManager().getPlugin("velocitab").get().getDescription();
+        return pluginContainer.getDescription();
     }
 
     private void registerCommands() {
+        final BrigadierCommand command = new VelocitabCommand(this).command();
         server.getCommandManager().register(
-                server.getCommandManager().metaBuilder("velocitab").build(),
-                new VelocitabCommand(this));
+                server.getCommandManager().metaBuilder(command).plugin(this).build(),
+                command
+        );
     }
 }

@@ -9,12 +9,13 @@ import net.kyori.adventure.text.format.TextColor;
 import net.william278.desertwell.AboutMenu;
 import net.william278.desertwell.Version;
 import net.william278.velocitab.Velocitab;
+import org.jetbrains.annotations.NotNull;
 
 public final class VelocitabCommand {
     private final AboutMenu aboutMenu;
     private final Velocitab plugin;
 
-    public VelocitabCommand(final Velocitab plugin) {
+    public VelocitabCommand(final @NotNull Velocitab plugin) {
         this.plugin = plugin;
         this.aboutMenu = AboutMenu.create("Velocitab")
                 .withDescription(plugin.getDescription().getDescription().orElseThrow())
@@ -31,8 +32,8 @@ public final class VelocitabCommand {
     }
 
     public BrigadierCommand command() {
-        final LiteralArgumentBuilder<CommandSource> builder
-                = LiteralArgumentBuilder.<CommandSource>literal("velocitab")
+        final LiteralArgumentBuilder<CommandSource> builder = LiteralArgumentBuilder
+                    .<CommandSource>literal("velocitab")
                     .executes(ctx -> {
                         sendAboutInfo(ctx.getSource());
                         return Command.SINGLE_SUCCESS;

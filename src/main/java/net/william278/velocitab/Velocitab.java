@@ -155,6 +155,7 @@ public class Velocitab {
         final BrigadierCommand command = new VelocitabCommand(this).command();
         server.getCommandManager().register(
                 server.getCommandManager().metaBuilder(command).plugin(this).build(),
-                command);
+                command
+        );
     }
 }

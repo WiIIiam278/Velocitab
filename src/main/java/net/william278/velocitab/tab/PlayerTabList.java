@@ -3,6 +3,7 @@ package net.william278.velocitab.tab;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
+import com.velocitypowered.api.event.proxy.ProxyReloadEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.player.TabList;
@@ -243,5 +244,12 @@ public class PlayerTabList {
                     }
                     return Optional.of(this.fallbackServers.stream().toList());
                 });
+    }
+
+    @Subscribe
+    public void proxyReload(@NotNull ProxyReloadEvent event) {
+        plugin.loadSettings();
+        reloadUpdate();
+        plugin.log("Velocitab has been reloaded!");
     }
 }

@@ -11,7 +11,6 @@ import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
@@ -24,7 +23,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 public class PlayerTabList {
     private final Velocitab plugin;

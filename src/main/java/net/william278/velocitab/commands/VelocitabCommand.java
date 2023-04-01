@@ -1,24 +1,24 @@
 package net.william278.velocitab.commands;
 
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
-import com.velocitypowered.api.command.SimpleCommand;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.william278.desertwell.AboutMenu;
 import net.william278.desertwell.Version;
 import net.william278.velocitab.Velocitab;
 
-import java.util.List;
-
-public class VelocitabCommand implements SimpleCommand {
+public final class VelocitabCommand {
     private final AboutMenu aboutMenu;
     private final Velocitab plugin;
 
-    public VelocitabCommand(Velocitab plugin) {
+    public VelocitabCommand(final Velocitab plugin) {
         this.plugin = plugin;
         this.aboutMenu = AboutMenu.create("Velocitab")
-                .withDescription(plugin.getDescription().getDescription().get())
-                .withVersion(Version.fromString(plugin.getDescription().getVersion().get(), "-"))
+                .withDescription(plugin.getDescription().getDescription().orElseThrow())
+                .withVersion(Version.fromString(plugin.getDescription().getVersion().orElseThrow(), "-"))
                 .addAttribution("Author",
                         AboutMenu.Credit.of("William278").withDescription("Click to visit website").withUrl("https://william278.net"))
                 .addAttribution("Contributors",
@@ -30,38 +30,35 @@ public class VelocitabCommand implements SimpleCommand {
                         AboutMenu.Link.of("https://modrinth.com/plugin/velocitab").withText("Modrinth").withIcon("X").withColor("#589143"));
     }
 
-    @Override
-    public void execute(Invocation invocation) {
-        if (invocation.arguments().length >= 1) {
-             if (invocation.arguments()[0].equalsIgnoreCase("reload")) {
-                 reloadSettings(invocation.source());
-                 return;
-             }
-        }
+    public BrigadierCommand command() {
+        final LiteralArgumentBuilder<CommandSource> builder
+                = LiteralArgumentBuilder.<CommandSource>literal("velocitab")
+                    .executes(ctx -> {
+                        sendAboutInfo(ctx.getSource());
+                        return Command.SINGLE_SUCCESS;
+                    })
+                    .then(LiteralArgumentBuilder.<CommandSource>literal("about")
+                            .executes(ctx -> {
+                                sendAboutInfo(ctx.getSource());
+                                return Command.SINGLE_SUCCESS;
+                            })
+                    )
+                    .then(LiteralArgumentBuilder.<CommandSource>literal("reload")
+                            .requires(src -> src.hasPermission("velocitab.command.reload"))
+                            .executes(ctx -> {
+                                plugin.loadSettings();
+                                plugin.getTabList().reloadUpdate();
+                                ctx.getSource().sendMessage(Component.text(
+                                        "Velocitab has been reloaded!",
+                                        TextColor.color(255, 199, 31)));
+                                return Command.SINGLE_SUCCESS;
+                            })
+                    );
 
-        sendAboutInfo(invocation.source());
-    }
-
-    @Override
-    public List<String> suggest(Invocation invocation) {
-        if (invocation.source().hasPermission("velocitab.command.reload")) {
-            return List.of("about", "reload");
-        } else {
-            return List.of("about");
-        }
+        return new BrigadierCommand(builder);
     }
 
     private void sendAboutInfo(CommandSource source) {
         source.sendMessage(aboutMenu.toMineDown().toComponent());
-    }
-
-    private void reloadSettings(CommandSource source) {
-        if (source.hasPermission("velocitab.command.reload")) {
-            plugin.loadSettings();
-            plugin.getTabList().reloadUpdate();
-            source.sendMessage(Component.text("Velocitab has been reloaded!").color(TextColor.color(255, 199, 31)));
-        } else {
-            source.sendMessage(Component.text("You do not have permission to use this command"));
-        }
     }
 }

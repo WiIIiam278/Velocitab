@@ -3,6 +3,7 @@ package net.william278.velocitab.config;
 import de.themoep.minedown.adventure.MineDown;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import org.apache.commons.lang3.function.TriFunction;
@@ -20,7 +21,9 @@ public enum Formatter {
     MINIMESSAGE((text, player, plugin) -> plugin.getMiniPlaceholdersHook()
             .map(hook -> hook.format(text, player.getPlayer()))
             .orElse(MiniMessage.miniMessage().deserialize(text)),
-            (text) -> MiniMessage.miniMessage().escapeTags(text));
+            (text) -> MiniMessage.miniMessage().escapeTags(text)),
+    LEGACY((text, player, plugin) -> LegacyComponentSerializer.legacyAmpersand().deserialize(text),
+            Function.identity());
 
     /**
      * Function to apply formatting to a string

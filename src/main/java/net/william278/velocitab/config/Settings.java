@@ -32,7 +32,7 @@ public class Settings {
     private Map<String, String> formats = Map.of("default", "&7[%server%] &f%prefix%%username%");
 
     @Getter
-    @YamlComment("Which text formatter to use (MINEDOWN or MINIMESSAGE)")
+    @YamlComment("Which text formatter to use (MINEDOWN, MINIMESSAGE, or LEGACY)")
     @YamlKey("formatting_type")
     private Formatter formatter = Formatter.MINEDOWN;
 

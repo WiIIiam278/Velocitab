@@ -25,7 +25,7 @@ Simply download the latest release and place it in your Velocity plugins folder 
 Velocitab has a simple config file that lets you define a header, footer and format for the player list. You can additionally configure [groups of servers](https://william278.net/docs/velocitab/server-groups) to display different formats in the TAB menu depending on which server the player is viewing it from.
 
 ### Formatting
-Velocitab [supports](https://william278.net/docs/velocitab/formatting) the full range of RGB colors and gradients, with options to use either MineDown (_default_) or MiniMessage formatting.
+Velocitab [supports](https://william278.net/docs/velocitab/formatting) the full range of RGB colors and gradients, with options to use either MineDown (_default_), MiniMessage, or legacy formatting.
 
 ### Placeholders
 You can include [placeholders](https://william278.net/docs/velocitab/placeholders) in the header, footer and player name format of the TAB list. The following placeholders are supported:

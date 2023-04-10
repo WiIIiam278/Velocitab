@@ -4,6 +4,7 @@ import com.velocitypowered.api.proxy.Player;
 import dev.simplix.protocolize.api.PacketDirection;
 import dev.simplix.protocolize.api.Protocol;
 import dev.simplix.protocolize.api.Protocolize;
+import dev.simplix.protocolize.api.player.ProtocolizePlayer;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,7 +55,12 @@ public class ScoreboardManager {
 
     private void dispatchPacket(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
         try {
-            Protocolize.playerProvider().player(player.getUniqueId()).sendPacket(packet);
+            ProtocolizePlayer protocolizePlayer = Protocolize.playerProvider().player(player.getUniqueId());
+            if (protocolizePlayer != null) {
+                protocolizePlayer.sendPacket(packet);
+            } else {
+                plugin.log("Failed to get ProtocolizePlayer for player " + player.getUsername() + " (UUID: " + player.getUniqueId() + ")");
+            }
         } catch (Exception e) {
             plugin.log("Failed to dispatch packet (is the client or server modded or using an illegal version?)", e);
         }

@@ -30,6 +30,7 @@ public class ScoreboardManager {
 
     public void setRoles(@NotNull Player player, @NotNull Map<String, String> playerRoles) {
         if (!player.isActive()) {
+            plugin.getTabList().removeOfflinePlayer(player);
             return;
         }
         playerRoles.entrySet().stream()
@@ -42,6 +43,7 @@ public class ScoreboardManager {
 
     public void updateRoles(@NotNull Player player, @NotNull String role, @NotNull String... playerNames) {
         if (!player.isActive()) {
+            plugin.getTabList().removeOfflinePlayer(player);
             return;
         }
         if (!createdTeams.getOrDefault(player.getUniqueId(), List.of()).contains(role)) {
@@ -61,6 +63,7 @@ public class ScoreboardManager {
 
     private void dispatchPacket(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
         if (!player.isActive()){
+            plugin.getTabList().removeOfflinePlayer(player);
             return;
         }
         try {

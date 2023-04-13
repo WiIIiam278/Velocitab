@@ -151,13 +151,19 @@ public class PlayerTabList {
 
     // Replace a player in the tab list
     public void replacePlayer(@NotNull TabPlayer tabPlayer) {
-        players.removeIf(player -> player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId()));
+        if (!players.removeIf(player -> player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId()))){
+            plugin.log("Failed to remove updated player " + tabPlayer.getPlayer().getUsername() + " (UUID: " + tabPlayer.getPlayer().getUniqueId() + ")");
+        }
         players.add(tabPlayer);
     }
 
     // Update a player's name in the tab list
     public void updatePlayer(@NotNull TabPlayer tabPlayer) {
         if (!tabPlayer.getPlayer().isActive()) {
+            // Try and remove the player from the list of players
+            if (!players.removeIf(player -> player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId()))){
+                plugin.log("Failed to remove offline player " + tabPlayer.getPlayer().getUsername() + " (UUID: " + tabPlayer.getPlayer().getUniqueId() + ")");
+            }
             return;
         }
 

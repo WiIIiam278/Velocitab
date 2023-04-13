@@ -131,8 +131,10 @@ public class PlayerTabList {
 
     @Subscribe
     public void onPlayerQuit(@NotNull DisconnectEvent event) {
-        // Remove the player from the tracking list
-        players.removeIf(player -> player.getPlayer().getUniqueId().equals(event.getPlayer().getUniqueId()));
+        // Remove the player from the tracking list, Print warning if player was not removed
+        if (!players.removeIf(player -> player.getPlayer().getUniqueId().equals(event.getPlayer().getUniqueId()))) {
+            plugin.log("Failed to remove disconnecting player " + event.getPlayer().getUsername() + " (UUID: " + event.getPlayer().getUniqueId() + ")");
+        }
 
         // Remove the player from the tab list of all other players
         plugin.getServer().getAllPlayers().forEach(player -> player.getTabList().removeEntry(event.getPlayer().getUniqueId()));

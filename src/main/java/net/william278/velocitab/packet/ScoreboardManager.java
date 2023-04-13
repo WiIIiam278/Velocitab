@@ -62,7 +62,7 @@ public class ScoreboardManager {
     }
 
     private void dispatchPacket(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
-        if (!player.isActive()){
+        if (!player.isActive()) {
             plugin.getTabList().removeOfflinePlayer(player);
             return;
         }

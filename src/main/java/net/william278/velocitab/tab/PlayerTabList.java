@@ -151,7 +151,7 @@ public class PlayerTabList {
 
     // Replace a player in the tab list
     public void replacePlayer(@NotNull TabPlayer tabPlayer) {
-        if (!players.removeIf(player -> player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId()))){
+        if (!players.removeIf(player -> player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId()))) {
             plugin.log("Failed to remove updated player " + tabPlayer.getPlayer().getUsername() + " (UUID: " + tabPlayer.getPlayer().getUniqueId() + ")");
         }
         players.add(tabPlayer);
@@ -258,9 +258,9 @@ public class PlayerTabList {
         plugin.log("Velocitab has been reloaded!");
     }
 
-    public void removeOfflinePlayer(Player player){
+    public void removeOfflinePlayer(@NotNull Player player) {
         // Try and remove the player from the list of players
-        if (!players.removeIf(tabPlayer -> tabPlayer.getPlayer().getUniqueId().equals(player.getUniqueId()))){
+        if (!players.removeIf(tabPlayer -> tabPlayer.getPlayer().getUniqueId().equals(player.getUniqueId()))) {
             plugin.log("Failed to remove offline player " + player.getUsername() + " (UUID: " + player.getUniqueId() + ")");
         }
     }

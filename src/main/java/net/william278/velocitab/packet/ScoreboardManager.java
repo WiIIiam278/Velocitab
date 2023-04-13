@@ -29,6 +29,9 @@ public class ScoreboardManager {
     }
 
     public void setRoles(@NotNull Player player, @NotNull Map<String, String> playerRoles) {
+        if (!player.isActive()) {
+            return;
+        }
         playerRoles.entrySet().stream()
                 .collect(Collectors.groupingBy(
                         Map.Entry::getValue,
@@ -38,6 +41,9 @@ public class ScoreboardManager {
     }
 
     public void updateRoles(@NotNull Player player, @NotNull String role, @NotNull String... playerNames) {
+        if (!player.isActive()) {
+            return;
+        }
         if (!createdTeams.getOrDefault(player.getUniqueId(), List.of()).contains(role)) {
             dispatchPacket(UpdateTeamsPacket.create(role, playerNames), player);
             createdTeams.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>()).add(role);
@@ -54,6 +60,9 @@ public class ScoreboardManager {
     }
 
     private void dispatchPacket(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
+        if (!player.isActive()){
+            return;
+        }
         try {
             ProtocolizePlayer protocolizePlayer = Protocolize.playerProvider().player(player.getUniqueId());
             if (protocolizePlayer != null) {

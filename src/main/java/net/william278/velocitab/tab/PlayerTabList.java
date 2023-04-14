@@ -131,8 +131,10 @@ public class PlayerTabList {
 
     @Subscribe
     public void onPlayerQuit(@NotNull DisconnectEvent event) {
-        // Remove the player from the tracking list
-        players.removeIf(player -> player.getPlayer().getUniqueId().equals(event.getPlayer().getUniqueId()));
+        // Remove the player from the tracking list, Print warning if player was not removed
+        if (!players.removeIf(player -> player.getPlayer().getUniqueId().equals(event.getPlayer().getUniqueId()))) {
+            plugin.log("Failed to remove disconnecting player " + event.getPlayer().getUsername() + " (UUID: " + event.getPlayer().getUniqueId() + ")");
+        }
 
         // Remove the player from the tab list of all other players
         plugin.getServer().getAllPlayers().forEach(player -> player.getTabList().removeEntry(event.getPlayer().getUniqueId()));
@@ -149,13 +151,16 @@ public class PlayerTabList {
 
     // Replace a player in the tab list
     public void replacePlayer(@NotNull TabPlayer tabPlayer) {
-        players.removeIf(player -> player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId()));
+        if (!players.removeIf(player -> player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId()))) {
+            plugin.log("Failed to remove updated player " + tabPlayer.getPlayer().getUsername() + " (UUID: " + tabPlayer.getPlayer().getUniqueId() + ")");
+        }
         players.add(tabPlayer);
     }
 
     // Update a player's name in the tab list
     public void updatePlayer(@NotNull TabPlayer tabPlayer) {
         if (!tabPlayer.getPlayer().isActive()) {
+            removeOfflinePlayer(tabPlayer.getPlayer());
             return;
         }
 
@@ -251,5 +256,12 @@ public class PlayerTabList {
         plugin.loadSettings();
         reloadUpdate();
         plugin.log("Velocitab has been reloaded!");
+    }
+
+    public void removeOfflinePlayer(@NotNull Player player) {
+        // Try and remove the player from the list of players
+        if (!players.removeIf(tabPlayer -> tabPlayer.getPlayer().getUniqueId().equals(player.getUniqueId()))) {
+            plugin.log("Failed to remove offline player " + player.getUsername() + " (UUID: " + player.getUniqueId() + ")");
+        }
     }
 }

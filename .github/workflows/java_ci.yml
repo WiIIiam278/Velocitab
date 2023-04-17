@@ -43,7 +43,7 @@ jobs:
           loaders: |
             velocity
           dependencies: |
-            protocolize | depends | 2.2.5
+            protocolize | depends | *
             luckperms | suggests | *
             papiproxybridge | suggests | *
             miniplaceholders | suggests | *

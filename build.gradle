@@ -2,15 +2,19 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'org.cadixdev.licenser' version '0.6.1'
     id 'org.ajoberstar.grgit' version '5.0.0'
     id 'java'
 }
 
 group 'net.william278'
-version "$ext.plugin_version-${versionMetadata()}"
+version "$ext.plugin_version${versionMetadata()}"
+description "$ext.plugin_description"
+defaultTasks 'licenseFormat', 'build'
 
 ext {
     set 'version', version.toString()
+    set 'description', description.toString()
 }
 
 repositories {
@@ -47,6 +51,12 @@ processResources {
     }
 }
 
+license {
+    header = rootProject.file('HEADER')
+    include '**/*.java'
+    newLine = true
+}
+
 logger.lifecycle("Building Velocitab ${version} by William278")
 
 version rootProject.version
@@ -58,7 +68,7 @@ shadowJar {
     relocate 'org.jetbrains', 'net.william278.velocitab.libraries'
     relocate 'org.intellij', 'net.william278.velocitab.libraries'
     relocate 'de.themoep', 'net.william278.velocitab.libraries'
-    relocate 'dev.dejvokep.boostedyaml', 'net.william278.velocitab.libraries'
+    relocate 'dev.dejvokep.boostedyaml', 'net.william278.velocitab.libraries.boostedyaml'
     relocate 'net.william278.annotaml', 'net.william278.velocitab.libraries.annotaml'
     relocate 'net.william278.desertwell', 'net.william278.velocitab.libraries.desertwell'
 
@@ -83,7 +93,7 @@ def versionMetadata() {
 
     // Otherwise, get the last commit hash and if it's a clean head
     if (grgit == null) {
-        return System.getenv("GITHUB_RUN_NUMBER") ? 'build.' + System.getenv("GITHUB_RUN_NUMBER") : 'unknown'
+        return '-' + System.getenv("GITHUB_RUN_NUMBER") ? 'build.' + System.getenv("GITHUB_RUN_NUMBER") : 'unknown'
     }
-    return grgit.head().abbreviatedId + (grgit.status().clean ? '' : '-indev')
+    return '-' + grgit.head().abbreviatedId + (grgit.status().clean ? '' : '-indev')
 }

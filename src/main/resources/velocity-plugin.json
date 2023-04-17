@@ -2,7 +2,7 @@
   "id": "velocitab",
   "name": "Velocitab",
   "version": "${version}",
-  "description": "A super-simple (sorted!) Velocity TAB menu plugin",
+  "description": "${description}",
   "url": "https://william278.net",
   "authors": [
     "William278"

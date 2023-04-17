@@ -43,7 +43,9 @@ public final class VelocitabCommand {
                         AboutMenu.Credit.of("William278").withDescription("Click to visit website").withUrl("https://william278.net"))
                 .addAttribution("Contributors",
                         AboutMenu.Credit.of("Ironboundred").withDescription("Coding"),
-                        AboutMenu.Credit.of("Emibergo02").withDescription("Coding"))
+                        AboutMenu.Credit.of("Emibergo02").withDescription("Coding"),
+                        AboutMenu.Credit.of("FreeMonoid").withDescription("Coding"),
+                        AboutMenu.Credit.of("4drian3d").withDescription("Coding"))
                 .addButtons(
                         AboutMenu.Link.of("https://william278.net/docs/velocitab").withText("Docs").withIcon("⛏"),
                         AboutMenu.Link.of("https://discord.gg/tVYhJfyDWG").withText("Discord").withIcon("⭐").withColor("#6773f5"),

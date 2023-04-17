@@ -10,7 +10,7 @@
   "dependencies": [
     {
       "id": "protocolize",
-      "optional": false
+      "optional": true
     },
     {
       "id": "luckperms",

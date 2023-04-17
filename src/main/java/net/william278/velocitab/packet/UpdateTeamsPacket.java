@@ -69,7 +69,7 @@ public class UpdateTeamsPacket extends AbstractPacket {
     private List<String> entities;
 
     @NotNull
-    public static UpdateTeamsPacket create(@NotNull String teamName, @NotNull String... teamMembers) {
+    protected static UpdateTeamsPacket create(@NotNull String teamName, @NotNull String... teamMembers) {
         return new UpdateTeamsPacket()
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.CREATE_TEAM)
@@ -84,7 +84,7 @@ public class UpdateTeamsPacket extends AbstractPacket {
     }
 
     @NotNull
-    public static UpdateTeamsPacket addToTeam(@NotNull String teamName, @NotNull String... teamMembers) {
+    protected static UpdateTeamsPacket addToTeam(@NotNull String teamName, @NotNull String... teamMembers) {
         return new UpdateTeamsPacket()
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.ADD_PLAYERS)
@@ -92,7 +92,7 @@ public class UpdateTeamsPacket extends AbstractPacket {
     }
 
     @NotNull
-    public static UpdateTeamsPacket removeFromTeam(@NotNull String teamName, @NotNull String... teamMembers) {
+    protected static UpdateTeamsPacket removeFromTeam(@NotNull String teamName, @NotNull String... teamMembers) {
         return new UpdateTeamsPacket()
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.REMOVE_PLAYERS)

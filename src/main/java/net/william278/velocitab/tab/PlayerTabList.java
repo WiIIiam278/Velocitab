@@ -64,7 +64,7 @@ public class PlayerTabList {
     @Subscribe
     public void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
         final Player joined = event.getPlayer();
-        plugin.getScoreboardManager().resetCache(joined);
+        plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined));
 
         // Remove the player from the tracking list if they are switching servers
         if (event.getPreviousServer() == null) {
@@ -97,7 +97,7 @@ public class PlayerTabList {
                     for (TabPlayer player : players) {
                         // Skip players on other servers if the setting is enabled
                         if (plugin.getSettings().isOnlyListPlayersInSameGroup() && serversInGroup.isPresent()
-                                && !serversInGroup.get().contains(player.getServerName())) {
+                            && !serversInGroup.get().contains(player.getServerName())) {
                             continue;
                         }
 
@@ -112,7 +112,7 @@ public class PlayerTabList {
                         player.sendHeaderAndFooter(this);
                     }
 
-                    plugin.getScoreboardManager().setRoles(joined, playerRoles);
+                    plugin.getScoreboardManager().ifPresent(manager -> manager.setRoles(joined, playerRoles));
                 })
                 .delay(500, TimeUnit.MILLISECONDS)
                 .schedule();
@@ -141,11 +141,12 @@ public class PlayerTabList {
                         () -> createEntry(newPlayer, player.getPlayer().getTabList())
                                 .thenAccept(entry -> player.getPlayer().getTabList().addEntry(entry))
                 );
-        plugin.getScoreboardManager().updateRoles(
+        plugin.getScoreboardManager().ifPresent(manager -> manager.updateRoles(
                 player.getPlayer(),
                 newPlayer.getTeamName(plugin),
                 newPlayer.getPlayer().getUsername()
-        );
+        ));
+
     }
 
     @Subscribe
@@ -187,8 +188,11 @@ public class PlayerTabList {
             player.getPlayer().getTabList().getEntries().stream()
                     .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
                     .ifPresent(entry -> entry.setDisplayName(displayName));
-            plugin.getScoreboardManager().updateRoles(player.getPlayer(),
-                    tabPlayer.getTeamName(plugin), tabPlayer.getPlayer().getUsername());
+            plugin.getScoreboardManager().ifPresent(manager -> manager.updateRoles(
+                    player.getPlayer(),
+                    tabPlayer.getTeamName(plugin),
+                    tabPlayer.getPlayer().getUsername()
+            ));
         }));
     }
 

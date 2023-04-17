@@ -41,7 +41,7 @@ public abstract class Hook {
                 return Optional.empty();
             }),
             (plugin -> {
-                if (isPluginAvailable(plugin, "papiproxybridge") && plugin.getSettings().isPapiHookEnabled()) {
+                if (isPluginAvailable(plugin, "papiproxybridge") && plugin.getSettings().isEnablePapiHook()) {
                     try {
                         plugin.log("Successfully hooked into PAPIProxyBridge");
                         return Optional.of(new PapiHook(plugin));
@@ -52,7 +52,7 @@ public abstract class Hook {
                 return Optional.empty();
             }),
             (plugin -> {
-                if (isPluginAvailable(plugin, "miniplaceholders") && plugin.getSettings().isMiniPlaceholdersHookEnabled()) {
+                if (isPluginAvailable(plugin, "miniplaceholders") && plugin.getSettings().isEnableMiniPlaceholdersHook()) {
                     try {
                         plugin.log("Successfully hooked into MiniPlaceholders");
                         return Optional.of(new MiniPlaceholdersHook(plugin));
@@ -70,7 +70,7 @@ public abstract class Hook {
         this.plugin = plugin;
     }
 
-    private static boolean isPluginAvailable(@NotNull Velocitab plugin, @NotNull String id) {
+    public static boolean isPluginAvailable(@NotNull Velocitab plugin, @NotNull String id) {
         return plugin.getServer().getPluginManager().getPlugin(id).isPresent();
     }
 

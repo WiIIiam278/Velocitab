@@ -81,12 +81,19 @@ public class Settings {
             "If no custom display name is provided for a server, its original name will be used.")
     private Map<String, String> serverDisplayNames = Map.of("very-long-server-name", "VLSN");
 
+    @Getter
     @YamlKey("enable_papi_hook")
     private boolean enablePapiHook = true;
 
+    @Getter
     @YamlKey("enable_miniplaceholders_hook")
     @YamlComment("If you are using MINIMESSAGE formatting, enable this to support MiniPlaceholders in formatting.")
     private boolean enableMiniPlaceholdersHook = true;
+
+    @Getter
+    @YamlKey("sort_players")
+    @YamlComment("Whether to sort players in the TAB list. Requires Protocolize to be installed.")
+    private boolean sortPlayers = true;
 
     @YamlKey("sort_players_by")
     @YamlComment("Ordered list of elements by which players should be sorted. (ROLE_WEIGHT, ROLE_NAME and SERVER are supported)")
@@ -95,6 +102,7 @@ public class Settings {
             TabPlayer.SortableElement.ROLE_NAME.name()
     );
 
+    @Getter
     @YamlKey("update_rate")
     @YamlComment("How often in milliseconds to periodically update the TAB list, including header and footer, for all users.\n" +
             "If set to 0, TAB will be updated on player join/leave instead. (1s = 1000ms)")
@@ -163,24 +171,12 @@ public class Settings {
                 .orElse(fallbackGroup);
     }
 
-    public boolean isPapiHookEnabled() {
-        return enablePapiHook;
-    }
-
-    public boolean isMiniPlaceholdersHookEnabled() {
-        return enableMiniPlaceholdersHook;
-    }
-
     @NotNull
     public List<TabPlayer.SortableElement> getSortingElementList() {
         return sortPlayersBy.stream()
                 .map(p -> TabPlayer.SortableElement.parse(p).orElseThrow(() ->
                         new IllegalArgumentException("Invalid sorting element set in config file: " + p)))
                 .toList();
-    }
-
-    public int getUpdateRate() {
-        return updateRate;
     }
 
 }

@@ -61,6 +61,6 @@ public class Role implements Comparable<Role> {
 
     @NotNull
     protected String getWeightString(int highestWeight) {
-        return String.format("%0" + (highestWeight + "").length() + "d", highestWeight - weight);
+        return String.format("%0" + Integer.toString(highestWeight).length() + "d", highestWeight - weight);
     }
 }

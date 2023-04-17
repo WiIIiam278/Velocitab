@@ -1,5 +1,4 @@
 <!--suppress ALL -->
-<h4>
 <p align="center">
     <img src="images/banner.png" alt="Velocitab" />
     <a href="https://modrinth.com/plugin/velocitab">
@@ -13,7 +12,6 @@
     </a>
 </p>
 <br/>
-</h4>
 
 **Velocitab** is a super-simple Velocity TAB menu plugin that uses scoreboard team client-bound packets to actually sort player lists without the need for a backend plugin.
 

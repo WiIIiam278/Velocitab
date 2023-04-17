@@ -50,7 +50,7 @@ public class LuckPermsHook extends Hook {
     public void onLuckPermsGroupUpdate(@NotNull UserDataRecalculateEvent event) {
         final PlayerTabList tabList = plugin.getTabList();
         // Check if the user is online.
-        if (plugin.getServer().getPlayer(event.getUser().getUniqueId()).isEmpty()){
+        if (plugin.getServer().getPlayer(event.getUser().getUniqueId()).isEmpty()) {
             return;
         }
         plugin.getServer().getPlayer(event.getUser().getUniqueId())

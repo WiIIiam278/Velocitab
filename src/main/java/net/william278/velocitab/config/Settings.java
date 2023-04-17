@@ -92,7 +92,7 @@ public class Settings {
 
     @Getter
     @YamlKey("sort_players")
-    @YamlComment("Whether to sort players in the TAB list. Requires Protocolize to be installed.")
+    @YamlComment("Whether to sort players in the TAB list.")
     private boolean sortPlayers = true;
 
     @YamlKey("sort_players_by")

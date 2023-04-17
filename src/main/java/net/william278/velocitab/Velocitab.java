@@ -132,10 +132,6 @@ public class Velocitab {
 
     private void prepareScoreboardManager() {
         if (settings.isSortPlayers()) {
-            if (!Hook.isPluginAvailable(this, "protocolize")) {
-                log("Protocolize is required to sort players by weight, but was not found. Disabling sorting.");
-                return;
-            }
             this.scoreboardManager = new ScoreboardManager(this);
             scoreboardManager.registerPacket();
         }

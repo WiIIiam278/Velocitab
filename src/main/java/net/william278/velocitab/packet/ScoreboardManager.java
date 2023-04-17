@@ -19,17 +19,22 @@
 
 package net.william278.velocitab.packet;
 
+import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.Player;
-import dev.simplix.protocolize.api.PacketDirection;
-import dev.simplix.protocolize.api.Protocol;
-import dev.simplix.protocolize.api.Protocolize;
-import dev.simplix.protocolize.api.player.ProtocolizePlayer;
+import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
+import com.velocitypowered.proxy.protocol.MinecraftPacket;
+import com.velocitypowered.proxy.protocol.StateRegistry;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.velocitypowered.api.network.ProtocolVersion.*;
 public class ScoreboardManager {
 
     private final Velocitab plugin;
@@ -85,27 +90,60 @@ public class ScoreboardManager {
             plugin.getTabList().removeOfflinePlayer(player);
             return;
         }
+
         try {
-            ProtocolizePlayer protocolizePlayer = Protocolize.playerProvider().player(player.getUniqueId());
-            if (protocolizePlayer != null) {
-                protocolizePlayer.sendPacket(packet);
-            } else {
-                plugin.log("Failed to get ProtocolizePlayer for player " + player.getUsername() + " (UUID: " + player.getUniqueId() + ")");
-            }
+            final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
+            connectedPlayer.getConnection().write(packet);
         } catch (Exception e) {
             plugin.log("Failed to dispatch packet (is the client or server modded or using an illegal version?)", e);
         }
     }
 
-    public void registerPacket() {
+    private static final MethodHandle STATE_REGISTRY$clientBound;
+    private static final MethodHandle PACKET_REGISTRY$register;
+    private static final MethodHandle PACKET_MAPPING$map;
+    private static final MethodHandle PACKET_MAPPING$map0;
+
+    static {
+        final MethodHandles.Lookup lookup = MethodHandles.lookup();
         try {
-            Protocolize.protocolRegistration().registerPacket(
-                    UpdateTeamsPacket.MAPPINGS,
-                    Protocol.PLAY,
-                    PacketDirection.CLIENTBOUND,
-                    UpdateTeamsPacket.class
+            final MethodHandles.Lookup stateRegistryLookup = MethodHandles.privateLookupIn(StateRegistry.class, lookup);
+            STATE_REGISTRY$clientBound = stateRegistryLookup.findGetter(StateRegistry.class, "clientbound", StateRegistry.PacketRegistry.class);
+
+            final MethodType mapType = MethodType.methodType(StateRegistry.PacketMapping.class, Integer.TYPE, ProtocolVersion.class, ProtocolVersion.class, Boolean.TYPE);
+            PACKET_MAPPING$map = stateRegistryLookup.findStatic(StateRegistry.class, "map", mapType);
+            final MethodType map0Type = MethodType.methodType(StateRegistry.PacketMapping.class, Integer.TYPE, ProtocolVersion.class, Boolean.TYPE);
+            PACKET_MAPPING$map0 = stateRegistryLookup.findStatic(StateRegistry.class, "map", map0Type);
+
+            final MethodHandles.Lookup packetRegistryLookup = MethodHandles.privateLookupIn(StateRegistry.PacketRegistry.class, lookup);
+            final MethodType registerType = MethodType.methodType(void.class, Class.class, Supplier.class, StateRegistry.PacketMapping[].class);
+            PACKET_REGISTRY$register = packetRegistryLookup.findVirtual(StateRegistry.PacketRegistry.class, "register", registerType);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void registerPacket() {
+        StateRegistry registry = StateRegistry.PLAY;
+
+        try {
+            final StateRegistry.PacketMapping[] MAPPINGS = {
+                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x47, MINECRAFT_1_13, MINECRAFT_1_13_2, false),
+                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x4B, MINECRAFT_1_14, MINECRAFT_1_14_4, false),
+                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x4C, MINECRAFT_1_15, MINECRAFT_1_16_4, false),
+                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x55, MINECRAFT_1_17, MINECRAFT_1_19, false),
+                    (StateRegistry.PacketMapping) PACKET_MAPPING$map0.invoke(0x58, MINECRAFT_1_19_1, false),
+                    (StateRegistry.PacketMapping) PACKET_MAPPING$map0.invoke(0x56, MINECRAFT_1_19_3, false),
+                    (StateRegistry.PacketMapping) PACKET_MAPPING$map0.invoke(0x5A, MINECRAFT_1_19_4, false)
+            };
+            final StateRegistry.PacketRegistry packetRegistry = (StateRegistry.PacketRegistry) STATE_REGISTRY$clientBound.invoke(registry);
+            PACKET_REGISTRY$register.invoke(
+                    packetRegistry,
+                    UpdateTeamsPacket.class,
+                    (Supplier<MinecraftPacket>) UpdateTeamsPacket::new,
+                    MAPPINGS
             );
-        } catch (Exception e) {
+        } catch (Throwable e) {
             plugin.log("Failed to register UpdateTeamsPacket", e);
         }
     }

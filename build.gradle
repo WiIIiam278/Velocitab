@@ -31,7 +31,7 @@ dependencies {
     compileOnly 'dev.simplix:protocolize-api:2.2.6'
     compileOnly 'io.netty:netty-codec-http:4.1.91.Final'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.0.0'
-    compileOnly 'net.william278:PAPIProxyBridge:1.0'
+    compileOnly 'net.william278:PAPIProxyBridge:1.2'
     compileOnly 'org.projectlombok:lombok:1.18.26'
     compileOnly 'net.kyori:adventure-text-minimessage:4.13.1'
 

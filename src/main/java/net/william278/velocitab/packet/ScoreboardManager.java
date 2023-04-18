@@ -102,7 +102,6 @@ public class ScoreboardManager {
     private static final MethodHandle STATE_REGISTRY$clientBound;
     private static final MethodHandle PACKET_REGISTRY$register;
     private static final MethodHandle PACKET_MAPPING$map;
-    private static final MethodHandle PACKET_MAPPING$map0;
 
     static {
         final MethodHandles.Lookup lookup = MethodHandles.lookup();
@@ -110,10 +109,8 @@ public class ScoreboardManager {
             final MethodHandles.Lookup stateRegistryLookup = MethodHandles.privateLookupIn(StateRegistry.class, lookup);
             STATE_REGISTRY$clientBound = stateRegistryLookup.findGetter(StateRegistry.class, "clientbound", StateRegistry.PacketRegistry.class);
 
-            final MethodType mapType = MethodType.methodType(StateRegistry.PacketMapping.class, Integer.TYPE, ProtocolVersion.class, ProtocolVersion.class, Boolean.TYPE);
+            final MethodType mapType = MethodType.methodType(StateRegistry.PacketMapping.class, Integer.TYPE, ProtocolVersion.class, Boolean.TYPE);
             PACKET_MAPPING$map = stateRegistryLookup.findStatic(StateRegistry.class, "map", mapType);
-            final MethodType map0Type = MethodType.methodType(StateRegistry.PacketMapping.class, Integer.TYPE, ProtocolVersion.class, Boolean.TYPE);
-            PACKET_MAPPING$map0 = stateRegistryLookup.findStatic(StateRegistry.class, "map", map0Type);
 
             final MethodHandles.Lookup packetRegistryLookup = MethodHandles.privateLookupIn(StateRegistry.PacketRegistry.class, lookup);
             final MethodType registerType = MethodType.methodType(void.class, Class.class, Supplier.class, StateRegistry.PacketMapping[].class);
@@ -128,13 +125,13 @@ public class ScoreboardManager {
 
         try {
             final StateRegistry.PacketMapping[] MAPPINGS = {
-                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x47, MINECRAFT_1_13, MINECRAFT_1_13_2, false),
-                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x4B, MINECRAFT_1_14, MINECRAFT_1_14_4, false),
-                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x4C, MINECRAFT_1_15, MINECRAFT_1_16_4, false),
-                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x55, MINECRAFT_1_17, MINECRAFT_1_19, false),
-                    (StateRegistry.PacketMapping) PACKET_MAPPING$map0.invoke(0x58, MINECRAFT_1_19_1, false),
-                    (StateRegistry.PacketMapping) PACKET_MAPPING$map0.invoke(0x56, MINECRAFT_1_19_3, false),
-                    (StateRegistry.PacketMapping) PACKET_MAPPING$map0.invoke(0x5A, MINECRAFT_1_19_4, false)
+                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x47, MINECRAFT_1_13, false),
+                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x4B, MINECRAFT_1_14, false),
+                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x4C, MINECRAFT_1_15, false),
+                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x55, MINECRAFT_1_17, false),
+                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x58, MINECRAFT_1_19_1, false),
+                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x56, MINECRAFT_1_19_3, false),
+                    (StateRegistry.PacketMapping) PACKET_MAPPING$map.invoke(0x5A, MINECRAFT_1_19_4, false)
             };
             final StateRegistry.PacketRegistry packetRegistry = (StateRegistry.PacketRegistry) STATE_REGISTRY$clientBound.invoke(registry);
             PACKET_REGISTRY$register.invoke(

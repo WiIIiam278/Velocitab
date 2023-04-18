@@ -171,9 +171,7 @@ public class PlayerTabList {
 
     // Replace a player in the tab list
     public void replacePlayer(@NotNull TabPlayer tabPlayer) {
-        if (!players.removeIf(player -> player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId()))) {
-            plugin.log("Failed to remove updated player " + tabPlayer.getPlayer().getUsername() + " (UUID: " + tabPlayer.getPlayer().getUniqueId() + ")");
-        }
+        players.removeIf(player -> player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId()));
         players.add(tabPlayer);
     }
 

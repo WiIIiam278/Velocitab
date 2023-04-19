@@ -70,7 +70,7 @@ public abstract class Hook {
         this.plugin = plugin;
     }
 
-    public static boolean isPluginAvailable(@NotNull Velocitab plugin, @NotNull String id) {
+    private static boolean isPluginAvailable(@NotNull Velocitab plugin, @NotNull String id) {
         return plugin.getServer().getPluginManager().getPlugin(id).isPresent();
     }
 

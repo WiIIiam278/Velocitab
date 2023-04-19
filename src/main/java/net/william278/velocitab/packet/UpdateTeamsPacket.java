@@ -19,11 +19,10 @@
 
 package net.william278.velocitab.packet;
 
-import dev.simplix.protocolize.api.PacketDirection;
-import dev.simplix.protocolize.api.mapping.AbstractProtocolMapping;
-import dev.simplix.protocolize.api.mapping.ProtocolIdMapping;
-import dev.simplix.protocolize.api.packet.AbstractPacket;
-import dev.simplix.protocolize.api.util.ProtocolUtil;
+import com.velocitypowered.api.network.ProtocolVersion;
+import com.velocitypowered.proxy.connection.MinecraftSessionHandler;
+import com.velocitypowered.proxy.protocol.MinecraftPacket;
+import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import io.netty.buffer.ByteBuf;
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -36,8 +35,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static dev.simplix.protocolize.api.util.ProtocolVersions.*;
-
 @Getter
 @Setter
 @ToString
@@ -45,17 +42,7 @@ import static dev.simplix.protocolize.api.util.ProtocolVersions.*;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Accessors(fluent = true)
-public class UpdateTeamsPacket extends AbstractPacket {
-
-    protected static final List<ProtocolIdMapping> MAPPINGS = List.of(
-            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_13, MINECRAFT_1_13_2, 0x47),
-            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_14, MINECRAFT_1_14_4, 0x4B),
-            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_15, MINECRAFT_1_16_5, 0x4C),
-            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_17, MINECRAFT_1_19, 0x55),
-            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_19_1, MINECRAFT_1_19_2, 0x58),
-            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_19_3, MINECRAFT_1_19_3, 0x56),
-            AbstractProtocolMapping.rangedIdMapping(MINECRAFT_1_19_4, MINECRAFT_LATEST, 0x5A)
-    );
+public class UpdateTeamsPacket implements MinecraftPacket {
 
     private String teamName;
     private UpdateMode mode;
@@ -99,58 +86,63 @@ public class UpdateTeamsPacket extends AbstractPacket {
                 .entities(Arrays.asList(teamMembers));
     }
 
+    @NotNull
+    private static String getChatString(@NotNull String string) {
+        return "{\"text\":\"" + StringEscapeUtils.escapeJson(string) + "\"}";
+    }
+
     @Override
-    public void read(ByteBuf byteBuf, PacketDirection packetDirection, int i) {
-        teamName = ProtocolUtil.readString(byteBuf);
+    public void decode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
+        teamName = ProtocolUtils.readString(byteBuf);
         mode = UpdateMode.byId(byteBuf.readByte());
         if (mode == UpdateMode.REMOVE_TEAM) {
             return;
         }
         if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.UPDATE_INFO) {
-            displayName = ProtocolUtil.readString(byteBuf);
+            displayName = ProtocolUtils.readString(byteBuf);
             friendlyFlags = FriendlyFlag.fromBitMask(byteBuf.readByte());
-            nameTagVisibility = NameTagVisibility.byId(ProtocolUtil.readString(byteBuf));
-            collisionRule = CollisionRule.byId(ProtocolUtil.readString(byteBuf));
+            nameTagVisibility = NameTagVisibility.byId(ProtocolUtils.readString(byteBuf));
+            collisionRule = CollisionRule.byId(ProtocolUtils.readString(byteBuf));
             color = byteBuf.readByte();
-            prefix = ProtocolUtil.readString(byteBuf);
-            suffix = ProtocolUtil.readString(byteBuf);
+            prefix = ProtocolUtils.readString(byteBuf);
+            suffix = ProtocolUtils.readString(byteBuf);
         }
         if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.ADD_PLAYERS || mode == UpdateMode.REMOVE_PLAYERS) {
-            int entityCount = ProtocolUtil.readVarInt(byteBuf);
+            int entityCount = ProtocolUtils.readVarInt(byteBuf);
             entities = new ArrayList<>(entityCount);
             for (int j = 0; j < entityCount; j++) {
-                entities.add(ProtocolUtil.readString(byteBuf));
+                entities.add(ProtocolUtils.readString(byteBuf));
             }
         }
     }
 
     @Override
-    public void write(ByteBuf byteBuf, PacketDirection packetDirection, int i) {
-        ProtocolUtil.writeString(byteBuf, teamName);
+    public void encode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
+        ProtocolUtils.writeString(byteBuf, teamName);
         byteBuf.writeByte(mode.id());
         if (mode == UpdateMode.REMOVE_TEAM) {
             return;
         }
         if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.UPDATE_INFO) {
-            ProtocolUtil.writeString(byteBuf, displayName);
+            ProtocolUtils.writeString(byteBuf, displayName);
             byteBuf.writeByte(FriendlyFlag.toBitMask(friendlyFlags));
-            ProtocolUtil.writeString(byteBuf, nameTagVisibility.id());
-            ProtocolUtil.writeString(byteBuf, collisionRule.id());
+            ProtocolUtils.writeString(byteBuf, nameTagVisibility.id());
+            ProtocolUtils.writeString(byteBuf, collisionRule.id());
             byteBuf.writeByte(color);
-            ProtocolUtil.writeString(byteBuf, prefix);
-            ProtocolUtil.writeString(byteBuf, suffix);
+            ProtocolUtils.writeString(byteBuf, prefix);
+            ProtocolUtils.writeString(byteBuf, suffix);
         }
         if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.ADD_PLAYERS || mode == UpdateMode.REMOVE_PLAYERS) {
-            ProtocolUtil.writeVarInt(byteBuf, entities != null ? entities.size() : 0);
+            ProtocolUtils.writeVarInt(byteBuf, entities != null ? entities.size() : 0);
             for (String entity : entities != null ? entities : new ArrayList<String>()) {
-                ProtocolUtil.writeString(byteBuf, entity);
+                ProtocolUtils.writeString(byteBuf, entity);
             }
         }
     }
 
-    @NotNull
-    private static String getChatString(@NotNull String string) {
-        return "{\"text\":\"" + StringEscapeUtils.escapeJson(string) + "\"}";
+    @Override
+    public boolean handle(MinecraftSessionHandler minecraftSessionHandler) {
+        return false;
     }
 
     public enum UpdateMode {

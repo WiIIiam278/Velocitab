@@ -13,14 +13,12 @@
 </p>
 <br/>
 
-**Velocitab** is a super-simple Velocity TAB menu plugin that uses scoreboard team client-bound packets to actually sort player lists without the need for a backend plugin.
+**Velocitab** is a super-simple Velocity TAB menu plugin that uses scoreboard team client-bound packets to actually sort player lists without the need for a backend plugin. Supporting modern RGB formatting, animations, comprehensive placeholder support and defining multiple TAB menus for different groups of servers, Velocitab is a versatile plugin, useful for any Velocity-based proxy network.
 
-![showcase.png](images/showcase.png)
+![Showcase of different TAB menus made with Velocitab.png](images/showcase.png)
 
 ## Setup
-Requires [Protocolize](https://www.spigotmc.org/resources/protocolize-protocollib-for-bungeecord-waterfall-velocity.63778/) v2.2.5 to be installed on your proxy. [LuckPerms](https://luckperms.net) is also strongly recommended for prefix/suffix/role (and sorting) support.
-
-Simply download the latest release and place it in your Velocity plugins folder (along with Protocolize).
+Simply add the jar to your Velocity `/plugins/` folder. It's also recommended that you install [LuckPerms](https://luckperms.net) for prefix/suffix/role (and sorting) support. Then, [edit the plugin config.yml](https://william278.net/docs/velocitab/config-file) to your liking.
 
 ## Configuration
 Velocitab has a simple config file that lets you define a header, footer and format for the player list. You can additionally configure [groups of servers](https://william278.net/docs/velocitab/server-groups) to display different formats in the TAB menu depending on which server the player is viewing it from.

@@ -26,7 +26,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'com.velocitypowered:velocity-api:3.2.0-SNAPSHOT'
+    compileOnly 'com.velocitypowered:velocity-api:4.0.0-SNAPSHOT'
     compileOnly 'com.velocitypowered:velocity-proxy:3.2.0-SNAPSHOT'
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'io.netty:netty-codec-http:4.1.91.Final'

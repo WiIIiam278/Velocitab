@@ -30,6 +30,8 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.william278.annotaml.Annotaml;
+import net.william278.desertwell.util.UpdateChecker;
+import net.william278.desertwell.util.Version;
 import net.william278.velocitab.commands.VelocitabCommand;
 import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.config.Settings;
@@ -46,6 +48,7 @@ import org.bstats.charts.SimplePie;
 import org.bstats.velocity.Metrics;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
+import org.slf4j.event.Level;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,20 +72,21 @@ public class Velocitab {
     private ScoreboardManager scoreboardManager;
 
     @Inject
-    public Velocitab(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+    public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path dataDirectory) {
         this.server = server;
         this.logger = logger;
         this.dataDirectory = dataDirectory;
     }
 
     @Subscribe
-    public void onProxyInitialization(ProxyInitializeEvent event) {
+    public void onProxyInitialization(@NotNull ProxyInitializeEvent event) {
         loadSettings();
         loadHooks();
         prepareScoreboardManager();
         prepareTabList();
         registerCommands();
         registerMetrics();
+        checkForUpdates();
         logger.info("Successfully enabled Velocitab");
     }
 
@@ -179,7 +183,12 @@ public class Velocitab {
         return pluginContainer.getDescription();
     }
 
-    public void registerMetrics() {
+    @NotNull
+    public Version getVersion() {
+        return Version.fromString(getDescription().getVersion().orElseThrow(), "-");
+    }
+
+    private void registerMetrics() {
         final Metrics metrics = metricsFactory.make(this, METRICS_ID);
         metrics.addCustomChart(new SimplePie("sort_players", () -> settings.isSortPlayers() ? "Enabled" : "Disabled"));
         metrics.addCustomChart(new SimplePie("formatter_type", () -> settings.getFormatter().getName()));
@@ -193,11 +202,48 @@ public class Velocitab {
         }));
     }
 
-    public void log(@NotNull String message, @NotNull Throwable... exceptions) {
-        Arrays.stream(exceptions).findFirst().ifPresentOrElse(
-                exception -> logger.error(message, exception),
-                () -> logger.warn(message)
-        );
+    private void checkForUpdates() {
+        if (!getSettings().isCheckForUpdates()) {
+            return;
+        }
+        getUpdateChecker().check().thenAccept(checked -> {
+            if (!checked.isUpToDate()) {
+                log(Level.WARN, "A new version of Velocitab is available: " + checked.getLatestVersion());
+            }
+        });
+    }
+
+    @NotNull
+    public UpdateChecker getUpdateChecker() {
+        return UpdateChecker.builder()
+                .currentVersion(getVersion())
+                .endpoint(UpdateChecker.Endpoint.MODRINTH)
+                .resource("velocitab")
+                .build();
+    }
+
+    public void log(@NotNull Level level, @NotNull String message, @NotNull Throwable... exceptions) {
+        switch (level) {
+            case ERROR -> {
+                if (exceptions.length > 0) {
+                    logger.error(message, exceptions[0]);
+                } else {
+                    logger.error(message);
+                }
+            }
+            case WARN -> {
+                if (exceptions.length > 0) {
+                    logger.warn(message, exceptions[0]);
+                } else {
+                    logger.warn(message);
+                }
+            }
+            case INFO -> logger.info(message);
+        }
+    }
+
+    public void log(@NotNull String message) {
+        this.log(Level.INFO, message);
     }
 
 }

@@ -25,11 +25,13 @@ import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import com.velocitypowered.proxy.protocol.StateRegistry;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.event.Level;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.velocitypowered.api.network.ProtocolVersion.*;
+
 public class ScoreboardManager {
 
     private final Velocitab plugin;
@@ -90,7 +92,7 @@ public class ScoreboardManager {
             final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
             connectedPlayer.getConnection().write(packet);
         } catch (Exception e) {
-            plugin.log("Failed to dispatch packet (is the client or server modded or using an illegal version?)", e);
+            plugin.log(Level.ERROR, "Failed to dispatch packet (is the client or server modded or using an illegal version?)", e);
         }
     }
 
@@ -109,7 +111,7 @@ public class ScoreboardManager {
                     .mapping(0x5A, MINECRAFT_1_19_4, false)
                     .register();
         } catch (Throwable e) {
-            plugin.log("Failed to register UpdateTeamsPacket", e);
+            plugin.log(Level.ERROR, "Failed to register UpdateTeamsPacket", e);
         }
     }
 

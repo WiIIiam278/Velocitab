@@ -21,6 +21,7 @@ package net.william278.velocitab.hook;
 
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.event.Level;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +36,7 @@ public abstract class Hook {
                         plugin.log("Successfully hooked into LuckPerms");
                         return Optional.of(new LuckPermsHook(plugin));
                     } catch (Exception e) {
-                        plugin.log("LuckPerms hook was not loaded: " + e.getMessage(), e);
+                        plugin.log(Level.WARN, "LuckPerms hook was not loaded: " + e.getMessage(), e);
                     }
                 }
                 return Optional.empty();
@@ -46,7 +47,7 @@ public abstract class Hook {
                         plugin.log("Successfully hooked into PAPIProxyBridge");
                         return Optional.of(new PAPIProxyBridgeHook(plugin));
                     } catch (Exception e) {
-                        plugin.log("PAPIProxyBridge hook was not loaded: " + e.getMessage(), e);
+                        plugin.log(Level.WARN, "PAPIProxyBridge hook was not loaded: " + e.getMessage(), e);
                     }
                 }
                 return Optional.empty();
@@ -57,7 +58,7 @@ public abstract class Hook {
                         plugin.log("Successfully hooked into MiniPlaceholders");
                         return Optional.of(new MiniPlaceholdersHook(plugin));
                     } catch (Exception e) {
-                        plugin.log("MiniPlaceholders hook was not loaded: " + e.getMessage(), e);
+                        plugin.log(Level.WARN, "MiniPlaceholders hook was not loaded: " + e.getMessage(), e);
                     }
                 }
                 return Optional.empty();

@@ -44,7 +44,7 @@ public abstract class Hook {
                 if (isPluginAvailable(plugin, "papiproxybridge") && plugin.getSettings().isEnablePapiHook()) {
                     try {
                         plugin.log("Successfully hooked into PAPIProxyBridge");
-                        return Optional.of(new PapiHook(plugin));
+                        return Optional.of(new PAPIProxyBridgeHook(plugin));
                     } catch (Exception e) {
                         plugin.log("PAPIProxyBridge hook was not loaded: " + e.getMessage(), e);
                     }

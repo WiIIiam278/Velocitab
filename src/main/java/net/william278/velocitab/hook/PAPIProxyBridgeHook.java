@@ -26,16 +26,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
 
-public class PapiHook extends Hook {
+public class PAPIProxyBridgeHook extends Hook {
 
     private final PlaceholderAPI api;
 
-    public PapiHook(@NotNull Velocitab plugin) {
+    public PAPIProxyBridgeHook(@NotNull Velocitab plugin) {
         super(plugin);
         this.api = PlaceholderAPI.getInstance();
     }
 
-    public CompletableFuture<String> formatPapiPlaceholders(@NotNull String input, @NotNull Player player) {
+    public CompletableFuture<String> formatPlaceholders(@NotNull String input, @NotNull Player player) {
         return api.formatPlaceholders(input, player.getUniqueId());
     }
 

@@ -36,7 +36,7 @@ import net.william278.velocitab.config.Settings;
 import net.william278.velocitab.hook.Hook;
 import net.william278.velocitab.hook.LuckPermsHook;
 import net.william278.velocitab.hook.MiniPlaceholdersHook;
-import net.william278.velocitab.hook.PapiHook;
+import net.william278.velocitab.hook.PAPIProxyBridgeHook;
 import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
@@ -119,12 +119,12 @@ public class Velocitab {
                 .findFirst();
     }
 
-    public Optional<LuckPermsHook> getLuckPerms() {
+    public Optional<LuckPermsHook> getLuckPermsHook() {
         return getHook(LuckPermsHook.class);
     }
 
-    public Optional<PapiHook> getPapiHook() {
-        return getHook(PapiHook.class);
+    public Optional<PAPIProxyBridgeHook> getPAPIProxyBridgeHook() {
+        return getHook(PAPIProxyBridgeHook.class);
     }
 
     public Optional<MiniPlaceholdersHook> getMiniPlaceholdersHook() {
@@ -161,10 +161,9 @@ public class Velocitab {
     @NotNull
     public TabPlayer getTabPlayer(@NotNull Player player) {
         return new TabPlayer(player,
-                getLuckPerms().map(hook -> hook.getPlayerRole(player))
-                        .orElse(Role.DEFAULT_ROLE),
-                getLuckPerms().map(LuckPermsHook::getHighestWeight)
-                        .orElse(0));
+                getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE),
+                getLuckPermsHook().map(LuckPermsHook::getHighestWeight).orElse(0)
+        );
     }
 
     private void registerCommands() {
@@ -187,7 +186,7 @@ public class Velocitab {
         metrics.addCustomChart(new SimpleBarChart("hooks_used", () -> {
             final Map<String, Integer> hooks = new HashMap<>();
             Hook.AVAILABLE.forEach(availableHook -> hooks.put(
-                    availableHook.getClass().getSimpleName(),
+                    availableHook.getClass().getSimpleName().replace("Hook", ""),
                     availableHook.apply(this).isPresent() ? 1 : 0)
             );
             return hooks;

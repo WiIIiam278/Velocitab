@@ -64,8 +64,8 @@ public enum Placeholder {
         }
         final String replaced = format;
 
-        return plugin.getPapiHook()
-                .map(hook -> hook.formatPapiPlaceholders(replaced, player.getPlayer()))
+        return plugin.getPAPIProxyBridgeHook()
+                .map(hook -> hook.formatPlaceholders(replaced, player.getPlayer()))
                 .orElse(CompletableFuture.completedFuture(replaced));
     }
 

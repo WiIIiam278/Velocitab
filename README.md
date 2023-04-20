@@ -64,8 +64,9 @@ Velocitab is licensed under the Apache 2.0 license.
 ## Links
 * **[Website](https://william278.net/project/velocitab)** — Visit my website!
 * **[Docs](https://william278.net/docs/velocitab)** — Read the plugin docs!
+* **[Modrinth](https://modrinth.com/plugin/velocitab)** — View the plugin Modrinth page 
+* **[Issues](https://github.com/WiIIiam278/Velocitab/issues)** — File a bug report or feature request
 * **[Discord](https://discord.com/invite/tVYhJfyDWG)** — Get support, ask questions!
-* **[GitHub](https://github.com/WiIIiam278/Velocitab)** — Check out the plugin source code!
 
 ---
 &copy; [William278](https://william278.net/), 2023. Licensed under the Apache-2.0 License.

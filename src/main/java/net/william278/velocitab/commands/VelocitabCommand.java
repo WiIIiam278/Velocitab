@@ -85,7 +85,7 @@ public final class VelocitabCommand {
                             plugin.getUpdateChecker().check().thenAccept(checked -> {
                                 if (checked.isUpToDate()) {
                                     ctx.getSource().sendMessage(Component
-                                            .text("Velocitab is up to date!", MAIN_COLOR));
+                                            .text("Velocitab is up to date! (Running v" + plugin.getVersion() + ")", MAIN_COLOR));
                                     return;
                                 }
                                 ctx.getSource().sendMessage(Component

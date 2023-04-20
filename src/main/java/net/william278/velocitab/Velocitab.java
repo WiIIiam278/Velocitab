@@ -192,14 +192,10 @@ public class Velocitab {
         final Metrics metrics = metricsFactory.make(this, METRICS_ID);
         metrics.addCustomChart(new SimplePie("sort_players", () -> settings.isSortPlayers() ? "Enabled" : "Disabled"));
         metrics.addCustomChart(new SimplePie("formatter_type", () -> settings.getFormatter().getName()));
-        metrics.addCustomChart(new SimpleBarChart("hooks_used", () -> {
-            final Map<String, Integer> hooks = new HashMap<>();
-            Hook.AVAILABLE.forEach(availableHook -> hooks.put(
-                    availableHook.getClass().getSimpleName().replace("Hook", ""),
-                    availableHook.apply(this).isPresent() ? 1 : 0)
-            );
-            return hooks;
-        }));
+        metrics.addCustomChart(new SimplePie("using_luckperms", () -> getLuckPermsHook().isPresent() ? "Yes" : "No"));
+        metrics.addCustomChart(new SimplePie("using_papiproxybridge", () -> getPAPIProxyBridgeHook().isPresent() ? "Yes" : "No"));
+        metrics.addCustomChart(new SimplePie("using_miniplaceholders", () -> getMiniPlaceholdersHook().isPresent() ? "Yes" : "No"));
+
     }
 
     private void checkForUpdates() {

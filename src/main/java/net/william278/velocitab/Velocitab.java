@@ -41,6 +41,9 @@ import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.tab.PlayerTabList;
+import org.bstats.charts.SimpleBarChart;
+import org.bstats.charts.SimplePie;
+import org.bstats.velocity.Metrics;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -52,13 +55,15 @@ import java.util.*;
 
 @Plugin(id = "velocitab")
 public class Velocitab {
-
+    private static final int METRICS_ID = 18247;
     private Settings settings;
     private final ProxyServer server;
     private final Logger logger;
     private final Path dataDirectory;
     @Inject
     private PluginContainer pluginContainer;
+    @Inject
+    private Metrics.Factory metricsFactory;
     private PlayerTabList tabList;
     private List<Hook> hooks;
     private ScoreboardManager scoreboardManager;
@@ -77,6 +82,7 @@ public class Velocitab {
         prepareScoreboardManager();
         prepareTabList();
         registerCommands();
+        registerMetrics();
         logger.info("Successfully enabled Velocitab");
     }
 
@@ -161,17 +167,6 @@ public class Velocitab {
                         .orElse(0));
     }
 
-    public void log(@NotNull String message, @NotNull Throwable... exceptions) {
-        Arrays.stream(exceptions).findFirst().ifPresentOrElse(
-                exception -> logger.error(message, exception),
-                () -> logger.warn(message)
-        );
-    }
-
-    public PluginDescription getDescription() {
-        return pluginContainer.getDescription();
-    }
-
     private void registerCommands() {
         final BrigadierCommand command = new VelocitabCommand(this).command();
         server.getCommandManager().register(
@@ -179,4 +174,31 @@ public class Velocitab {
                 command
         );
     }
+
+    @NotNull
+    public PluginDescription getDescription() {
+        return pluginContainer.getDescription();
+    }
+
+    public void registerMetrics() {
+        final Metrics metrics = metricsFactory.make(this, METRICS_ID);
+        metrics.addCustomChart(new SimplePie("sort_players", () -> settings.isSortPlayers() ? "Enabled" : "Disabled"));
+        metrics.addCustomChart(new SimplePie("formatter_type", () -> settings.getFormatter().getName()));
+        metrics.addCustomChart(new SimpleBarChart("hooks_used", () -> {
+            final Map<String, Integer> hooks = new HashMap<>();
+            Hook.AVAILABLE.forEach(availableHook -> hooks.put(
+                    availableHook.getClass().getSimpleName(),
+                    availableHook.apply(this).isPresent() ? 1 : 0)
+            );
+            return hooks;
+        }));
+    }
+
+    public void log(@NotNull String message, @NotNull Throwable... exceptions) {
+        Arrays.stream(exceptions).findFirst().ifPresentOrElse(
+                exception -> logger.error(message, exception),
+                () -> logger.warn(message)
+        );
+    }
+
 }

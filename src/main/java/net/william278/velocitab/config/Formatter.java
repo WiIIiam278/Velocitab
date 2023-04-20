@@ -35,14 +35,28 @@ import java.util.function.Function;
  */
 @SuppressWarnings("unused")
 public enum Formatter {
-    MINEDOWN((text, player, plugin) -> new MineDown(text).toComponent(),
-            (text) -> text.replace("__", "_\\_")),
-    MINIMESSAGE((text, player, plugin) -> plugin.getMiniPlaceholdersHook()
-            .map(hook -> hook.format(text, player.getPlayer()))
-            .orElse(MiniMessage.miniMessage().deserialize(text)),
-            (text) -> MiniMessage.miniMessage().escapeTags(text)),
-    LEGACY((text, player, plugin) -> LegacyComponentSerializer.legacyAmpersand().deserialize(text),
-            Function.identity());
+    MINEDOWN(
+            (text, player, plugin) -> new MineDown(text).toComponent(),
+            (text) -> text.replace("__", "_\\_"),
+            "MineDown"
+    ),
+    MINIMESSAGE(
+            (text, player, plugin) -> plugin.getMiniPlaceholdersHook()
+                    .map(hook -> hook.format(text, player.getPlayer()))
+                    .orElse(MiniMessage.miniMessage().deserialize(text)),
+            (text) -> MiniMessage.miniMessage().escapeTags(text),
+            "MiniMessage"
+    ),
+    LEGACY(
+            (text, player, plugin) -> LegacyComponentSerializer.legacyAmpersand().deserialize(text),
+            Function.identity(),
+            "Legacy Text"
+    );
+
+    /**
+     * Name of the formatter
+     */
+    private final String name;
 
     /**
      * Function to apply formatting to a string
@@ -53,9 +67,11 @@ public enum Formatter {
      */
     private final Function<String, String> escaper;
 
-    Formatter(@NotNull TriFunction<String, TabPlayer, Velocitab, Component> formatter, @NotNull Function<String, String> escaper) {
+    Formatter(@NotNull TriFunction<String, TabPlayer, Velocitab, Component> formatter, @NotNull Function<String, String> escaper,
+              @NotNull String name) {
         this.formatter = formatter;
         this.escaper = escaper;
+        this.name = name;
     }
 
     @NotNull
@@ -66,6 +82,11 @@ public enum Formatter {
     @NotNull
     public String escape(@NotNull String text) {
         return escaper.apply(text);
+    }
+
+    @NotNull
+    public String getName() {
+        return name;
     }
 
 }

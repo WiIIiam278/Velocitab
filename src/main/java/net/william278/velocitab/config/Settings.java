@@ -36,7 +36,8 @@ import java.util.Map;
         ┃       Velocitab Config       ┃
         ┃    Developed by William278   ┃
         ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-        ┗╸ Placeholders: %players_online%, %max_players_online%, %local_players_online%, %current_date%, %current_time%, %username%, %server%, %ping%, %prefix%, %suffix%, %role%""")
+        ┣╸ Information: https://william278.net/project/velocitab
+        ┗╸ Documentation: https://william278.net/docs/velocitab""")
 public class Settings {
 
     @Getter

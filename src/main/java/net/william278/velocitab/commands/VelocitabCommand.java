@@ -26,7 +26,6 @@ import com.velocitypowered.api.command.CommandSource;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.william278.desertwell.about.AboutMenu;
-import net.william278.desertwell.util.Version;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 

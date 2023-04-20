@@ -226,7 +226,9 @@ public class PlayerTabList {
                 .schedule();
     }
 
-    // Update all players since there was a reload of the config
+    /**
+     * Update the TAB list for all players when a plugin or proxy reload is performed
+     */
     public void reloadUpdate() {
         if (players.isEmpty()) {
             return;
@@ -248,9 +250,10 @@ public class PlayerTabList {
     }
 
     /**
-     * Get the servers in the same group as the given server
-     * If the server is not in a group, use fallback
-     * If fallback is disabled, return empty
+     * Get the servers in the same group as the given server, as an optional
+     * <p>
+     * If the server is not in a group, use the fallback group
+     * If the fallback is disabled, return an empty optional
      *
      * @param serverName The server name
      * @return The servers in the same group as the given server, empty if the server is not in a group and fallback is disabled
@@ -279,8 +282,12 @@ public class PlayerTabList {
         plugin.log("Velocitab has been reloaded!");
     }
 
+    /**
+     * Remove an offline player from the list of tracked TAB players
+     *
+     * @param player The player to remove
+     */
     public void removeOfflinePlayer(@NotNull Player player) {
-        // Try and remove the player from the list of players
         if (!players.removeIf(tabPlayer -> tabPlayer.getPlayer().getUniqueId().equals(player.getUniqueId()))) {
             plugin.log("Failed to remove offline player " + player.getUsername() + " (UUID: " + player.getUniqueId() + ")");
         }

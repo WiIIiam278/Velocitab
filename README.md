@@ -47,7 +47,7 @@ You can include [placeholders](https://william278.net/docs/velocitab/placeholder
 PlaceholderAPI placeholders are also supported. To use them, just install [PAPIProxyBridge](https://modrinth.com/plugin/papiproxybridge) on your Velocity proxy and backend Spigot servers. Additionally, a hook for MiniPlaceholders is supported for servers using the MiniMessage formatter.
 
 ### Command
-You can use the `/velocitab reload` command to reload the plugin config file (permission: `velocitab.command.reload`) 
+You can use the `/velocitab reload` command to reload the plugin config file (permission: `velocitab.command.reload`), and `/velocitab update` to check for updates (permission: `velocitab.command.update`).
 
 ## Building
 To build Velocitab, simply run the following in the root of the repository:
@@ -64,8 +64,9 @@ Velocitab is licensed under the Apache 2.0 license.
 ## Links
 * **[Website](https://william278.net/project/velocitab)** — Visit my website!
 * **[Docs](https://william278.net/docs/velocitab)** — Read the plugin docs!
+* **[Modrinth](https://modrinth.com/plugin/velocitab)** — View the plugin Modrinth page 
+* **[Issues](https://github.com/WiIIiam278/Velocitab/issues)** — File a bug report or feature request
 * **[Discord](https://discord.com/invite/tVYhJfyDWG)** — Get support, ask questions!
-* **[GitHub](https://github.com/WiIIiam278/Velocitab)** — Check out the plugin source code!
 
 ---
 &copy; [William278](https://william278.net/), 2023. Licensed under the Apache-2.0 License.

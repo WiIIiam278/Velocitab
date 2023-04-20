@@ -38,7 +38,8 @@ dependencies {
     implementation 'net.william278:Annotaml:2.0.1'
     implementation 'dev.dejvokep:boosted-yaml:1.3.1'
     implementation 'de.themoep:minedown-adventure:1.7.2-SNAPSHOT'
-    implementation 'net.william278:DesertWell:1.1.1'
+    implementation 'net.william278:DesertWell:2.0.2'
+    implementation 'org.bstats:bstats-velocity:3.0.2'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
 }
@@ -70,6 +71,8 @@ shadowJar {
     relocate 'dev.dejvokep.boostedyaml', 'net.william278.velocitab.libraries.boostedyaml'
     relocate 'net.william278.annotaml', 'net.william278.velocitab.libraries.annotaml'
     relocate 'net.william278.desertwell', 'net.william278.velocitab.libraries.desertwell'
+    relocate 'org.json', 'net.william278.velocitab.libraries.json'
+    relocate 'org.bstats', 'net.william278.velocitab.libraries.bstats'
 
     dependencies {
         //noinspection GroovyAssignabilityCheck

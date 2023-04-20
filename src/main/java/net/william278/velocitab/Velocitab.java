@@ -30,53 +30,64 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.william278.annotaml.Annotaml;
+import net.william278.desertwell.util.UpdateChecker;
+import net.william278.desertwell.util.Version;
 import net.william278.velocitab.commands.VelocitabCommand;
 import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.config.Settings;
 import net.william278.velocitab.hook.Hook;
 import net.william278.velocitab.hook.LuckPermsHook;
 import net.william278.velocitab.hook.MiniPlaceholdersHook;
-import net.william278.velocitab.hook.PapiHook;
+import net.william278.velocitab.hook.PAPIProxyBridgeHook;
 import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.tab.PlayerTabList;
+import org.bstats.charts.SimplePie;
+import org.bstats.velocity.Metrics;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
+import org.slf4j.event.Level;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Plugin(id = "velocitab")
 public class Velocitab {
-
+    private static final int METRICS_ID = 18247;
     private Settings settings;
     private final ProxyServer server;
     private final Logger logger;
     private final Path dataDirectory;
     @Inject
     private PluginContainer pluginContainer;
+    @Inject
+    private Metrics.Factory metricsFactory;
     private PlayerTabList tabList;
     private List<Hook> hooks;
     private ScoreboardManager scoreboardManager;
 
     @Inject
-    public Velocitab(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+    public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path dataDirectory) {
         this.server = server;
         this.logger = logger;
         this.dataDirectory = dataDirectory;
     }
 
     @Subscribe
-    public void onProxyInitialization(ProxyInitializeEvent event) {
+    public void onProxyInitialization(@NotNull ProxyInitializeEvent event) {
         loadSettings();
         loadHooks();
         prepareScoreboardManager();
         prepareTabList();
         registerCommands();
+        registerMetrics();
+        checkForUpdates();
         logger.info("Successfully enabled Velocitab");
     }
 
@@ -113,12 +124,12 @@ public class Velocitab {
                 .findFirst();
     }
 
-    public Optional<LuckPermsHook> getLuckPerms() {
+    public Optional<LuckPermsHook> getLuckPermsHook() {
         return getHook(LuckPermsHook.class);
     }
 
-    public Optional<PapiHook> getPapiHook() {
-        return getHook(PapiHook.class);
+    public Optional<PAPIProxyBridgeHook> getPAPIProxyBridgeHook() {
+        return getHook(PAPIProxyBridgeHook.class);
     }
 
     public Optional<MiniPlaceholdersHook> getMiniPlaceholdersHook() {
@@ -155,21 +166,9 @@ public class Velocitab {
     @NotNull
     public TabPlayer getTabPlayer(@NotNull Player player) {
         return new TabPlayer(player,
-                getLuckPerms().map(hook -> hook.getPlayerRole(player))
-                        .orElse(Role.DEFAULT_ROLE),
-                getLuckPerms().map(LuckPermsHook::getHighestWeight)
-                        .orElse(0));
-    }
-
-    public void log(@NotNull String message, @NotNull Throwable... exceptions) {
-        Arrays.stream(exceptions).findFirst().ifPresentOrElse(
-                exception -> logger.error(message, exception),
-                () -> logger.warn(message)
+                getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE),
+                getLuckPermsHook().map(LuckPermsHook::getHighestWeight).orElse(0)
         );
-    }
-
-    public PluginDescription getDescription() {
-        return pluginContainer.getDescription();
     }
 
     private void registerCommands() {
@@ -179,4 +178,69 @@ public class Velocitab {
                 command
         );
     }
+
+    @NotNull
+    public PluginDescription getDescription() {
+        return pluginContainer.getDescription();
+    }
+
+    @NotNull
+    public Version getVersion() {
+        return Version.fromString(getDescription().getVersion().orElseThrow(), "-");
+    }
+
+    private void registerMetrics() {
+        final Metrics metrics = metricsFactory.make(this, METRICS_ID);
+        metrics.addCustomChart(new SimplePie("sort_players", () -> settings.isSortPlayers() ? "Enabled" : "Disabled"));
+        metrics.addCustomChart(new SimplePie("formatter_type", () -> settings.getFormatter().getName()));
+        metrics.addCustomChart(new SimplePie("using_luckperms", () -> getLuckPermsHook().isPresent() ? "Yes" : "No"));
+        metrics.addCustomChart(new SimplePie("using_papiproxybridge", () -> getPAPIProxyBridgeHook().isPresent() ? "Yes" : "No"));
+        metrics.addCustomChart(new SimplePie("using_miniplaceholders", () -> getMiniPlaceholdersHook().isPresent() ? "Yes" : "No"));
+
+    }
+
+    private void checkForUpdates() {
+        if (!getSettings().isCheckForUpdates()) {
+            return;
+        }
+        getUpdateChecker().check().thenAccept(checked -> {
+            if (!checked.isUpToDate()) {
+                log(Level.WARN, "A new version of Velocitab is available: " + checked.getLatestVersion());
+            }
+        });
+    }
+
+    @NotNull
+    public UpdateChecker getUpdateChecker() {
+        return UpdateChecker.builder()
+                .currentVersion(getVersion())
+                .endpoint(UpdateChecker.Endpoint.MODRINTH)
+                .resource("velocitab")
+                .build();
+    }
+
+    public void log(@NotNull Level level, @NotNull String message, @NotNull Throwable... exceptions) {
+        switch (level) {
+            case ERROR -> {
+                if (exceptions.length > 0) {
+                    logger.error(message, exceptions[0]);
+                } else {
+                    logger.error(message);
+                }
+            }
+            case WARN -> {
+                if (exceptions.length > 0) {
+                    logger.warn(message, exceptions[0]);
+                } else {
+                    logger.warn(message);
+                }
+            }
+            case INFO -> logger.info(message);
+        }
+    }
+
+    public void log(@NotNull String message) {
+        this.log(Level.INFO, message);
+    }
+
 }

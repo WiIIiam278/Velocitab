@@ -290,8 +290,6 @@ public class PlayerTabList {
      * @param player The player to remove
      */
     public void removeOfflinePlayer(@NotNull Player player) {
-        if (!players.removeIf(tabPlayer -> tabPlayer.getPlayer().getUniqueId().equals(player.getUniqueId()))) {
-            plugin.log("Failed to remove offline player " + player.getUsername() + " (UUID: " + player.getUniqueId() + ")");
-        }
+        players.removeIf(tabPlayer -> tabPlayer.getPlayer().getUniqueId().equals(player.getUniqueId()));
     }
 }

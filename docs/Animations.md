@@ -21,9 +21,11 @@ headers:
 By default, the plugin will switch between each frame whenever it is updated. To get this to animate, you must configure your `update_rate` setting.
 
 ### Setting the frame rate
-The `update_rate` setting in your `config.yml` file&mdash;set to `0` by default&mdash;controls the length (in milliseconds, where `1ms = 1/1000th` of a second) between yoru TAB list being updated. On each update, the header or footer format will use the next frame in the list, looping back to the first after the last one has been displayed. 
+The `update_rate` setting in your `config.yml` file&mdash;set to `0` by default&mdash;controls the length (in milliseconds&dagger;) between your TAB list being updated. On each update, the header or footer format will use the next frame in the list, looping back to the first after the last one has been displayed. 
 
 A good starting value for this could be `1000`, which is equivalent to one second. Once you've changed the value, use `/velocitab reload` to update the TAB menu in-game without restarting your proxy.
+
+&dagger;`1ms = 1/1000th` of a second.
 
 ## Example: Rainbow fade
 ![Example rainbow fade animation GIF](https://user-images.githubusercontent.com/31187453/232607366-35d530dc-fb2a-419b-a345-3cc758baa6df.gif)

@@ -1,7 +1,6 @@
 # Update the GitHub Wiki documentation when a push is made to docs/
 name: Update Docs
 
-
 on:
   push:
     paths:

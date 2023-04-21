@@ -18,3 +18,6 @@ Please click through to the topic you wish to read about.
 * 💻 [GitHub](https://github.com/WiIIiam278/Velocitab)
 * 📂 [Download](https://modrinth.com/plugin/velocitab)
 * 💬 [Discord Support](https://discord.gg/tVYhJfyDWG)
+
+## Contribute to this documentation
+This documentation is automatically generated from the source code and markdown files in the [Velocitab GitHub repository](https://github.com/WiIIiam278/Velocitab/tree/master/docs). If you wish to contribute to the documentation, please submit a pull request to the repository.

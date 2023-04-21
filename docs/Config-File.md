@@ -57,7 +57,7 @@ update_rate: 0
 
 ## Details
 ### Server Groups
-Which formatting to use for a player's TAB list is determined by the group they are on. See [[Server Groups]] for more information.
+Which formatting and the header/footer to use for a player's TAB list is determined by the group of servers they are currently connected to. See [[Server Groups]] for more information.
 
 ### Formatting
 Velocitab supports the full range of modern color formatting, including RGB colors and gradients, through either MineDown or MiniMessage syntax. See [[Formatting]] for more information.

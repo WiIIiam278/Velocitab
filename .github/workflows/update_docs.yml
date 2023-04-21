@@ -10,9 +10,6 @@ on:
     tags-ignore:
       - '*'
 
-permissions:
-  contents: read
-
 jobs:
   deploy-wiki:
     runs-on: ubuntu-latest
@@ -22,7 +19,7 @@ jobs:
       - name: 'Push Changes to Wiki'
         uses: Andrew-Chen-Wang/github-wiki-action@v3
         env:
-          WIKI_DIR: docs/
+          WIKI_DIR: 'docs/'
           GH_TOKEN: ${{ github.token }}
-          GH_MAIL: ${{ github.actor }}@users.noreply.github.com
-          GH_NAME: ${{ github.repository_owner }}
+          GH_MAIL: 'actions@github.com'
+          GH_NAME: 'github-actions[bot]'

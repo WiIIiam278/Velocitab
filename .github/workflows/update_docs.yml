@@ -1,26 +1,27 @@
 # Update the GitHub Wiki documentation when a push is made to docs/
 name: Update Docs
 
-permissions:
-  contents: read
-  wikis: write
 
 on:
   push:
     paths:
       - 'docs/**'
+      - 'workflows/update_docs.yml'
     branches:
       - master
+    tags-ignore:
+      - '*'
 
 jobs:
   deploy-wiki:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Push Changes to GitHub Wiki
+      - name: 'Checkout Code'
+        uses: actions/checkout@v3
+      - name: 'Push Changes to Wiki'
         uses: Andrew-Chen-Wang/github-wiki-action@v3
         env:
           WIKI_DIR: docs/
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           GH_MAIL: ${{ github.actor }}@users.noreply.github.com
           GH_NAME: ${{ github.repository_owner }}

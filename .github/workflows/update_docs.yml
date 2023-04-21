@@ -3,13 +3,15 @@ name: Update Docs
 
 on:
   push:
+    branches: [ 'master' ]
     paths:
       - 'docs/**'
-      - 'workflows/update_docs.yml'
-    branches:
-      - master
+      - 'workflows/**'
     tags-ignore:
       - '*'
+
+permissions:
+  contents: read
 
 jobs:
   deploy-wiki:
@@ -21,6 +23,6 @@ jobs:
         uses: Andrew-Chen-Wang/github-wiki-action@v3
         env:
           WIKI_DIR: docs/
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_MAIL: ${{ github.actor }}@users.noreply.github.com
           GH_NAME: ${{ github.repository_owner }}

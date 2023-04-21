@@ -6,8 +6,7 @@ on:
     branches: [ 'master' ]
     paths-ignore:
       - 'docs/**'
-      - 'workflows/pr_tests.yml'
-      - 'workflows/update_docs.yml'
+      - 'workflows/**'
       - 'README.md'
 
 permissions:

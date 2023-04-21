@@ -27,6 +27,7 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.player.TabList;
 import com.velocitypowered.api.proxy.player.TabListEntry;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
@@ -67,7 +68,8 @@ public class PlayerTabList {
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined));
 
         // Remove the player from the tracking list if they are switching servers
-        if (event.getPreviousServer() == null) {
+        final RegisteredServer previousServer = event.getPreviousServer();
+        if (previousServer == null) {
             players.removeIf(player -> player.getPlayer().getUniqueId().equals(joined.getUniqueId()));
         }
 
@@ -79,7 +81,7 @@ public class PlayerTabList {
                 .orElse("?"));
         // If the server is not in a group, use fallback.
         // If fallback is disabled, permit the player to switch excluded servers without header or footer override
-        if (serversInGroup.isEmpty() && !this.fallbackServers.contains(event.getPreviousServer().getServerInfo().getName())) {
+        if (serversInGroup.isEmpty() && (previousServer != null && !this.fallbackServers.contains(previousServer.getServerInfo().getName()))) {
             event.getPlayer().sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
             return;
         }

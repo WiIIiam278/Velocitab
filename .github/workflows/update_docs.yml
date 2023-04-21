@@ -1,6 +1,10 @@
 # Update the GitHub Wiki documentation when a push is made to docs/
 name: Update Docs
 
+permissions:
+  contents: read
+  wikis: write
+
 on:
   push:
     paths:

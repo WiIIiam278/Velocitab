@@ -1,0 +1,22 @@
+# Update the GitHub Wiki documentation when a push is made to docs/
+name: Update Docs
+
+on:
+  push:
+    paths:
+      - 'docs/**'
+    branches:
+      - master
+
+jobs:
+  deploy-wiki:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Push Changes to GitHub Wiki
+        uses: Andrew-Chen-Wang/github-wiki-action@v3
+        env:
+          WIKI_DIR: docs/
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_MAIL: ${{ github.actor }}@users.noreply.github.com
+          GH_NAME: ${{ github.repository_owner }}

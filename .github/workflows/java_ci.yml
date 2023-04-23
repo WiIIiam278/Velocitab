@@ -34,11 +34,14 @@ jobs:
         run: |
           echo "version_name=${{steps.fetch-version.outputs.VERSION_NAME}}" >> $GITHUB_ENV
       - name: Upload to Modrinth
-        uses: Kir-Antipov/mc-publish@v3.2
+        uses: WiIIiam278/mc-publish@hangar
         with:
           modrinth-id: Q10irTG0
           modrinth-featured: false
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          hangar-id: William278/Velocitab
+          hangar-token: ${{ secrets.HANGAR_API_KEY }}
+          hangar-version-type: Alpha
           files: target/Velocitab-*.jar
           name: Velocitab v${{ env.version_name }}
           version: ${{ env.version_name }}

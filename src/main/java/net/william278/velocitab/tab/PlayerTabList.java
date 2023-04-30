@@ -214,6 +214,10 @@ public class PlayerTabList {
 
     // Update the tab list periodically
     private void updatePeriodically(int updateRate) {
+        // Set the minimal update rate to 200 milliseconds
+        if (updateRate < 200) {
+            updateRate = 200;
+        }
         updateTask = plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
                     if (players.isEmpty()) {

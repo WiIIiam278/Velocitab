@@ -9,6 +9,6 @@ MineDown is the default formatter type. See the [MineDown Syntax Reference](http
 MiniMessage formatting can be enabled by setting `formatting_type` to `MINIMESSAGE` in `config.yml`. See the [MiniMessage Syntax Reference](https://docs.advntr.dev/minimessage/format.html) on the Adventure Docs for how to format text with it. Using MiniMessage as the formatter also allows compatibility for using MiniPlaceholders in text.
 
 ## Legacy formatting
-> ⚠️ Option for legacy formatting is provided only for backwards compatibility with other plugins, please consider using MineDown or MiniMessage options instead!
+> **Warning:** The option for legacy formatting is provided only for backwards compatibility with other plugins. Please consider using the MineDown or MiniMessage options instead!
 
 Legacy formatting can be enabled by setting `formatting_type` to `LEGACY` in `config.yml`. Legacy formatter supports Mojang color and formatting codes (e.g. `&d`, `&l`), Adventure-styled RGB color codes (e.g. `&#a25981`), as well as BungeeCord RGB color codes (e.g. `&x&a&2&5&9&8&1`). See the [LegacyComponentSerializer Syntax Reference](https://docs.advntr.dev/serializer/legacy.html) on the Adventure Docs for more technical details.

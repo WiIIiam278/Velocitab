@@ -29,7 +29,7 @@ dependencies {
     compileOnly 'com.velocitypowered:velocity-api:3.2.0-SNAPSHOT'
     compileOnly 'com.velocitypowered:velocity-proxy:3.2.0-SNAPSHOT'
     compileOnly 'net.luckperms:api:5.4'
-    compileOnly 'io.netty:netty-codec-http:4.1.92.Final'
+    compileOnly 'io.netty:netty-codec-http:4.1.93.Final'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.0.0'
     compileOnly 'net.william278:PAPIProxyBridge:1.2'
     compileOnly 'org.projectlombok:lombok:1.18.26'

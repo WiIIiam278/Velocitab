@@ -23,7 +23,7 @@ By default, the plugin will switch between each frame whenever it is updated. To
 ### Setting the frame rate
 The `update_rate` setting in your `config.yml` file&mdash;set to `0` by default&mdash;controls the length (in milliseconds&dagger;) between your TAB list being updated. On each update, the header or footer format will use the next frame in the list, looping back to the first after the last one has been displayed. 
 
-A good starting value for this could be `1000`, which is equivalent to one second. Once you've changed the value, use `/velocitab reload` to update the TAB menu in-game without restarting your proxy.
+A good starting value for this could be `1000`, which is equivalent to one second. Once you've changed the value, use `/velocitab reload` to update the TAB menu in-game without restarting your proxy. Note the minimum update rate is `200` to avoid excessive network packet traffic, so values between `1`-`199` will be rounded up to `200`. If this value is set to `0` or below (as it is by default), the TAB menu will only update when a player joins or leaves, permissions are recalculated on LuckPerms, or the proxy is reloaded.
 
 &dagger;`1ms = 1/1000th` of a second.
 
@@ -83,6 +83,6 @@ server_groups:
   default:
   - server
   - server2
-update_rate: 100
+update_rate: 200
 ```
 </details>

@@ -13,6 +13,7 @@ Please click through to the topic you wish to read about.
 * 🎨 [[Formatting]]
 * ✍️ [[Placeholders]]
 * ✨ [[Animations]]
+* 🖼️ [[Custom Logos]]
 
 ## Links
 * 💻 [GitHub](https://github.com/WiIIiam278/Velocitab)

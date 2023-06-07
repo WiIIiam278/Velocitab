@@ -7,6 +7,7 @@
 * 🎨 [[Formatting]]
 * ✍️ [[Placeholders]]
 * ✨ [[Animations]]
+* 🖼️ [[Custom Logos]]
 
 ## Links
 * 💻 [GitHub](https://github.com/WiIIiam278/Velocitab)

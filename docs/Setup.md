@@ -8,10 +8,11 @@ This page will walk you through installing Velocitab on a Velocity proxy server.
 
 ## Installation
 1. Download the latest version of [Velocitab](https://modrinth.com/plugin/velocitab)
-2. Drag both into the `/plugins/` folder on your Velocity proxy server
+2. Drag the plugin into the `/plugins/` folder on your Velocity proxy server
 3. Download and install additional optional dependencies on your proxy and backend servers as needed:
-   1. If you'd like Velocitab to display user roles from [LuckPerms](https://luckperms.net/), ensure LuckPerms is installed on your proxy as well, and configured to synchronise role information over your database
-   2. If you'd like to use [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) placeholders, install [PAPIProxyBridge](https://modrinth.com/plugin/papiproxybridge) on both your Velocity server and Spigot-based Minecraft servers. Also ensure PlaceholderAPI is installed on your spigot servers
+   1. If you'd like Velocitab to display user roles from [LuckPerms](https://luckperms.net/), ensure LuckPerms is installed on your Velocity proxy as well, and configured to synchronise role information over your database
+   2. If you'd like to use [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) placeholders, install [PAPIProxyBridge](https://modrinth.com/plugin/papiproxybridge) on both your Velocity proxy and Spigot-based Minecraft servers. Also ensure PlaceholderAPI is installed on your spigot servers
+   3. If you'd like to use [MiniPlaceholders](https://modrinth.com/plugin/miniplaceholders) placeholders, install MiniPlaceholders on your Velocity proxy.
 4. Restart your proxy to let Velocitab generate its configuration file
 5. Stop your proxy server, modify the [`config.yml`](config-file) file to your liking, and start your server
 

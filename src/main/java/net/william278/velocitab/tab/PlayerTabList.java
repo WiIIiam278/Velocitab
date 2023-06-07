@@ -224,7 +224,7 @@ public class PlayerTabList {
                         player.sendHeaderAndFooter(this);
                     });
                 })
-                .repeat(updateRate, TimeUnit.MILLISECONDS)
+                .repeat(Math.max(200, updateRate), TimeUnit.MILLISECONDS)
                 .schedule();
     }
 

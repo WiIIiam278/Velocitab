@@ -31,7 +31,7 @@ To do this, you'll need to make a resource pack, and set it to be used on your s
 ```
 7. Save the file. Note that later on you may need to tweak the `height` and `ascent` values in the file to suit your logo's size.
 8. For testing, install the resource pack locally by placing it in your `~/.minecraft/resourcepacks` folder and select your newly created pack in the Resource Packs menu.
-9. Copy the Unicode character from [fileformat.info's unicode browsertest page](fileformat.info/info/unicode/char/e238/browsertest.htm) and paste it to chat in-game. Observe and verify that your logo looks correct.
+9. Copy the Unicode character from [fileformat.info's unicode browsertest page](https://fileformat.info/info/unicode/char/e238/browsertest.htm) and paste it to chat in-game. Observe and verify that your logo looks correct.
 
 ## Applying your pack to your servers and Velocitab
 10. In Velocitab, add your logo's Unicode character to the header section of one or more of your TAB menus. You may need to add multiple newlines (`\n`) after the Unicode character to add spacing between the header and player list. Use `/velocitab reload` to get it right.

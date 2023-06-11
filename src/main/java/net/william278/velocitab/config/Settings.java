@@ -102,7 +102,7 @@ public class Settings {
     private boolean sortPlayers = true;
 
     @YamlKey("sort_players_by")
-    @YamlComment("Ordered list of elements by which players should be sorted. (ROLE_WEIGHT, ROLE_NAME and SERVER are supported)")
+    @YamlComment("Ordered list of elements by which players should be sorted. (ROLE_WEIGHT, ROLE_NAME and SERVER_NAME are supported)")
     private List<String> sortPlayersBy = List.of(
             TabPlayer.SortableElement.ROLE_WEIGHT.name(),
             TabPlayer.SortableElement.ROLE_NAME.name(),

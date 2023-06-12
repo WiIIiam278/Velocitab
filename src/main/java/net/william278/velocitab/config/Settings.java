@@ -94,7 +94,7 @@ public class Settings {
 
     @Getter
     @YamlKey("papi_cache_time")
-    @YamlComment("How long in seconds to cache PAPI placeholders for. (0 to disable)")
+    @YamlComment("How long in seconds to cache PAPI placeholders for, in seconds. (0 to disable)")
     private int papiCacheTime = 30;
 
     @Getter

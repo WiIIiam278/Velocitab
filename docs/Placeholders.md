@@ -34,7 +34,9 @@ server_display_names:
 </details>
 
 ## PlaceholderAPI support
-To use PlaceholderAPI placeholders in Velocitab, install the [PAPIProxyBridge](https://modrinth.com/plugin/papiproxybridge) library plugin on your Velocity proxy and all Minecraft spigot servers on your network, and ensure the  PAPI hook option is enabled in your Velocitab [[Config File]]. You can then include PAPI placeholders in your formats as you would any of the default placeholders.
+To use PlaceholderAPI placeholders in Velocitab, install the [PAPIProxyBridge](https://modrinth.com/plugin/papiproxybridge) library plugin on your Velocity proxy and all Minecraft spigot servers on your network, and ensure the PAPI hook option is enabled in your Velocitab [[Config File]]. You can then include PAPI placeholders in your formats as you would any of the default placeholders.
+
+PlaceholderAPI placeholders are cached to reduce plugin message traffic. By default, placeholders are cached for 30 seconds (30000 milliseconds); if you wish to use PAPI placeholders that update more frequently, you can reduce the cache time in the Velocitab config.yml file by adjusting the `papi_cache_time` value.
 
 ## MiniPlaceholders support
 If you are using MiniMessage [[Formatting]], you can use [MiniPlaceholders](https://github.com/MiniPlaceholders/MiniPlaceholders) with Velocitab for MiniMessage-styled component placeholders provided by other proxy plugins. Install MiniPlaceholders on your Velocity proxy, set the `formatter_type` to `MINIMESSAGE` and ensure `enable_miniplaceholders_hook` is set to `true`

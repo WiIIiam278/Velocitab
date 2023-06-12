@@ -33,6 +33,7 @@ public class PAPIProxyBridgeHook extends Hook {
     public PAPIProxyBridgeHook(@NotNull Velocitab plugin) {
         super(plugin);
         this.api = PlaceholderAPI.getInstance();
+        this.api.setCacheExpiry(plugin.getSettings().getPapiCacheTime());
     }
 
     public CompletableFuture<String> formatPlaceholders(@NotNull String input, @NotNull Player player) {

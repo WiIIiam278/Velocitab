@@ -89,7 +89,13 @@ public class Settings {
 
     @Getter
     @YamlKey("enable_papi_hook")
+    @YamlComment("Whether to enable the PAPIProxyBridge hook for PAPI support")
     private boolean enablePapiHook = true;
+
+    @Getter
+    @YamlKey("papi_cache_time")
+    @YamlComment("How long in seconds to cache PAPI placeholders for. (0 to disable)")
+    private int papiCacheTime = 30;
 
     @Getter
     @YamlKey("enable_miniplaceholders_hook")

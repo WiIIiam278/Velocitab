@@ -47,6 +47,7 @@ public enum Placeholder {
     PREFIX((plugin, player) -> player.getRole().getPrefix().orElse("")),
     SUFFIX((plugin, player) -> player.getRole().getSuffix().orElse("")),
     ROLE((plugin, player) -> player.getRole().getName().orElse("")),
+    ROLE_DISPLAY_NAME((plugin, player) -> player.getRole().getDisplayName().orElse("")),
     DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getTeamName(plugin)));
 
     /**

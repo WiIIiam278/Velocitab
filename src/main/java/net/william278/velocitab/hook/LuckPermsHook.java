@@ -33,6 +33,7 @@ import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -58,9 +59,11 @@ public class LuckPermsHook extends Hook {
         if (metaData.getPrimaryGroup() == null) {
             return Role.DEFAULT_ROLE;
         }
+        final Optional<Group> group = getGroup(metaData.getPrimaryGroup());
         return new Role(
-                getWeight(metaData.getPrimaryGroup()).orElse(0),
+                group.map(this::getGroupWeight).orElse(Role.DEFAULT_WEIGHT),
                 metaData.getPrimaryGroup(),
+                group.map(Group::getDisplayName).orElse(metaData.getPrimaryGroup()),
                 metaData.getPrefix(),
                 metaData.getSuffix()
         );
@@ -83,12 +86,17 @@ public class LuckPermsHook extends Hook {
                         .schedule());
     }
 
-    private OptionalInt getWeight(@Nullable String groupName) {
-        final Group group;
-        if (groupName == null || (group = api.getGroupManager().getGroup(groupName)) == null) {
-            return OptionalInt.empty();
+    // Get a group by name
+    private Optional<Group> getGroup(@Nullable String groupName) {
+        if (groupName == null) {
+            return Optional.empty();
         }
-        return group.getWeight();
+        return Optional.ofNullable(api.getGroupManager().getGroup(groupName));
+    }
+
+    // Get the weight of a group
+    private int getGroupWeight(@NotNull Group group) {
+        return group.getWeight().orElse(Role.DEFAULT_WEIGHT);
     }
 
     public int getHighestWeight() {

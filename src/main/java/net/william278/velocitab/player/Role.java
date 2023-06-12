@@ -26,18 +26,21 @@ import java.util.Optional;
 
 public class Role implements Comparable<Role> {
     public static final int DEFAULT_WEIGHT = 0;
-    public static final Role DEFAULT_ROLE = new Role(DEFAULT_WEIGHT, null, null, null);
+    public static final Role DEFAULT_ROLE = new Role(DEFAULT_WEIGHT, null, null, null, null);
     private final int weight;
     @Nullable
     private final String name;
+    @Nullable
+    private final String displayName;
     @Nullable
     private final String prefix;
     @Nullable
     private final String suffix;
 
-    public Role(int weight, @Nullable String name, @Nullable String prefix, @Nullable String suffix) {
+    public Role(int weight, @Nullable String name, @Nullable String displayName, @Nullable String prefix, @Nullable String suffix) {
         this.weight = weight;
         this.name = name;
+        this.displayName = displayName;
         this.prefix = prefix;
         this.suffix = suffix;
     }
@@ -45,6 +48,14 @@ public class Role implements Comparable<Role> {
     @Override
     public int compareTo(@NotNull Role o) {
         return weight - o.weight;
+    }
+
+    public Optional<String> getName() {
+        return Optional.ofNullable(name);
+    }
+
+    public Optional<String> getDisplayName() {
+        return Optional.ofNullable(displayName).or(this::getName);
     }
 
     public Optional<String> getPrefix() {
@@ -55,12 +66,9 @@ public class Role implements Comparable<Role> {
         return Optional.ofNullable(suffix);
     }
 
-    public Optional<String> getName() {
-        return Optional.ofNullable(name);
-    }
-
     @NotNull
     protected String getWeightString(int highestWeight) {
         return String.format("%0" + Integer.toString(highestWeight).length() + "d", highestWeight - weight);
     }
+
 }

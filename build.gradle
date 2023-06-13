@@ -33,7 +33,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.28'
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.0.0'
-    compileOnly 'net.william278:PAPIProxyBridge:1.2.1'
+    compileOnly 'net.william278:PAPIProxyBridge:1.2.2'
 
     implementation 'org.apache.commons:commons-text:1.10.0'
     implementation 'net.william278:annotaml:2.0.2'

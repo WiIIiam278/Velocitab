@@ -39,7 +39,10 @@ only_list_players_in_same_group: true
 # If no custom display name is provided for a server, its original name will be used.
 server_display_names:
   very-long-server-name: VLSN
+# Whether to enable the PAPIProxyBridge hook for PAPI support
 enable_papi_hook: true
+# How long in seconds to cache PAPI placeholders for, in milliseconds. (0 to disable)
+papi_cache_time: 30000
 # If you are using MINIMESSAGE formatting, enable this to support MiniPlaceholders in formatting.
 enable_miniplaceholders_hook: true
 # Whether to sort players in the TAB list.

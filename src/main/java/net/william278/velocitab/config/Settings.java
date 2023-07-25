@@ -46,12 +46,15 @@ public class Settings {
     private boolean checkForUpdates = true;
 
     @YamlKey("headers")
-    @YamlComment("Header(s) to display above the TAB list for each server group.\nList multiple headers and set update_rate to the number of ticks between frames for basic animations")
+    @YamlComment("Header(s) to display above the TAB list for each server group." +
+            "\nList multiple headers and set update_rate to the number of ticks between frames for basic animations")
     private Map<String, List<String>> headers = Map.of("default", List.of("&rainbow&Running Velocitab by William278"));
 
     @YamlKey("footers")
     @YamlComment("Footer(s) to display below the TAB list for each server group, same as headers.")
-    private Map<String, List<String>> footers = Map.of("default", List.of("[There are currently %players_online%/%max_players_online% players online](gray)"));
+    private Map<String, List<String>> footers = Map.of(
+            "default",
+            List.of("[There are currently %players_online%/%max_players_online% players online](gray)"));
 
     @YamlKey("formats")
     private Map<String, String> formats = Map.of("default", "&7[%server%] &f%prefix%%username%");
@@ -68,7 +71,8 @@ public class Settings {
 
     @Getter
     @YamlKey("fallback_enabled")
-    @YamlComment("All servers which are not in other groups will be put in the fallback group.\n\"false\" will exclude them from Velocitab.")
+    @YamlComment("All servers which are not in other groups will be put in the fallback group.\n" +
+            "\"false\" will exclude them from Velocitab.")
     private boolean fallbackEnabled = true;
 
     @Getter
@@ -108,7 +112,8 @@ public class Settings {
     private boolean sortPlayers = true;
 
     @YamlKey("sort_players_by")
-    @YamlComment("Ordered list of elements by which players should be sorted. (ROLE_WEIGHT, ROLE_NAME and SERVER are supported)")
+    @YamlComment("Ordered list of elements by which players should be sorted. " +
+            "(ROLE_WEIGHT, ROLE_NAME and SERVER_NAME are supported)")
     private List<String> sortPlayersBy = List.of(
             TabPlayer.SortableElement.ROLE_WEIGHT.name(),
             TabPlayer.SortableElement.ROLE_NAME.name()

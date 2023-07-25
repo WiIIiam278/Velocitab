@@ -47,7 +47,7 @@ papi_cache_time: 30000
 enable_miniplaceholders_hook: true
 # Whether to sort players in the TAB list.
 sort_players: true
-# Ordered list of elements by which players should be sorted. (ROLE_WEIGHT, ROLE_NAME and SERVER are supported)
+# Ordered list of elements by which players should be sorted. (ROLE_WEIGHT, ROLE_NAME and SERVER_NAME are supported)
 sort_players_by:
 - ROLE_WEIGHT
 - ROLE_NAME

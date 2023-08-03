@@ -152,7 +152,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     @SuppressWarnings("unused")
     public enum SortableElement {
         ROLE_WEIGHT((player, plugin) -> player.getRole().getWeightString(player.highestWeight)),
-        ROLE_NAME((player, plugin) -> player.getRole().getName()
+        ROLE_NAME((player, plugin) -> player.getRole().getDisplayName()
                 .map(name -> name.length() > 3 ? name.substring(0, 3) : name)
                 .orElse("")),
         SERVER_NAME((player, plugin) -> player.getServerName());

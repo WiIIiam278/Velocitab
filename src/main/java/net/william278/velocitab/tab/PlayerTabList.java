@@ -153,6 +153,8 @@ public class PlayerTabList {
 
     @Subscribe
     public void onPlayerQuit(@NotNull DisconnectEvent event) {
+        if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) return;
+
         // Remove the player from the tracking list, Print warning if player was not removed
         if (!players.removeIf(player -> player.getPlayer().getUniqueId().equals(event.getPlayer().getUniqueId()))) {
             plugin.log("Failed to remove disconnecting player " + event.getPlayer().getUsername() + " (UUID: " + event.getPlayer().getUniqueId() + ")");

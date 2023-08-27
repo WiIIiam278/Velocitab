@@ -23,6 +23,7 @@ import com.google.inject.Inject;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.PluginDescription;
@@ -91,6 +92,12 @@ public class Velocitab {
         logger.info("Successfully enabled Velocitab");
     }
 
+    @Subscribe
+    public void onProxyShutdown(@NotNull ProxyShutdownEvent event) {
+        disableScoreboardManager();
+        logger.info("Successfully disabled Velocitab");
+    }
+
     @NotNull
     public ProxyServer getServer() {
         return server;
@@ -145,6 +152,12 @@ public class Velocitab {
         if (settings.isSortPlayers()) {
             this.scoreboardManager = new ScoreboardManager(this);
             scoreboardManager.registerPacket();
+        }
+    }
+
+    private void disableScoreboardManager() {
+        if (scoreboardManager !=null && settings.isSortPlayers()) {
+            scoreboardManager.unregisterPacket();
         }
     }
 

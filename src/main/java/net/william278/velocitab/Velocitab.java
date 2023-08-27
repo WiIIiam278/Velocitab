@@ -156,7 +156,7 @@ public class Velocitab {
     }
 
     private void disableScoreboardManager() {
-if (scoreboardManager !=null && settings.isSortPlayers()) {
+        if (scoreboardManager !=null && settings.isSortPlayers()) {
             scoreboardManager.unregisterPacket();
         }
     }

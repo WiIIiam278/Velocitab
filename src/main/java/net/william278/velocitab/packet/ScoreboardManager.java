@@ -117,6 +117,9 @@ public class ScoreboardManager {
     }
 
     public void unregisterPacket() {
+        if(packetRegistration==null) {
+            return;
+        }
         try {
             packetRegistration.unregister();
         } catch (Throwable e) {

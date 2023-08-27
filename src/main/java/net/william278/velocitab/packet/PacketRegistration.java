@@ -78,7 +78,6 @@ public final class PacketRegistration<P extends MinecraftPacket> {
         }
 
         public void register() {
-
             try {
                 final StateRegistry.PacketRegistry packetRegistry = direction == ProtocolUtils.Direction.CLIENTBOUND
                         ? (StateRegistry.PacketRegistry) STATE_REGISTRY$clientBound.invoke(stateRegistry)
@@ -99,7 +98,6 @@ public final class PacketRegistration<P extends MinecraftPacket> {
         @SuppressWarnings("unchecked")
         public void unregister() {
             try {
-
                 final StateRegistry.PacketRegistry packetRegistry = direction == ProtocolUtils.Direction.CLIENTBOUND
                         ? (StateRegistry.PacketRegistry) STATE_REGISTRY$clientBound.invoke(stateRegistry)
                         : (StateRegistry.PacketRegistry) STATE_REGISTRY$serverBound.invoke(stateRegistry);

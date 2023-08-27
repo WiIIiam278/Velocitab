@@ -23,13 +23,19 @@ import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.proxy.protocol.MinecraftPacket;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import com.velocitypowered.proxy.protocol.StateRegistry;
+import io.netty.util.collection.IntObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 // Based on VPacketEvents PacketRegistration API
@@ -72,16 +78,48 @@ public final class PacketRegistration<P extends MinecraftPacket> {
         }
 
         public void register() {
+
             try {
                 final StateRegistry.PacketRegistry packetRegistry = direction == ProtocolUtils.Direction.CLIENTBOUND
                         ? (StateRegistry.PacketRegistry) STATE_REGISTRY$clientBound.invoke(stateRegistry)
                         : (StateRegistry.PacketRegistry) STATE_REGISTRY$serverBound.invoke(stateRegistry);
+
                 PACKET_REGISTRY$register.invoke(
                         packetRegistry,
                         packetClass,
                         packetSupplier,
                         mappings.toArray(StateRegistry.PacketMapping[]::new)
                 );
+
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        public void unregister() {
+            try {
+
+                final StateRegistry.PacketRegistry packetRegistry = direction == ProtocolUtils.Direction.CLIENTBOUND
+                        ? (StateRegistry.PacketRegistry) STATE_REGISTRY$clientBound.invoke(stateRegistry)
+                        : (StateRegistry.PacketRegistry) STATE_REGISTRY$serverBound.invoke(stateRegistry);
+
+                Map<ProtocolVersion, StateRegistry.PacketRegistry.ProtocolRegistry> versions = (Map<ProtocolVersion, StateRegistry.PacketRegistry.ProtocolRegistry>) PACKET_REGISTRY$versions.invoke(packetRegistry);
+                versions.forEach((protocolVersion, protocolRegistry) -> {
+                    try {
+                        IntObjectMap<Supplier<?>> packetIdToSupplier = (IntObjectMap<Supplier<?>>) PACKET_REGISTRY$packetIdToSupplier.invoke(protocolRegistry);
+                        Object2IntMap<Class<?>> packetClassToId = (Object2IntMap<Class<?>>) PACKET_REGISTRY$packetClassToId.invoke(protocolRegistry);
+                        packetIdToSupplier.keySet().stream()
+                                .filter(supplier -> packetIdToSupplier.get(supplier).get().getClass().equals(packetClass))
+                                .forEach(packetIdToSupplier::remove);
+                        packetClassToId.values().intStream()
+                                .filter(id -> Objects.equals(packetClassToId.getInt(packetClass), id))
+                                .forEach(packetClassToId::removeInt);
+                    } catch (Throwable t) {
+                        throw new RuntimeException(t);
+                    }
+                });
+
             } catch (Throwable t) {
                 throw new RuntimeException(t);
             }
@@ -98,7 +136,13 @@ public final class PacketRegistration<P extends MinecraftPacket> {
         private static final MethodHandle STATE_REGISTRY$clientBound;
         private static final MethodHandle STATE_REGISTRY$serverBound;
         private static final MethodHandle PACKET_REGISTRY$register;
+        private static final MethodHandle PACKET_REGISTRY$packetIdToSupplier;
+        private static final MethodHandle PACKET_REGISTRY$packetClassToId;
+        private static final MethodHandle PACKET_REGISTRY$versions;
         private static final MethodHandle PACKET_MAPPING$map;
+
+
+
 
         static {
             final MethodHandles.Lookup lookup = MethodHandles.lookup();
@@ -113,6 +157,13 @@ public final class PacketRegistration<P extends MinecraftPacket> {
                 final MethodHandles.Lookup packetRegistryLookup = MethodHandles.privateLookupIn(StateRegistry.PacketRegistry.class, lookup);
                 final MethodType registerType = MethodType.methodType(void.class, Class.class, Supplier.class, StateRegistry.PacketMapping[].class);
                 PACKET_REGISTRY$register = packetRegistryLookup.findVirtual(StateRegistry.PacketRegistry.class, "register", registerType);
+                PACKET_REGISTRY$versions = packetRegistryLookup.findGetter(StateRegistry.PacketRegistry.class, "versions", Map.class);
+
+                final MethodHandles.Lookup protocolRegistryLookup = MethodHandles.privateLookupIn(StateRegistry.PacketRegistry.ProtocolRegistry.class, lookup);
+                PACKET_REGISTRY$packetIdToSupplier = protocolRegistryLookup.findGetter(StateRegistry.PacketRegistry.ProtocolRegistry.class, "packetIdToSupplier", IntObjectMap.class);
+                PACKET_REGISTRY$packetClassToId = protocolRegistryLookup.findGetter(StateRegistry.PacketRegistry.ProtocolRegistry.class, "packetClassToId", Object2IntMap.class);
+
+
             } catch (Throwable e) {
                 throw new RuntimeException(e);
             }

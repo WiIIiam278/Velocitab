@@ -34,6 +34,7 @@ import static com.velocitypowered.api.network.ProtocolVersion.*;
 
 public class ScoreboardManager {
 
+    private PacketRegistration<UpdateTeamsPacket> packetRegistration;
     private final Velocitab plugin;
     private final Map<UUID, List<String>> createdTeams;
     private final Map<UUID, Map<String, String>> roleMappings;
@@ -98,7 +99,7 @@ public class ScoreboardManager {
 
     public void registerPacket() {
         try {
-            PacketRegistration.of(UpdateTeamsPacket.class)
+            packetRegistration = PacketRegistration.of(UpdateTeamsPacket.class)
                     .direction(ProtocolUtils.Direction.CLIENTBOUND)
                     .packetSupplier(UpdateTeamsPacket::new)
                     .stateRegistry(StateRegistry.PLAY)
@@ -108,10 +109,18 @@ public class ScoreboardManager {
                     .mapping(0x55, MINECRAFT_1_17, false)
                     .mapping(0x58, MINECRAFT_1_19_1, false)
                     .mapping(0x56, MINECRAFT_1_19_3, false)
-                    .mapping(0x5A, MINECRAFT_1_19_4, false)
-                    .register();
+                    .mapping(0x5A, MINECRAFT_1_19_4, false);
+            packetRegistration.register();
         } catch (Throwable e) {
             plugin.log(Level.ERROR, "Failed to register UpdateTeamsPacket", e);
+        }
+    }
+
+    public void unregisterPacket() {
+        try {
+            packetRegistration.unregister();
+        } catch (Throwable e) {
+            plugin.log(Level.ERROR, "Failed to unregister UpdateTeamsPacket", e);
         }
     }
 

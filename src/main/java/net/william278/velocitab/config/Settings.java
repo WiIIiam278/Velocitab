@@ -59,6 +59,10 @@ public class Settings {
     @YamlKey("formats")
     private Map<String, String> formats = Map.of("default", "&7[%server%] &f%prefix%%username%");
 
+    @YamlKey("nametags")
+    @YamlComment("Nametag(s) to display above players' heads for each server group. To disable, set to empty")
+    private Map<String, String> nametags = Map.of("default", "&f%prefix%%username%&f%suffix%");
+
     @Getter
     @YamlComment("Which text formatter to use (MINEDOWN, MINIMESSAGE, or LEGACY)")
     @YamlKey("formatting_type")
@@ -162,6 +166,12 @@ public class Settings {
     public String getFormat(@NotNull String serverGroup) {
         return StringEscapeUtils.unescapeJava(
                 formats.getOrDefault(serverGroup, "%username%"));
+    }
+
+    @NotNull
+    public String getNametag(@NotNull String serverGroup) {
+        return StringEscapeUtils.unescapeJava(
+                nametags.getOrDefault(serverGroup, ""));
     }
 
     /**

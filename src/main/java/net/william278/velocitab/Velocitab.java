@@ -95,6 +95,7 @@ public class Velocitab {
     @Subscribe
     public void onProxyShutdown(@NotNull ProxyShutdownEvent event) {
         disableScoreboardManager();
+        getLuckPermsHook().ifPresent(LuckPermsHook::close);
         logger.info("Successfully disabled Velocitab");
     }
 
@@ -182,6 +183,10 @@ public class Velocitab {
                 getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE),
                 getLuckPermsHook().map(LuckPermsHook::getHighestWeight).orElse(0)
         );
+    }
+
+    public Optional<TabPlayer> getTabPlayer(String name) {
+        return server.getPlayer(name).map(this::getTabPlayer);
     }
 
     private void registerCommands() {

@@ -80,6 +80,11 @@ public enum Formatter {
     }
 
     @NotNull
+    public String format(@NotNull String text) {
+        return text.replaceAll("&", "§");
+    }
+
+    @NotNull
     public String escape(@NotNull String text) {
         return escaper.apply(text);
     }

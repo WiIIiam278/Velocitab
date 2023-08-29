@@ -99,10 +99,19 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     @NotNull
+    public CompletableFuture<String> getNametag(@NotNull Velocitab plugin) {
+        final String serverGroup = plugin.getSettings().getServerGroup(getServerName());
+        return Placeholder.replace(plugin.getSettings().getNametag(serverGroup), plugin, this)
+                .thenApply(formatted -> plugin.getFormatter().format(formatted)
+                        .replace(player.getUsername(), "%username%"));
+
+    }
+
+    @NotNull
     public String getTeamName(@NotNull Velocitab plugin) {
         return plugin.getSettings().getSortingElementList().stream()
                 .map(element -> element.resolve(this, plugin))
-                .collect(Collectors.joining("-"));
+                .collect(Collectors.joining("-")) + player.getUniqueId().toString().substring(0, 3);
     }
 
     public void sendHeaderAndFooter(@NotNull PlayerTabList tabList) {

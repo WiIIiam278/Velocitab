@@ -36,9 +36,7 @@ import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -60,6 +58,7 @@ public class PlayerTabList {
             this.updatePeriodically(plugin.getSettings().getUpdateRate());
         }
     }
+
 
     @SuppressWarnings("UnstableApiUsage")
     @Subscribe
@@ -94,7 +93,6 @@ public class PlayerTabList {
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
                     final TabList tabList = joined.getTabList();
-                    final Map<String, String> playerRoles = new HashMap<>();
 
                     for (TabPlayer player : players) {
                         // Skip players on other servers if the setting is enabled
@@ -103,7 +101,6 @@ public class PlayerTabList {
                             continue;
                         }
 
-                        playerRoles.put(player.getPlayer().getUsername(), player.getTeamName(plugin));
                         tabList.getEntries().stream()
                                 .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
                                 .ifPresentOrElse(
@@ -114,7 +111,10 @@ public class PlayerTabList {
                         player.sendHeaderAndFooter(this);
                     }
 
-                    plugin.getScoreboardManager().ifPresent(manager -> manager.setRoles(joined, playerRoles));
+                    plugin.getScoreboardManager().ifPresent(s -> {
+                        s.resendAllNameTags(joined);
+                        s.updateRole(joined, plugin.getTabPlayer(joined).getTeamName(plugin));
+                    });
                 })
                 .delay(500, TimeUnit.MILLISECONDS)
                 .schedule();
@@ -143,11 +143,6 @@ public class PlayerTabList {
                         () -> createEntry(newPlayer, player.getPlayer().getTabList())
                                 .thenAccept(entry -> player.getPlayer().getTabList().addEntry(entry))
                 );
-        plugin.getScoreboardManager().ifPresent(manager -> manager.updateRoles(
-                player.getPlayer(),
-                newPlayer.getTeamName(plugin),
-                newPlayer.getPlayer().getUsername()
-        ));
 
     }
 
@@ -171,6 +166,9 @@ public class PlayerTabList {
                 }))
                 .delay(500, TimeUnit.MILLISECONDS)
                 .schedule();
+        // Delete player team
+        plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(event.getPlayer()));
+
     }
 
     // Replace a player in the tab list
@@ -186,15 +184,15 @@ public class PlayerTabList {
             return;
         }
 
+        plugin.getScoreboardManager().ifPresent(manager -> manager.updateRole(
+                tabPlayer.getPlayer(),
+                tabPlayer.getTeamName(plugin)
+        ));
+
         players.forEach(player -> tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
             player.getPlayer().getTabList().getEntries().stream()
                     .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
                     .ifPresent(entry -> entry.setDisplayName(displayName));
-            plugin.getScoreboardManager().ifPresent(manager -> manager.updateRoles(
-                    player.getPlayer(),
-                    tabPlayer.getTeamName(plugin),
-                    tabPlayer.getPlayer().getUsername()
-            ));
         }));
     }
 
@@ -277,6 +275,24 @@ public class PlayerTabList {
                     }
                     return Optional.of(this.fallbackServers.stream().toList());
                 });
+    }
+
+    /**
+     * Get the servers in the same group as the given server, as an optional list of {@link ServerInfo}
+     * <p>
+     * If the server is not in a group, use the fallback group
+     * If the fallback is disabled, return an empty optional
+     *
+     * @param serverName The server name
+     * @return The servers in the same group as the given server, empty if the server is not in a group and fallback is disabled
+     */
+    @NotNull
+    public List<RegisteredServer> getSiblingsServers(String serverName) {
+        return plugin.getServer().getAllServers().stream()
+                .filter(server -> plugin.getSettings().getServerGroups().values().stream()
+                        .filter(servers -> servers.contains(serverName))
+                        .anyMatch(servers -> servers.contains(server.getServerInfo().getName())))
+                .toList();
     }
 
     @Subscribe

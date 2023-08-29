@@ -23,6 +23,7 @@ import com.velocitypowered.api.proxy.Player;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.cacheddata.CachedMetaData;
+import net.luckperms.api.event.EventSubscription;
 import net.luckperms.api.event.user.UserDataRecalculateEvent;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
@@ -42,11 +43,17 @@ public class LuckPermsHook extends Hook {
 
     private int highestWeight = Role.DEFAULT_WEIGHT;
     private final LuckPerms api;
+    private final
+    EventSubscription<UserDataRecalculateEvent> event;
 
     public LuckPermsHook(@NotNull Velocitab plugin) throws IllegalStateException {
         super(plugin);
         this.api = LuckPermsProvider.get();
-        api.getEventBus().subscribe(plugin, UserDataRecalculateEvent.class, this::onLuckPermsGroupUpdate);
+        event = api.getEventBus().subscribe(plugin, UserDataRecalculateEvent.class, this::onLuckPermsGroupUpdate);
+    }
+
+    public void close() {
+        event.close();
     }
 
     @NotNull

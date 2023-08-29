@@ -71,6 +71,35 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     }
 
     @NotNull
+    protected static UpdateTeamsPacket create(@NotNull String teamName, @NotNull String displayName, @Nullable String prefix, @Nullable String suffix, @NotNull String... teamMembers) {
+        return new UpdateTeamsPacket()
+                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .mode(UpdateMode.CREATE_TEAM)
+                .displayName(getChatString(displayName))
+                .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
+                .nameTagVisibility(NameTagVisibility.ALWAYS)
+                .collisionRule(CollisionRule.ALWAYS)
+                .color(getLastColor(prefix))
+                .prefix(getChatString(prefix == null ? "" : prefix))
+                .suffix(getChatString(suffix == null ? "" : suffix))
+                .entities(Arrays.asList(teamMembers));
+    }
+
+    @NotNull
+    protected static UpdateTeamsPacket changeNameTag(@NotNull String teamName, @Nullable String prefix, @Nullable String suffix) {
+        return new UpdateTeamsPacket()
+                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .mode(UpdateMode.UPDATE_INFO)
+                .displayName(getChatString(teamName))
+                .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
+                .nameTagVisibility(NameTagVisibility.ALWAYS)
+                .collisionRule(CollisionRule.ALWAYS)
+                .color(getLastColor(prefix))
+                .prefix(getChatString(prefix == null ? "" : prefix))
+                .suffix(getChatString(suffix == null ? "" : suffix));
+    }
+
+    @NotNull
     protected static UpdateTeamsPacket addToTeam(@NotNull String teamName, @NotNull String... teamMembers) {
         return new UpdateTeamsPacket()
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
@@ -87,8 +116,57 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     }
 
     @NotNull
+    protected static UpdateTeamsPacket removeTeam(@NotNull String teamName) {
+        return new UpdateTeamsPacket()
+                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .mode(UpdateMode.REMOVE_TEAM);
+    }
+
+    @NotNull
     private static String getChatString(@NotNull String string) {
         return "{\"text\":\"" + StringEscapeUtils.escapeJson(string) + "\"}";
+    }
+
+    public static int getLastColor(@Nullable String text) {
+        if (text == null) {
+            return 15;
+        }
+        int intvar = text.lastIndexOf("§");
+
+        if(intvar == -1 || intvar == text.length() - 1) {
+            return 15;
+        }
+
+        String last = text.substring(intvar, intvar + 2);
+        return convertColorCharToInt(last.charAt(1));
+    }
+
+    public static int convertColorCharToInt(char colorChar) {
+        return switch (colorChar) {
+            case '0' -> 0;
+            case '1' -> 1;
+            case '2' -> 2;
+            case '3' -> 3;
+            case '4' -> 4;
+            case '5' -> 5;
+            case '6' -> 6;
+            case '7' -> 7;
+            case '8' -> 8;
+            case '9' -> 9;
+            case 'a' -> 10;
+            case 'b' -> 11;
+            case 'c' -> 12;
+            case 'd' -> 13;
+            case 'e' -> 14;
+            case 'f' -> 15;
+            case 'k' -> 16; // Obfuscated
+            case 'l' -> 17; // Bold
+            case 'm' -> 18; // Strikethrough
+            case 'n' -> 19; // Underlined
+            case 'o' -> 20; // Italic
+            case 'r' -> 21; // Reset
+            default -> 15; // Invalid
+        };
     }
 
     @Override

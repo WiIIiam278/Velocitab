@@ -20,15 +20,18 @@
 package net.william278.velocitab.packet;
 
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ServerConnection;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import com.velocitypowered.proxy.protocol.StateRegistry;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.velocitypowered.api.network.ProtocolVersion.*;
 
@@ -36,51 +39,84 @@ public class ScoreboardManager {
 
     private PacketRegistration<UpdateTeamsPacket> packetRegistration;
     private final Velocitab plugin;
-    private final Map<UUID, List<String>> createdTeams;
-    private final Map<UUID, Map<String, String>> roleMappings;
+    private final Map<UUID, String> createdTeams;
+    private final Map<String, String> nametags;
 
     public ScoreboardManager(@NotNull Velocitab velocitab) {
         this.plugin = velocitab;
-        this.createdTeams = new HashMap<>();
-        this.roleMappings = new HashMap<>();
+        this.createdTeams = new ConcurrentHashMap<>();
+        this.nametags = new ConcurrentHashMap<>();
     }
 
     public void resetCache(@NotNull Player player) {
-        createdTeams.remove(player.getUniqueId());
-        roleMappings.remove(player.getUniqueId());
+        String team = createdTeams.remove(player.getUniqueId());
+        if (team != null) {
+            dispatchPacketAll(UpdateTeamsPacket.removeTeam(team), player);
+        }
     }
 
-    public void setRoles(@NotNull Player player, @NotNull Map<String, String> playerRoles) {
+    public void updateRole(@NotNull Player player, @NotNull String role) {
         if (!player.isActive()) {
             plugin.getTabList().removeOfflinePlayer(player);
             return;
         }
-        playerRoles.entrySet().stream()
-                .collect(Collectors.groupingBy(
-                        Map.Entry::getValue,
-                        Collectors.mapping(Map.Entry::getKey, Collectors.toList())
-                ))
-                .forEach((role, players) -> updateRoles(player, role, players.toArray(new String[0])));
+
+        String name = player.getUsername();
+
+        TabPlayer tabPlayer = plugin.getTabPlayer(player);
+
+        tabPlayer.getNametag(plugin).thenAccept(nametag -> {
+            String[] split = nametag.split("%username%");
+            String prefix = split[0];
+            String suffix = split.length > 1 ? split[1] : "";
+
+            if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
+                createdTeams.computeIfAbsent(player.getUniqueId(), k -> role);
+                this.nametags.put(role, prefix + suffix);
+                dispatchPacketAll(UpdateTeamsPacket.create(role, "", prefix, suffix, new String[]{name}), player);
+            } else if (!this.nametags.getOrDefault(role, "").equals(prefix + suffix)) {
+                this.nametags.put(role, prefix + suffix);
+                dispatchPacketAll(UpdateTeamsPacket.changeNameTag(role, prefix, suffix), player);
+            }
+        });
     }
 
-    public void updateRoles(@NotNull Player player, @NotNull String role, @NotNull String... playerNames) {
-        if (!player.isActive()) {
-            plugin.getTabList().removeOfflinePlayer(player);
+
+    public void resendAllNameTags(Player player) {
+        Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
+
+        if (optionalServerConnection.isEmpty()) {
             return;
         }
-        if (!createdTeams.getOrDefault(player.getUniqueId(), List.of()).contains(role)) {
-            dispatchPacket(UpdateTeamsPacket.create(role, playerNames), player);
-            createdTeams.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>()).add(role);
-            roleMappings.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).put(player.getUsername(), role);
-        } else {
-            roleMappings.getOrDefault(player.getUniqueId(), Map.of())
-                    .entrySet().stream()
-                    .filter((entry) -> List.of(playerNames).contains(entry.getKey()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-                    .forEach((playerName, oldRole) -> dispatchPacket(UpdateTeamsPacket.removeFromTeam(oldRole, playerName), player));
-            dispatchPacket(UpdateTeamsPacket.addToTeam(role, playerNames), player);
-            roleMappings.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).put(player.getUsername(), role);
-        }
+
+        RegisteredServer serverInfo = optionalServerConnection.get().getServer();
+
+        List<RegisteredServer> siblings = plugin.getTabList().getSiblingsServers(serverInfo.getServerInfo().getName());
+
+        List<Player> players = siblings.stream().map(RegisteredServer::getPlayersConnected).flatMap(Collection::stream).toList();
+
+        players.forEach(p -> {
+            if (p == player || !p.isActive()) {
+                return;
+            }
+
+            String role = createdTeams.getOrDefault(p.getUniqueId(), "");
+
+            if (role.isEmpty()) {
+                return;
+            }
+
+            String nametag = nametags.getOrDefault(role, "");
+
+            if (nametag.isEmpty()) {
+                return;
+            }
+
+            String[] split = nametag.split("%username%");
+            String prefix = split[0];
+            String suffix = split.length > 1 ? split[1] : "";
+            dispatchPacket(UpdateTeamsPacket.create(role, "", prefix, suffix, new String[]{p.getUsername()}), player);
+        });
     }
 
     private void dispatchPacket(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
@@ -95,6 +131,29 @@ public class ScoreboardManager {
         } catch (Exception e) {
             plugin.log(Level.ERROR, "Failed to dispatch packet (is the client or server modded or using an illegal version?)", e);
         }
+    }
+
+    private void dispatchPacketAll(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
+        Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
+
+        if (optionalServerConnection.isEmpty()) {
+            return;
+        }
+
+        RegisteredServer serverInfo = optionalServerConnection.get().getServer();
+
+        List<RegisteredServer> siblings = plugin.getTabList().getSiblingsServers(serverInfo.getServerInfo().getName());
+
+        siblings.forEach(s -> {
+            s.getPlayersConnected().forEach(p -> {
+                try {
+                    final ConnectedPlayer connectedPlayer = (ConnectedPlayer) p;
+                    connectedPlayer.getConnection().write(packet);
+                } catch (Exception e) {
+                    plugin.log(Level.ERROR, "Failed to dispatch packet (is the client or server modded or using an illegal version?)", e);
+                }
+            });
+        });
     }
 
     public void registerPacket() {
@@ -117,7 +176,7 @@ public class ScoreboardManager {
     }
 
     public void unregisterPacket() {
-        if(packetRegistration==null) {
+        if (packetRegistration == null) {
             return;
         }
         try {

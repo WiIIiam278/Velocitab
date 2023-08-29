@@ -43,8 +43,7 @@ public class LuckPermsHook extends Hook {
 
     private int highestWeight = Role.DEFAULT_WEIGHT;
     private final LuckPerms api;
-    private final
-    EventSubscription<UserDataRecalculateEvent> event;
+    private final EventSubscription<UserDataRecalculateEvent> event;
 
     public LuckPermsHook(@NotNull Velocitab plugin) throws IllegalStateException {
         super(plugin);

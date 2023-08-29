@@ -65,7 +65,7 @@ public enum Placeholder {
         }
         final String replaced = format;
 
-        if(!replaced.matches("%.*?%")) {
+        if (!replaced.matches("%.*?%")) {
             return CompletableFuture.completedFuture(replaced);
         }
 

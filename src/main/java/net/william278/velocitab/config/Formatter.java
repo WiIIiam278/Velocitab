@@ -80,7 +80,7 @@ public enum Formatter {
     }
 
     @NotNull
-    public String format(@NotNull String text) {
+    public String formatLegacySymbols(@NotNull String text) {
         return text.replaceAll("&", "§");
     }
 

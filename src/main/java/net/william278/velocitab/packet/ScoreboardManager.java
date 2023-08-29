@@ -51,7 +51,7 @@ public class ScoreboardManager {
     public void resetCache(@NotNull Player player) {
         String team = createdTeams.remove(player.getUniqueId());
         if (team != null) {
-            dispatchPacketAll(UpdateTeamsPacket.removeTeam(team), player);
+            dispatchGroupPacket(UpdateTeamsPacket.removeTeam(team), player);
         }
     }
 
@@ -73,16 +73,24 @@ public class ScoreboardManager {
             if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
                 createdTeams.computeIfAbsent(player.getUniqueId(), k -> role);
                 this.nametags.put(role, prefix + suffix);
-                dispatchPacketAll(UpdateTeamsPacket.create(role, "", prefix, suffix, new String[]{name}), player);
+                dispatchGroupPacket(UpdateTeamsPacket.create(role, "", prefix, suffix, new String[]{name}), player);
             } else if (!this.nametags.getOrDefault(role, "").equals(prefix + suffix)) {
                 this.nametags.put(role, prefix + suffix);
-                dispatchPacketAll(UpdateTeamsPacket.changeNameTag(role, prefix, suffix), player);
+                dispatchGroupPacket(UpdateTeamsPacket.changeNameTag(role, prefix, suffix), player);
             }
+        }).exceptionally(e -> {
+            plugin.log(Level.ERROR, "Failed to update role for " + player.getUsername(), e);
+            return null;
         });
     }
 
 
     public void resendAllNameTags(Player player) {
+
+        if(!plugin.getSettings().areNametagsEnabled()) {
+            return;
+        }
+
         Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
 
         if (optionalServerConnection.isEmpty()) {
@@ -91,7 +99,7 @@ public class ScoreboardManager {
 
         RegisteredServer serverInfo = optionalServerConnection.get().getServer();
 
-        List<RegisteredServer> siblings = plugin.getTabList().getSiblingsServers(serverInfo.getServerInfo().getName());
+        List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
 
         List<Player> players = siblings.stream().map(RegisteredServer::getPlayersConnected).flatMap(Collection::stream).toList();
 
@@ -133,7 +141,7 @@ public class ScoreboardManager {
         }
     }
 
-    private void dispatchPacketAll(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
+    private void dispatchGroupPacket(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
         Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
 
         if (optionalServerConnection.isEmpty()) {
@@ -142,7 +150,7 @@ public class ScoreboardManager {
 
         RegisteredServer serverInfo = optionalServerConnection.get().getServer();
 
-        List<RegisteredServer> siblings = plugin.getTabList().getSiblingsServers(serverInfo.getServerInfo().getName());
+        List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
 
         siblings.forEach(s -> {
             s.getPlayersConnected().forEach(p -> {

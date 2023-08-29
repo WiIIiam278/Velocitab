@@ -138,7 +138,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         }
 
         String last = text.substring(intvar, intvar + 2);
-        return convertColorCharToInt(last.charAt(1));
+        return TeamColor.getColorId(last.charAt(1));
     }
 
     public enum TeamColor {
@@ -173,9 +173,8 @@ public class UpdateTeamsPacket implements MinecraftPacket {
             this.id = id;
         }
         
-        @NotNull
-        public static int getColorId(char char) {
-            return Arrays.stream(values()).filter(color -> color.colorChar == char).findFirst().orElse(15);
+        public static int getColorId(char var) {
+            return Arrays.stream(values()).filter(color -> color.colorChar == var).map(c -> c.id).findFirst().orElse(15);
         }
     }
 

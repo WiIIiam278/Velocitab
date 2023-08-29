@@ -59,6 +59,7 @@ public class Settings {
     @YamlKey("formats")
     private Map<String, String> formats = Map.of("default", "&7[%server%] &f%prefix%%username%");
 
+    @Getter
     @YamlKey("nametags")
     @YamlComment("Nametag(s) to display above players' heads for each server group. To disable, set to empty")
     private Map<String, String> nametags = Map.of("default", "&f%prefix%%username%&f%suffix%");
@@ -172,6 +173,10 @@ public class Settings {
     public String getNametag(@NotNull String serverGroup) {
         return StringEscapeUtils.unescapeJava(
                 nametags.getOrDefault(serverGroup, ""));
+    }
+
+    public boolean areNametagsEnabled() {
+        return !nametags.isEmpty();
     }
 
     /**

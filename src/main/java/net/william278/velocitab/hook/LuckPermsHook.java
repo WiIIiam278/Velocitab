@@ -87,6 +87,7 @@ public class LuckPermsHook extends Hook {
                             );
                             tabList.replacePlayer(updatedPlayer);
                             tabList.updatePlayer(updatedPlayer);
+                            tabList.updatePlayerDisplayName(updatedPlayer);
                         })
                         .delay(500, TimeUnit.MILLISECONDS)
                         .schedule());

@@ -120,6 +120,12 @@ public class Velocitab {
                     new File(dataDirectory.toFile(), "config.yml"),
                     new Settings(this)
             ).get();
+
+            settings.getNametags().values().stream()
+                    .filter(nametag -> !nametag.contains("%username%")).forEach(nametag -> {
+                        logger.warn("Nametag '" + nametag + "' does not contain %username% - removing");
+                        settings.getNametags().remove(nametag);
+                    });
         } catch (IOException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             logger.error("Failed to load config file: " + e.getMessage(), e);
         }
@@ -157,7 +163,7 @@ public class Velocitab {
     }
 
     private void disableScoreboardManager() {
-        if (scoreboardManager !=null && settings.isSortPlayers()) {
+        if (scoreboardManager != null && settings.isSortPlayers()) {
             scoreboardManager.unregisterPacket();
         }
     }

@@ -74,7 +74,7 @@ public class PlayerTabList {
 
         // Get the servers in the group from the joined server name
         // If the server is not in a group, use fallback
-        Optional<List<String>> serversInGroup = getSiblings(joined.getCurrentServer()
+        Optional<List<String>> serversInGroup = getGroupNames(joined.getCurrentServer()
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
                 .orElse("?"));
@@ -97,7 +97,7 @@ public class PlayerTabList {
                     for (TabPlayer player : players) {
                         // Skip players on other servers if the setting is enabled
                         if (plugin.getSettings().isOnlyListPlayersInSameGroup() && serversInGroup.isPresent()
-                            && !serversInGroup.get().contains(player.getServerName())) {
+                                && !serversInGroup.get().contains(player.getServerName())) {
                             continue;
                         }
 
@@ -188,12 +188,23 @@ public class PlayerTabList {
                 tabPlayer.getPlayer(),
                 tabPlayer.getTeamName(plugin)
         ));
+    }
 
-        players.forEach(player -> tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
-            player.getPlayer().getTabList().getEntries().stream()
-                    .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
-                    .ifPresent(entry -> entry.setDisplayName(displayName));
-        }));
+    public void updatePlayerDisplayName(TabPlayer tabPlayer) {
+        Component lastDisplayName = tabPlayer.getLastDisplayname();
+        tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
+            if (displayName == null || displayName.equals(lastDisplayName)) return;
+
+            players.forEach(player ->
+                    player.getPlayer().getTabList().getEntries().stream()
+                            .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
+                            .ifPresent(entry -> entry.setDisplayName(displayName)));
+        });
+
+    }
+
+    public void updateDisplayNames() {
+        players.forEach(this::updatePlayerDisplayName);
     }
 
     public CompletableFuture<Component> getHeader(@NotNull TabPlayer player) {
@@ -223,6 +234,7 @@ public class PlayerTabList {
                         this.updatePlayer(player);
                         player.sendHeaderAndFooter(this);
                     });
+                    updateDisplayNames();
                 })
                 .repeat(Math.max(200, updateRate), TimeUnit.MILLISECONDS)
                 .schedule();
@@ -247,6 +259,7 @@ public class PlayerTabList {
                 this.updatePlayer(player);
                 player.sendHeaderAndFooter(this);
             });
+            updateDisplayNames();
         }
 
     }
@@ -261,7 +274,7 @@ public class PlayerTabList {
      * @return The servers in the same group as the given server, empty if the server is not in a group and fallback is disabled
      */
     @NotNull
-    public Optional<List<String>> getSiblings(String serverName) {
+    public Optional<List<String>> getGroupNames(String serverName) {
         return plugin.getSettings().getServerGroups().values().stream()
                 .filter(servers -> servers.contains(serverName))
                 .findFirst()
@@ -287,7 +300,7 @@ public class PlayerTabList {
      * @return The servers in the same group as the given server, empty if the server is not in a group and fallback is disabled
      */
     @NotNull
-    public List<RegisteredServer> getSiblingsServers(String serverName) {
+    public List<RegisteredServer> getGroupServers(String serverName) {
         return plugin.getServer().getAllServers().stream()
                 .filter(server -> plugin.getSettings().getServerGroups().values().stream()
                         .filter(servers -> servers.contains(serverName))

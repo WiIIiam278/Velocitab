@@ -141,32 +141,42 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         return convertColorCharToInt(last.charAt(1));
     }
 
-    public static int convertColorCharToInt(char colorChar) {
-        return switch (colorChar) {
-            case '0' -> 0;
-            case '1' -> 1;
-            case '2' -> 2;
-            case '3' -> 3;
-            case '4' -> 4;
-            case '5' -> 5;
-            case '6' -> 6;
-            case '7' -> 7;
-            case '8' -> 8;
-            case '9' -> 9;
-            case 'a' -> 10;
-            case 'b' -> 11;
-            case 'c' -> 12;
-            case 'd' -> 13;
-            case 'e' -> 14;
-            case 'f' -> 15;
-            case 'k' -> 16; // Obfuscated
-            case 'l' -> 17; // Bold
-            case 'm' -> 18; // Strikethrough
-            case 'n' -> 19; // Underlined
-            case 'o' -> 20; // Italic
-            case 'r' -> 21; // Reset
-            default -> 15; // Invalid
-        };
+    public enum TeamColor {
+        BLACK('0', 0),
+        DARK_BLUE('1', 1),
+        DARK_GREEN('2', 2),
+        DARK_AQUA('3', 3),
+        DARK_RED('4', 4),
+        DARK_PURPLE('5', 5),
+        GOLD('6', 6),
+        GRAY('7', 7),
+        DARK_GRAY('8', 8),
+        BLUE('9', 9),
+        GREEN('a', 10),
+        AQUA('b', 11),
+        RED('c', 12),
+        LIGHT_PURPLE('d', 13),
+        YELLOW('e', 14),
+        WHITE('f', 15),
+        OBFUSCATED('k', 16),
+        BOLD('l', 17),
+        STRIKETHROUGH('m', 18),
+        UNDERLINED('n', 19),
+        ITALIC('o', 20),
+        RESET('r', 21);
+
+        private final char colorChar;
+        private final int id;
+
+        TeamColor(char colorChar, int id) {
+            this.colorChar= colorChar;
+            this.id = id;
+        }
+        
+        @NotNull
+        public static int getColorId(char char) {
+            return Arrays.stream(values()).filter(color -> color.colorChar == char).findFirst().orElse(15);
+        }
     }
 
     @Override

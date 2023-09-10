@@ -38,11 +38,13 @@ public class ScoreboardManager {
     private final Velocitab plugin;
     private final Map<UUID, List<String>> createdTeams;
     private final Map<UUID, Map<String, String>> roleMappings;
+    private final VersionManager versionManager;
 
     public ScoreboardManager(@NotNull Velocitab velocitab) {
         this.plugin = velocitab;
         this.createdTeams = new HashMap<>();
         this.roleMappings = new HashMap<>();
+        this.versionManager = new VersionManager();
     }
 
     public void resetCache(@NotNull Player player) {
@@ -91,6 +93,7 @@ public class ScoreboardManager {
 
         try {
             final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
+            System.out.println("Sending packet to " + connectedPlayer.getUsername() + ": " + packet.toString());
             connectedPlayer.getConnection().write(packet);
         } catch (Exception e) {
             plugin.log(Level.ERROR, "Failed to dispatch packet (is the client or server modded or using an illegal version?)", e);
@@ -103,6 +106,8 @@ public class ScoreboardManager {
                     .direction(ProtocolUtils.Direction.CLIENTBOUND)
                     .packetSupplier(UpdateTeamsPacket::new)
                     .stateRegistry(StateRegistry.PLAY)
+                    .mapping(0x3E, MINECRAFT_1_8, false)
+                    .mapping(0x44, MINECRAFT_1_12_2, false)
                     .mapping(0x47, MINECRAFT_1_13, false)
                     .mapping(0x4B, MINECRAFT_1_14, false)
                     .mapping(0x4C, MINECRAFT_1_15, false)

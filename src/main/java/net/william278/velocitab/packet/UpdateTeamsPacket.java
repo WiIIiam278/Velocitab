@@ -60,13 +60,13 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         return new UpdateTeamsPacket()
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.CREATE_TEAM)
-                .displayName(getChatString(teamName))
+                .displayName(teamName)
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nameTagVisibility(NameTagVisibility.ALWAYS)
                 .collisionRule(CollisionRule.ALWAYS)
                 .color(15)
-                .prefix(getChatString(""))
-                .suffix(getChatString(""))
+                .prefix("")
+                .suffix("")
                 .entities(Arrays.asList(teamMembers));
     }
 
@@ -86,58 +86,14 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .entities(Arrays.asList(teamMembers));
     }
 
-    @NotNull
-    private static String getChatString(@NotNull String string) {
-        return "{\"text\":\"" + StringEscapeUtils.escapeJson(string) + "\"}";
-    }
-
     @Override
     public void decode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
-        teamName = ProtocolUtils.readString(byteBuf);
-        mode = UpdateMode.byId(byteBuf.readByte());
-        if (mode == UpdateMode.REMOVE_TEAM) {
-            return;
-        }
-        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.UPDATE_INFO) {
-            displayName = ProtocolUtils.readString(byteBuf);
-            friendlyFlags = FriendlyFlag.fromBitMask(byteBuf.readByte());
-            nameTagVisibility = NameTagVisibility.byId(ProtocolUtils.readString(byteBuf));
-            collisionRule = CollisionRule.byId(ProtocolUtils.readString(byteBuf));
-            color = byteBuf.readByte();
-            prefix = ProtocolUtils.readString(byteBuf);
-            suffix = ProtocolUtils.readString(byteBuf);
-        }
-        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.ADD_PLAYERS || mode == UpdateMode.REMOVE_PLAYERS) {
-            int entityCount = ProtocolUtils.readVarInt(byteBuf);
-            entities = new ArrayList<>(entityCount);
-            for (int j = 0; j < entityCount; j++) {
-                entities.add(ProtocolUtils.readString(byteBuf));
-            }
-        }
+        VersionManager.getInstance().getVersion(protocolVersion).decode(byteBuf, this);
     }
 
     @Override
     public void encode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
-        ProtocolUtils.writeString(byteBuf, teamName);
-        byteBuf.writeByte(mode.id());
-        if (mode == UpdateMode.REMOVE_TEAM) {
-            return;
-        }
-        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.UPDATE_INFO) {
-            ProtocolUtils.writeString(byteBuf, displayName);
-            byteBuf.writeByte(FriendlyFlag.toBitMask(friendlyFlags));
-            ProtocolUtils.writeString(byteBuf, nameTagVisibility.id());
-            ProtocolUtils.writeString(byteBuf, collisionRule.id());
-            byteBuf.writeByte(color);
-            ProtocolUtils.writeString(byteBuf, prefix);
-            ProtocolUtils.writeString(byteBuf, suffix);
-        }
-        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.ADD_PLAYERS || mode == UpdateMode.REMOVE_PLAYERS) {
-            ProtocolUtils.writeVarInt(byteBuf, entities != null ? entities.size() : 0);
-            for (String entity : entities != null ? entities : new ArrayList<String>()) {
-                ProtocolUtils.writeString(byteBuf, entity);
-            }
-        }
+        VersionManager.getInstance().getVersion(protocolVersion).encode(byteBuf, this);
     }
 
     @Override

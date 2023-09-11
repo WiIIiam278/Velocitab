@@ -30,10 +30,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+@Getter
 @RequiredArgsConstructor
 public abstract class AbstractVersion {
 
-    @Getter
     private final List<ProtocolVersion> protocolVersions;
 
     public abstract void decode(ByteBuf byteBuf, UpdateTeamsPacket updateTeamsPacket);

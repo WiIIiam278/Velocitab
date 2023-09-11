@@ -22,28 +22,33 @@ package net.william278.velocitab.packet;
 
 import com.velocitypowered.api.network.ProtocolVersion;
 import lombok.Getter;
+import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.packet.versions.AbstractVersion;
-import net.william278.velocitab.packet.versions.CurrentVersion;
-import net.william278.velocitab.packet.versions.Version1_12_2;
+import net.william278.velocitab.packet.versions.Protocol403;
+import net.william278.velocitab.packet.versions.Protocol340;
+import net.william278.velocitab.packet.versions.Protocol48;
 
+import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 public class VersionManager {
 
     @Getter
     private static VersionManager instance;
+    private final Velocitab plugin;
     private final Set<AbstractVersion> versions;
 
-    public VersionManager() {
+    public VersionManager(Velocitab plugin) {
         instance = this;
-        this.versions = new CopyOnWriteArraySet<>();
+        this.plugin = plugin;
+        this.versions = new HashSet<>();
         registerVersions();
     }
 
     private void registerVersions() {
-        versions.add(new CurrentVersion());
-        versions.add(new Version1_12_2());
+        versions.add(new Protocol403());
+        versions.add(new Protocol340());
+        versions.add(new Protocol48());
     }
 
     public AbstractVersion getVersion(ProtocolVersion protocolVersion) {
@@ -51,6 +56,10 @@ public class VersionManager {
                 .filter(version -> version.getProtocolVersions().contains(protocolVersion))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("No version found for protocol version " + protocolVersion));
+    }
+
+    public void sendProtocolError(String message) {
+        plugin.getLogger().error(message);
     }
 
 }

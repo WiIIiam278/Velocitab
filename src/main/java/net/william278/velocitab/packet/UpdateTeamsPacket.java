@@ -26,6 +26,7 @@ import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import io.netty.buffer.ByteBuf;
 import lombok.*;
 import lombok.experimental.Accessors;
+import net.william278.velocitab.Velocitab;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -88,11 +89,25 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @Override
     public void decode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
+
+        if(mode==null) {
+            VersionManager.getInstance().sendProtocolError("Something went wrong while decoding a UpdateTeamsPacket" +
+                    ", if your server is on 1.8.x and you are using viaversion," +
+                    ", please disable 'auto-team' in the config.yml and reload it.");
+        }
+
         VersionManager.getInstance().getVersion(protocolVersion).decode(byteBuf, this);
     }
 
     @Override
     public void encode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
+
+        if(mode==null) {
+            VersionManager.getInstance().sendProtocolError("Something went wrong while encoding a UpdateTeamsPacket" +
+                    ", if your server is on 1.8.x and you are using viaversion," +
+                    ", please disable 'auto-team' in the config.yml and reload it.");
+        }
+
         VersionManager.getInstance().getVersion(protocolVersion).encode(byteBuf, this);
     }
 

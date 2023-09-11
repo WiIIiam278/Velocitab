@@ -28,45 +28,41 @@ import net.william278.velocitab.packet.UpdateTeamsPacket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Version1_12_2 extends AbstractVersion{
-    public Version1_12_2() {
+@SuppressWarnings("DuplicatedCode")
+public class Protocol340 extends AbstractVersion {
+    public Protocol340() {
         super(List.of(ProtocolVersion.MINECRAFT_1_12_2));
     }
 
     @Override
     public void decode(ByteBuf byteBuf, UpdateTeamsPacket updateTeamsPacket) {
-
-        UpdateTeamsPacket.UpdateMode mode;
-        List<String> entities;
-
         updateTeamsPacket.teamName(ProtocolUtils.readString(byteBuf));
-        mode = UpdateTeamsPacket.UpdateMode.byId(byteBuf.readByte());
+        UpdateTeamsPacket.UpdateMode mode = UpdateTeamsPacket.UpdateMode.byId(byteBuf.readByte());
         if (mode == UpdateTeamsPacket.UpdateMode.REMOVE_TEAM) {
             return;
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.UPDATE_INFO) {
             updateTeamsPacket.displayName(ProtocolUtils.readString(byteBuf));
+            updateTeamsPacket.prefix(ProtocolUtils.readString(byteBuf));
+            updateTeamsPacket.suffix(ProtocolUtils.readString(byteBuf));
             updateTeamsPacket.friendlyFlags(UpdateTeamsPacket.FriendlyFlag.fromBitMask(byteBuf.readByte()));
             updateTeamsPacket.nameTagVisibility(UpdateTeamsPacket.NameTagVisibility.byId(ProtocolUtils.readString(byteBuf)));
             updateTeamsPacket.collisionRule(UpdateTeamsPacket.CollisionRule.byId(ProtocolUtils.readString(byteBuf)));
             updateTeamsPacket.color(byteBuf.readByte());
-            updateTeamsPacket.prefix(ProtocolUtils.readString(byteBuf));
-            updateTeamsPacket.suffix(ProtocolUtils.readString(byteBuf));
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.ADD_PLAYERS || mode == UpdateTeamsPacket.UpdateMode.REMOVE_PLAYERS) {
             int entityCount = ProtocolUtils.readVarInt(byteBuf);
-            entities = new ArrayList<>(entityCount);
+            List<String> entities = new ArrayList<>(entityCount);
             for (int j = 0; j < entityCount; j++) {
                 entities.add(ProtocolUtils.readString(byteBuf));
             }
             updateTeamsPacket.entities(entities);
         }
-
     }
 
     @Override
     public void encode(ByteBuf byteBuf, UpdateTeamsPacket updateTeamsPacket) {
-        ProtocolUtils.writeString(byteBuf, updateTeamsPacket.teamName());
+        ProtocolUtils.writeString(byteBuf, updateTeamsPacket.teamName().substring(0, Math.min(updateTeamsPacket.teamName().length(), 16)));
         UpdateTeamsPacket.UpdateMode mode = updateTeamsPacket.mode();
         byteBuf.writeByte(mode.id());
         if (mode == UpdateTeamsPacket.UpdateMode.REMOVE_TEAM) {

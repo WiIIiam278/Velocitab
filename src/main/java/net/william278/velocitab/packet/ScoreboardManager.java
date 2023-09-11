@@ -44,7 +44,7 @@ public class ScoreboardManager {
         this.plugin = velocitab;
         this.createdTeams = new HashMap<>();
         this.roleMappings = new HashMap<>();
-        this.versionManager = new VersionManager();
+        this.versionManager = new VersionManager(plugin);
     }
 
     public void resetCache(@NotNull Player player) {
@@ -93,7 +93,6 @@ public class ScoreboardManager {
 
         try {
             final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
-            System.out.println("Sending packet to " + connectedPlayer.getUsername() + ": " + packet.toString());
             connectedPlayer.getConnection().write(packet);
         } catch (Exception e) {
             plugin.log(Level.ERROR, "Failed to dispatch packet (is the client or server modded or using an illegal version?)", e);

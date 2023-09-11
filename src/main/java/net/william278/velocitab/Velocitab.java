@@ -30,6 +30,7 @@ import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import lombok.Getter;
 import net.william278.annotaml.Annotaml;
 import net.william278.desertwell.util.UpdateChecker;
 import net.william278.desertwell.util.Version;
@@ -63,6 +64,7 @@ public class Velocitab {
     private static final int METRICS_ID = 18247;
     private Settings settings;
     private final ProxyServer server;
+    @Getter
     private final Logger logger;
     private final Path dataDirectory;
     @Inject

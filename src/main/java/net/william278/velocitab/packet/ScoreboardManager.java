@@ -19,11 +19,16 @@
 
 package net.william278.velocitab.packet;
 
+import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import com.velocitypowered.proxy.protocol.StateRegistry;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.packet.versions.AbstractVersion;
+import net.william278.velocitab.packet.versions.Protocol340;
+import net.william278.velocitab.packet.versions.Protocol403;
+import net.william278.velocitab.packet.versions.Protocol48;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
@@ -38,13 +43,31 @@ public class ScoreboardManager {
     private final Velocitab plugin;
     private final Map<UUID, List<String>> createdTeams;
     private final Map<UUID, Map<String, String>> roleMappings;
-    private final VersionManager versionManager;
+    private final Set<AbstractVersion> versions;
 
     public ScoreboardManager(@NotNull Velocitab velocitab) {
         this.plugin = velocitab;
         this.createdTeams = new HashMap<>();
         this.roleMappings = new HashMap<>();
-        this.versionManager = new VersionManager(plugin);
+        this.versions = new HashSet<>();
+        this.registerVersions();
+    }
+
+    private void registerVersions() {
+        versions.add(new Protocol403());
+        versions.add(new Protocol340());
+        versions.add(new Protocol48());
+    }
+
+    public AbstractVersion getVersion(ProtocolVersion protocolVersion) {
+        return versions.stream()
+                .filter(version -> version.getProtocolVersions().contains(protocolVersion))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No version found for protocol version " + protocolVersion));
+    }
+
+    public void sendProtocolError(String message) {
+        plugin.getLogger().error(message);
     }
 
     public void resetCache(@NotNull Player player) {
@@ -71,7 +94,7 @@ public class ScoreboardManager {
             return;
         }
         if (!createdTeams.getOrDefault(player.getUniqueId(), List.of()).contains(role)) {
-            dispatchPacket(UpdateTeamsPacket.create(role, playerNames), player);
+            dispatchPacket(UpdateTeamsPacket.create(plugin, role, playerNames), player);
             createdTeams.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>()).add(role);
             roleMappings.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).put(player.getUsername(), role);
         } else {
@@ -79,8 +102,8 @@ public class ScoreboardManager {
                     .entrySet().stream()
                     .filter((entry) -> List.of(playerNames).contains(entry.getKey()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-                    .forEach((playerName, oldRole) -> dispatchPacket(UpdateTeamsPacket.removeFromTeam(oldRole, playerName), player));
-            dispatchPacket(UpdateTeamsPacket.addToTeam(role, playerNames), player);
+                    .forEach((playerName, oldRole) -> dispatchPacket(UpdateTeamsPacket.removeFromTeam(plugin, oldRole, playerName), player));
+            dispatchPacket(UpdateTeamsPacket.addToTeam(plugin, role, playerNames), player);
             roleMappings.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).put(player.getUsername(), role);
         }
     }
@@ -103,7 +126,7 @@ public class ScoreboardManager {
         try {
             packetRegistration = PacketRegistration.of(UpdateTeamsPacket.class)
                     .direction(ProtocolUtils.Direction.CLIENTBOUND)
-                    .packetSupplier(UpdateTeamsPacket::new)
+                    .packetSupplier(() -> new UpdateTeamsPacket(plugin))
                     .stateRegistry(StateRegistry.PLAY)
                     .mapping(0x3E, MINECRAFT_1_8, false)
                     .mapping(0x44, MINECRAFT_1_12_2, false)
@@ -121,7 +144,7 @@ public class ScoreboardManager {
     }
 
     public void unregisterPacket() {
-        if(packetRegistration==null) {
+        if (packetRegistration == null) {
             return;
         }
         try {

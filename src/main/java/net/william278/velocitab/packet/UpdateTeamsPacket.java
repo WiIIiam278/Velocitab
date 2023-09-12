@@ -34,16 +34,18 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @ToString
 @AllArgsConstructor
-@NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Accessors(fluent = true)
 public class UpdateTeamsPacket implements MinecraftPacket {
+
+    private final Velocitab plugin;
 
     private String teamName;
     private UpdateMode mode;
@@ -56,9 +58,13 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     private String suffix;
     private List<String> entities;
 
+    public UpdateTeamsPacket(Velocitab plugin) {
+        this.plugin = plugin;
+    }
+
     @NotNull
-    protected static UpdateTeamsPacket create(@NotNull String teamName, @NotNull String... teamMembers) {
-        return new UpdateTeamsPacket()
+    protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+        return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.CREATE_TEAM)
                 .displayName(teamName)
@@ -72,16 +78,16 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     }
 
     @NotNull
-    protected static UpdateTeamsPacket addToTeam(@NotNull String teamName, @NotNull String... teamMembers) {
-        return new UpdateTeamsPacket()
+    protected static UpdateTeamsPacket addToTeam(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+        return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.ADD_PLAYERS)
                 .entities(Arrays.asList(teamMembers));
     }
 
     @NotNull
-    protected static UpdateTeamsPacket removeFromTeam(@NotNull String teamName, @NotNull String... teamMembers) {
-        return new UpdateTeamsPacket()
+    protected static UpdateTeamsPacket removeFromTeam(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+        return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.REMOVE_PLAYERS)
                 .entities(Arrays.asList(teamMembers));
@@ -89,26 +95,40 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @Override
     public void decode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
+        Optional<ScoreboardManager> scoreboardManagerOptional = plugin.getScoreboardManager();
+
+        if (scoreboardManagerOptional.isEmpty()) {
+            return;
+        }
+
+        ScoreboardManager scoreboardManager = scoreboardManagerOptional.get();
 
         if(mode==null) {
-            VersionManager.getInstance().sendProtocolError("Something went wrong while decoding a UpdateTeamsPacket" +
-                    ", if your server is on 1.8.x and you are using viaversion," +
+            scoreboardManager.sendProtocolError("Something went wrong while decoding a UpdateTeamsPacket" +
+                    ", if your server is on 1.8.x and you are using ViaVersion," +
                     ", please disable 'auto-team' in the config.yml and reload it.");
         }
 
-        VersionManager.getInstance().getVersion(protocolVersion).decode(byteBuf, this);
+        scoreboardManager.getVersion(protocolVersion).decode(byteBuf, this);
     }
 
     @Override
     public void encode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
+        Optional<ScoreboardManager> scoreboardManagerOptional = plugin.getScoreboardManager();
+
+        if (scoreboardManagerOptional.isEmpty()) {
+            return;
+        }
+
+        ScoreboardManager scoreboardManager = scoreboardManagerOptional.get();
 
         if(mode==null) {
-            VersionManager.getInstance().sendProtocolError("Something went wrong while encoding a UpdateTeamsPacket" +
-                    ", if your server is on 1.8.x and you are using viaversion," +
+            scoreboardManager.sendProtocolError("Something went wrong while encoding a UpdateTeamsPacket" +
+                    ", if your server is on 1.8.x and you are using ViaVersion," +
                     ", please disable 'auto-team' in the config.yml and reload it.");
         }
 
-        VersionManager.getInstance().getVersion(protocolVersion).encode(byteBuf, this);
+        scoreboardManager.getVersion(protocolVersion).encode(byteBuf, this);
     }
 
     @Override

@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 @SuppressWarnings("DuplicatedCode")
-public class Protocol403Adapter extends ProtocolAbstractAdapter {
+public class Protocol403Adapter extends TeamsPacketAdapter {
 
     public Protocol403Adapter() {
         super(Set.of(ProtocolVersion.MINECRAFT_1_13_2,

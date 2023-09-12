@@ -24,7 +24,6 @@ import com.velocitypowered.api.network.ProtocolVersion;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.william278.velocitab.packet.UpdateTeamsPacket;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +31,7 @@ import java.util.Set;
 
 @Getter
 @RequiredArgsConstructor
-public abstract class ProtocolAbstractAdapter {
+public abstract class TeamsPacketAdapter {
 
     private final Set<ProtocolVersion> protocolVersions;
 

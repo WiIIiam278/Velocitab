@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 @SuppressWarnings("DuplicatedCode")
-public class Protocol48Adapter extends ProtocolAbstractAdapter {
+public class Protocol48Adapter extends TeamsPacketAdapter {
 
     public Protocol48Adapter() {
         super(Set.of(ProtocolVersion.MINECRAFT_1_8));

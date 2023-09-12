@@ -39,7 +39,7 @@ public class ScoreboardManager {
     private final Velocitab plugin;
     private final Map<UUID, List<String>> createdTeams;
     private final Map<UUID, Map<String, String>> roleMappings;
-    private final Set<ProtocolAbstractAdapter> versions;
+    private final Set<TeamsPacketAdapter> versions;
 
     public ScoreboardManager(@NotNull Velocitab velocitab) {
         this.plugin = velocitab;
@@ -55,7 +55,7 @@ public class ScoreboardManager {
         versions.add(new Protocol48Adapter());
     }
 
-    public ProtocolAbstractAdapter getPacketAdapter(ProtocolVersion protocolVersion) {
+    public TeamsPacketAdapter getPacketAdapter(ProtocolVersion protocolVersion) {
         return versions.stream()
                 .filter(version -> version.getProtocolVersions().contains(protocolVersion))
                 .findFirst()

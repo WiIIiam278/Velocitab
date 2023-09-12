@@ -26,23 +26,24 @@ import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import io.netty.buffer.ByteBuf;
 import lombok.*;
 import lombok.experimental.Accessors;
-import org.apache.commons.text.StringEscapeUtils;
+import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @ToString
 @AllArgsConstructor
-@NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Accessors(fluent = true)
 public class UpdateTeamsPacket implements MinecraftPacket {
+
+    private final Velocitab plugin;
 
     private String teamName;
     private UpdateMode mode;
@@ -55,89 +56,77 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     private String suffix;
     private List<String> entities;
 
+    public UpdateTeamsPacket(Velocitab plugin) {
+        this.plugin = plugin;
+    }
+
     @NotNull
-    protected static UpdateTeamsPacket create(@NotNull String teamName, @NotNull String... teamMembers) {
-        return new UpdateTeamsPacket()
+    protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+        return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.CREATE_TEAM)
-                .displayName(getChatString(teamName))
+                .displayName(teamName)
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nameTagVisibility(NameTagVisibility.ALWAYS)
                 .collisionRule(CollisionRule.ALWAYS)
                 .color(15)
-                .prefix(getChatString(""))
-                .suffix(getChatString(""))
+                .prefix("")
+                .suffix("")
                 .entities(Arrays.asList(teamMembers));
     }
 
     @NotNull
-    protected static UpdateTeamsPacket addToTeam(@NotNull String teamName, @NotNull String... teamMembers) {
-        return new UpdateTeamsPacket()
+    protected static UpdateTeamsPacket addToTeam(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+        return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.ADD_PLAYERS)
                 .entities(Arrays.asList(teamMembers));
     }
 
     @NotNull
-    protected static UpdateTeamsPacket removeFromTeam(@NotNull String teamName, @NotNull String... teamMembers) {
-        return new UpdateTeamsPacket()
+    protected static UpdateTeamsPacket removeFromTeam(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+        return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.REMOVE_PLAYERS)
                 .entities(Arrays.asList(teamMembers));
     }
 
-    @NotNull
-    private static String getChatString(@NotNull String string) {
-        return "{\"text\":\"" + StringEscapeUtils.escapeJson(string) + "\"}";
-    }
-
     @Override
     public void decode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
-        teamName = ProtocolUtils.readString(byteBuf);
-        mode = UpdateMode.byId(byteBuf.readByte());
-        if (mode == UpdateMode.REMOVE_TEAM) {
+        Optional<ScoreboardManager> scoreboardManagerOptional = plugin.getScoreboardManager();
+
+        if (scoreboardManagerOptional.isEmpty()) {
             return;
         }
-        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.UPDATE_INFO) {
-            displayName = ProtocolUtils.readString(byteBuf);
-            friendlyFlags = FriendlyFlag.fromBitMask(byteBuf.readByte());
-            nameTagVisibility = NameTagVisibility.byId(ProtocolUtils.readString(byteBuf));
-            collisionRule = CollisionRule.byId(ProtocolUtils.readString(byteBuf));
-            color = byteBuf.readByte();
-            prefix = ProtocolUtils.readString(byteBuf);
-            suffix = ProtocolUtils.readString(byteBuf);
+
+        ScoreboardManager scoreboardManager = scoreboardManagerOptional.get();
+
+        if (mode == null) {
+            scoreboardManager.sendProtocolError("Something went wrong while decoding a UpdateTeamsPacket" +
+                    ", if your server is on 1.8.x and you are using ViaVersion," +
+                    ", please disable 'auto-team' in the config.yml and reload it.");
         }
-        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.ADD_PLAYERS || mode == UpdateMode.REMOVE_PLAYERS) {
-            int entityCount = ProtocolUtils.readVarInt(byteBuf);
-            entities = new ArrayList<>(entityCount);
-            for (int j = 0; j < entityCount; j++) {
-                entities.add(ProtocolUtils.readString(byteBuf));
-            }
-        }
+
+        scoreboardManager.getPacketAdapter(protocolVersion).decode(byteBuf, this);
     }
 
     @Override
     public void encode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
-        ProtocolUtils.writeString(byteBuf, teamName);
-        byteBuf.writeByte(mode.id());
-        if (mode == UpdateMode.REMOVE_TEAM) {
+        Optional<ScoreboardManager> scoreboardManagerOptional = plugin.getScoreboardManager();
+
+        if (scoreboardManagerOptional.isEmpty()) {
             return;
         }
-        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.UPDATE_INFO) {
-            ProtocolUtils.writeString(byteBuf, displayName);
-            byteBuf.writeByte(FriendlyFlag.toBitMask(friendlyFlags));
-            ProtocolUtils.writeString(byteBuf, nameTagVisibility.id());
-            ProtocolUtils.writeString(byteBuf, collisionRule.id());
-            byteBuf.writeByte(color);
-            ProtocolUtils.writeString(byteBuf, prefix);
-            ProtocolUtils.writeString(byteBuf, suffix);
+
+        ScoreboardManager scoreboardManager = scoreboardManagerOptional.get();
+
+        if (mode == null) {
+            scoreboardManager.sendProtocolError("Something went wrong while encoding a UpdateTeamsPacket" +
+                    ", if your server is on 1.8.x and you are using ViaVersion," +
+                    ", please disable 'auto-team' in the config.yml and reload it.");
         }
-        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.ADD_PLAYERS || mode == UpdateMode.REMOVE_PLAYERS) {
-            ProtocolUtils.writeVarInt(byteBuf, entities != null ? entities.size() : 0);
-            for (String entity : entities != null ? entities : new ArrayList<String>()) {
-                ProtocolUtils.writeString(byteBuf, entity);
-            }
-        }
+
+        scoreboardManager.getPacketAdapter(protocolVersion).encode(byteBuf, this);
     }
 
     @Override

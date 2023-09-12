@@ -67,6 +67,7 @@ public class PlayerTabList {
         final Player joined = event.getPlayer();
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined));
 
+
         // Remove the player from the tracking list if they are switching servers
         final RegisteredServer previousServer = event.getPreviousServer();
         if (previousServer == null) {
@@ -90,6 +91,8 @@ public class PlayerTabList {
         final TabPlayer tabPlayer = plugin.getTabPlayer(joined);
         players.add(tabPlayer);
 
+
+
         // Update lists
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
@@ -111,8 +114,11 @@ public class PlayerTabList {
                                         () -> createEntry(player, tabList).thenAccept(tabList::addEntry)
                                 );
                         addPlayerToTabList(player, tabPlayer);
+
                         player.sendHeaderAndFooter(this);
+
                     }
+
 
                     plugin.getScoreboardManager().ifPresent(manager -> manager.setRoles(joined, playerRoles));
                 })

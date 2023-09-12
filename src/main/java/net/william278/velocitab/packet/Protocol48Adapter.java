@@ -30,6 +30,7 @@ import java.util.Set;
 
 @SuppressWarnings("DuplicatedCode")
 public class Protocol48Adapter extends ProtocolAbstractAdapter {
+
     public Protocol48Adapter() {
         super(Set.of(ProtocolVersion.MINECRAFT_1_8));
     }

@@ -30,6 +30,7 @@ import java.util.Set;
 
 @SuppressWarnings("DuplicatedCode")
 public class Protocol403Adapter extends ProtocolAbstractAdapter {
+
     public Protocol403Adapter() {
         super(Set.of(ProtocolVersion.MINECRAFT_1_13_2,
                 ProtocolVersion.MINECRAFT_1_14_4,

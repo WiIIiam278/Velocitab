@@ -63,7 +63,7 @@ public class ScoreboardManager {
     }
 
     public void sendProtocolError(String message) {
-        plugin.getLogger().error(message);
+        plugin.log(Level.ERROR, message);
     }
 
     public void resetCache(@NotNull Player player) {

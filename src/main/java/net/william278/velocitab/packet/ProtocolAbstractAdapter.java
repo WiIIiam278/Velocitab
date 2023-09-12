@@ -42,7 +42,7 @@ public abstract class ProtocolAbstractAdapter {
 
     @NotNull
     protected String getChatString(@NotNull String string) {
-        return "{\"text\":\"" + StringEscapeUtils.escapeJson(string) + "\"}";
+        return String.format("{\"text\":\"%s\"}", StringEscapeUtils.escapeJson(string));
     }
 
 

@@ -120,7 +120,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
         ScoreboardManager scoreboardManager = scoreboardManagerOptional.get();
 
-        if(mode==null) {
+        if (mode == null) {
             scoreboardManager.sendProtocolError("Something went wrong while encoding a UpdateTeamsPacket" +
                     ", if your server is on 1.8.x and you are using ViaVersion," +
                     ", please disable 'auto-team' in the config.yml and reload it.");

@@ -27,11 +27,9 @@ import io.netty.buffer.ByteBuf;
 import lombok.*;
 import lombok.experimental.Accessors;
 import net.william278.velocitab.Velocitab;
-import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -109,7 +107,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                     ", please disable 'auto-team' in the config.yml and reload it.");
         }
 
-        scoreboardManager.getVersion(protocolVersion).decode(byteBuf, this);
+        scoreboardManager.getPacketAdapter(protocolVersion).decode(byteBuf, this);
     }
 
     @Override
@@ -128,7 +126,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                     ", please disable 'auto-team' in the config.yml and reload it.");
         }
 
-        scoreboardManager.getVersion(protocolVersion).encode(byteBuf, this);
+        scoreboardManager.getPacketAdapter(protocolVersion).encode(byteBuf, this);
     }
 
     @Override

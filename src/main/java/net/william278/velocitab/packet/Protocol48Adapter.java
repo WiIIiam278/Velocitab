@@ -18,20 +18,20 @@
  */
 
 
-package net.william278.velocitab.packet.versions;
+package net.william278.velocitab.packet;
 
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import io.netty.buffer.ByteBuf;
-import net.william278.velocitab.packet.UpdateTeamsPacket;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @SuppressWarnings("DuplicatedCode")
-public class Protocol48 extends AbstractVersion {
-    public Protocol48() {
-        super(List.of(ProtocolVersion.MINECRAFT_1_8));
+public class Protocol48Adapter extends ProtocolAbstractAdapter {
+    public Protocol48Adapter() {
+        super(Set.of(ProtocolVersion.MINECRAFT_1_8));
     }
 
     @Override

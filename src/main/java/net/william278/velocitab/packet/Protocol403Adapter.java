@@ -18,20 +18,20 @@
  */
 
 
-package net.william278.velocitab.packet.versions;
+package net.william278.velocitab.packet;
 
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import io.netty.buffer.ByteBuf;
-import net.william278.velocitab.packet.UpdateTeamsPacket;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @SuppressWarnings("DuplicatedCode")
-public class Protocol403 extends AbstractVersion {
-    public Protocol403() {
-        super(List.of(ProtocolVersion.MINECRAFT_1_13_2,
+public class Protocol403Adapter extends ProtocolAbstractAdapter {
+    public Protocol403Adapter() {
+        super(Set.of(ProtocolVersion.MINECRAFT_1_13_2,
                 ProtocolVersion.MINECRAFT_1_14_4,
                 ProtocolVersion.MINECRAFT_1_15_2,
                 ProtocolVersion.MINECRAFT_1_16_4,

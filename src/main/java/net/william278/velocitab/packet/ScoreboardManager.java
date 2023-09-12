@@ -25,10 +25,6 @@ import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import com.velocitypowered.proxy.protocol.StateRegistry;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.packet.versions.AbstractVersion;
-import net.william278.velocitab.packet.versions.Protocol340;
-import net.william278.velocitab.packet.versions.Protocol403;
-import net.william278.velocitab.packet.versions.Protocol48;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
@@ -43,7 +39,7 @@ public class ScoreboardManager {
     private final Velocitab plugin;
     private final Map<UUID, List<String>> createdTeams;
     private final Map<UUID, Map<String, String>> roleMappings;
-    private final Set<AbstractVersion> versions;
+    private final Set<ProtocolAbstractAdapter> versions;
 
     public ScoreboardManager(@NotNull Velocitab velocitab) {
         this.plugin = velocitab;
@@ -54,12 +50,12 @@ public class ScoreboardManager {
     }
 
     private void registerVersions() {
-        versions.add(new Protocol403());
-        versions.add(new Protocol340());
-        versions.add(new Protocol48());
+        versions.add(new Protocol403Adapter());
+        versions.add(new Protocol340Adapter());
+        versions.add(new Protocol48Adapter());
     }
 
-    public AbstractVersion getVersion(ProtocolVersion protocolVersion) {
+    public ProtocolAbstractAdapter getPacketAdapter(ProtocolVersion protocolVersion) {
         return versions.stream()
                 .filter(version -> version.getProtocolVersions().contains(protocolVersion))
                 .findFirst()

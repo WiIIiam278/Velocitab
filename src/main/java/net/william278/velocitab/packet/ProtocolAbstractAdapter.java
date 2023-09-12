@@ -18,7 +18,7 @@
  */
 
 
-package net.william278.velocitab.packet.versions;
+package net.william278.velocitab.packet;
 
 import com.velocitypowered.api.network.ProtocolVersion;
 import io.netty.buffer.ByteBuf;
@@ -28,13 +28,13 @@ import net.william278.velocitab.packet.UpdateTeamsPacket;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @RequiredArgsConstructor
-public abstract class AbstractVersion {
+public abstract class ProtocolAbstractAdapter {
 
-    private final List<ProtocolVersion> protocolVersions;
+    private final Set<ProtocolVersion> protocolVersions;
 
     public abstract void decode(ByteBuf byteBuf, UpdateTeamsPacket updateTeamsPacket);
 

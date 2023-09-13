@@ -43,10 +43,11 @@ public final class VelocitabCommand {
                 .credits("Author",
                         AboutMenu.Credit.of("William278").description("Click to visit website").url("https://william278.net"))
                 .credits("Contributors",
-                        AboutMenu.Credit.of("Ironboundred").description("Coding"),
-                        AboutMenu.Credit.of("Emibergo02").description("Coding"),
-                        AboutMenu.Credit.of("FreeMonoid").description("Coding"),
-                        AboutMenu.Credit.of("4drian3d").description("Coding"))
+                        AboutMenu.Credit.of("AlexDev03").description("Code"),
+                        AboutMenu.Credit.of("Ironboundred").description("Code"),
+                        AboutMenu.Credit.of("Emibergo02").description("Code"),
+                        AboutMenu.Credit.of("FreeMonoid").description("Code"),
+                        AboutMenu.Credit.of("4drian3d").description("Code"))
                 .buttons(
                         AboutMenu.Link.of("https://william278.net/docs/velocitab").text("Docs").icon("⛏"),
                         AboutMenu.Link.of("https://discord.gg/tVYhJfyDWG").text("Discord").icon("⭐").color(TextColor.color(0x6773f5)),

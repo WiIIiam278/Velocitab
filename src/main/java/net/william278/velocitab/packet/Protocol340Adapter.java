@@ -23,11 +23,15 @@ package net.william278.velocitab.packet;
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import io.netty.buffer.ByteBuf;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Adapter for handling the UpdateTeamsPacket for Minecraft 1.12.2
+ */
 @SuppressWarnings("DuplicatedCode")
 public class Protocol340Adapter extends TeamsPacketAdapter {
 
@@ -36,20 +40,20 @@ public class Protocol340Adapter extends TeamsPacketAdapter {
     }
 
     @Override
-    public void decode(ByteBuf byteBuf, UpdateTeamsPacket updateTeamsPacket) {
-        updateTeamsPacket.teamName(ProtocolUtils.readString(byteBuf));
+    public void decode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet) {
+        packet.teamName(ProtocolUtils.readString(byteBuf));
         UpdateTeamsPacket.UpdateMode mode = UpdateTeamsPacket.UpdateMode.byId(byteBuf.readByte());
         if (mode == UpdateTeamsPacket.UpdateMode.REMOVE_TEAM) {
             return;
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.UPDATE_INFO) {
-            updateTeamsPacket.displayName(ProtocolUtils.readString(byteBuf));
-            updateTeamsPacket.prefix(ProtocolUtils.readString(byteBuf));
-            updateTeamsPacket.suffix(ProtocolUtils.readString(byteBuf));
-            updateTeamsPacket.friendlyFlags(UpdateTeamsPacket.FriendlyFlag.fromBitMask(byteBuf.readByte()));
-            updateTeamsPacket.nameTagVisibility(UpdateTeamsPacket.NameTagVisibility.byId(ProtocolUtils.readString(byteBuf)));
-            updateTeamsPacket.collisionRule(UpdateTeamsPacket.CollisionRule.byId(ProtocolUtils.readString(byteBuf)));
-            updateTeamsPacket.color(byteBuf.readByte());
+            packet.displayName(ProtocolUtils.readString(byteBuf));
+            packet.prefix(ProtocolUtils.readString(byteBuf));
+            packet.suffix(ProtocolUtils.readString(byteBuf));
+            packet.friendlyFlags(UpdateTeamsPacket.FriendlyFlag.fromBitMask(byteBuf.readByte()));
+            packet.nameTagVisibility(UpdateTeamsPacket.NameTagVisibility.byId(ProtocolUtils.readString(byteBuf)));
+            packet.collisionRule(UpdateTeamsPacket.CollisionRule.byId(ProtocolUtils.readString(byteBuf)));
+            packet.color(byteBuf.readByte());
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.ADD_PLAYERS || mode == UpdateTeamsPacket.UpdateMode.REMOVE_PLAYERS) {
             int entityCount = ProtocolUtils.readVarInt(byteBuf);
@@ -57,29 +61,29 @@ public class Protocol340Adapter extends TeamsPacketAdapter {
             for (int j = 0; j < entityCount; j++) {
                 entities.add(ProtocolUtils.readString(byteBuf));
             }
-            updateTeamsPacket.entities(entities);
+            packet.entities(entities);
         }
     }
 
     @Override
-    public void encode(ByteBuf byteBuf, UpdateTeamsPacket updateTeamsPacket) {
-        ProtocolUtils.writeString(byteBuf, updateTeamsPacket.teamName().substring(0, Math.min(updateTeamsPacket.teamName().length(), 16)));
-        UpdateTeamsPacket.UpdateMode mode = updateTeamsPacket.mode();
+    public void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet) {
+        ProtocolUtils.writeString(byteBuf, packet.teamName().substring(0, Math.min(packet.teamName().length(), 16)));
+        UpdateTeamsPacket.UpdateMode mode = packet.mode();
         byteBuf.writeByte(mode.id());
         if (mode == UpdateTeamsPacket.UpdateMode.REMOVE_TEAM) {
             return;
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.UPDATE_INFO) {
-            ProtocolUtils.writeString(byteBuf, updateTeamsPacket.displayName());
-            ProtocolUtils.writeString(byteBuf, updateTeamsPacket.prefix());
-            ProtocolUtils.writeString(byteBuf, updateTeamsPacket.suffix());
-            byteBuf.writeByte(UpdateTeamsPacket.FriendlyFlag.toBitMask(updateTeamsPacket.friendlyFlags()));
-            ProtocolUtils.writeString(byteBuf, updateTeamsPacket.nameTagVisibility().id());
-            ProtocolUtils.writeString(byteBuf, updateTeamsPacket.collisionRule().id());
-            byteBuf.writeByte(updateTeamsPacket.color());
+            ProtocolUtils.writeString(byteBuf, packet.displayName());
+            ProtocolUtils.writeString(byteBuf, packet.prefix());
+            ProtocolUtils.writeString(byteBuf, packet.suffix());
+            byteBuf.writeByte(UpdateTeamsPacket.FriendlyFlag.toBitMask(packet.friendlyFlags()));
+            ProtocolUtils.writeString(byteBuf, packet.nameTagVisibility().id());
+            ProtocolUtils.writeString(byteBuf, packet.collisionRule().id());
+            byteBuf.writeByte(packet.color());
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.ADD_PLAYERS || mode == UpdateTeamsPacket.UpdateMode.REMOVE_PLAYERS) {
-            List<String> entities = updateTeamsPacket.entities();
+            List<String> entities = packet.entities();
             ProtocolUtils.writeVarInt(byteBuf, entities != null ? entities.size() : 0);
             for (String entity : entities != null ? entities : new ArrayList<String>()) {
                 ProtocolUtils.writeString(byteBuf, entity);

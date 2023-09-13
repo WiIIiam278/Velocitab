@@ -35,9 +35,9 @@ public abstract class TeamsPacketAdapter {
 
     private final Set<ProtocolVersion> protocolVersions;
 
-    public abstract void decode(ByteBuf byteBuf, UpdateTeamsPacket updateTeamsPacket);
+    public abstract void decode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet);
 
-    public abstract void encode(ByteBuf byteBuf, UpdateTeamsPacket updateTeamsPacket);
+    public abstract void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet);
 
     @NotNull
     protected String getChatString(@NotNull String string) {

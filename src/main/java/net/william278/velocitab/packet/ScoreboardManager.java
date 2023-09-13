@@ -55,15 +55,12 @@ public class ScoreboardManager {
         versions.add(new Protocol48Adapter());
     }
 
-    public TeamsPacketAdapter getPacketAdapter(ProtocolVersion protocolVersion) {
+    @NotNull
+    public TeamsPacketAdapter getPacketAdapter(@NotNull ProtocolVersion version) {
         return versions.stream()
-                .filter(version -> version.getProtocolVersions().contains(protocolVersion))
+                .filter(adapter -> adapter.getProtocolVersions().contains(version))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No version found for protocol version " + protocolVersion));
-    }
-
-    public void sendProtocolError(String message) {
-        plugin.log(Level.ERROR, message);
+                .orElseThrow(() -> new IllegalArgumentException("No adapter found for protocol version " + version));
     }
 
     public void resetCache(@NotNull Player player) {
@@ -98,7 +95,10 @@ public class ScoreboardManager {
                     .entrySet().stream()
                     .filter((entry) -> List.of(playerNames).contains(entry.getKey()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-                    .forEach((playerName, oldRole) -> dispatchPacket(UpdateTeamsPacket.removeFromTeam(plugin, oldRole, playerName), player));
+                    .forEach((playerName, oldRole) -> dispatchPacket(
+                            UpdateTeamsPacket.removeFromTeam(plugin, oldRole, playerName),
+                            player
+                    ));
             dispatchPacket(UpdateTeamsPacket.addToTeam(plugin, role, playerNames), player);
             roleMappings.computeIfAbsent(player.getUniqueId(), k -> new HashMap<>()).put(player.getUsername(), role);
         }

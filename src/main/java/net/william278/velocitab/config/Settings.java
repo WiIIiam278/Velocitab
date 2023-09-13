@@ -92,6 +92,11 @@ public class Settings {
     private Map<String, String> serverDisplayNames = Map.of("very-long-server-name", "VLSN");
 
     @Getter
+    @YamlKey("server_group_order")
+    @YamlComment("Define order of server groups for sorting.")
+    private List<String> serverGroupOrder = List.of("default");
+
+    @Getter
     @YamlKey("enable_papi_hook")
     @YamlComment("Whether to enable the PAPIProxyBridge hook for PAPI support")
     private boolean enablePapiHook = true;
@@ -173,6 +178,16 @@ public class Settings {
     @NotNull
     public String getServerDisplayName(@NotNull String serverName) {
         return serverDisplayNames.getOrDefault(serverName, serverName);
+    }
+
+    /**
+     * Get the ordinal position of the server group
+     *
+     * @param serverGroupName The server group name
+     * @return The ordinal position of the server group
+     */
+    public int getServerGroupPosition(@NotNull String serverGroupName) {
+        return serverGroupOrder.indexOf(serverGroupName);
     }
 
     /**

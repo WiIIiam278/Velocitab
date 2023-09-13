@@ -79,6 +79,15 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     /**
+     * Get the ordinal position of the TAB server group this player is connected to
+     * @param plugin instance of the {@link Velocitab} plugin
+     * @return The ordinal position of the server group
+     */
+    public int getServerGroupPosition(@NotNull Velocitab plugin) {
+        return plugin.getSettings().getServerGroupPosition(getServerGroup(plugin));
+    }
+
+    /**
      * Get the display name of the server the player is currently on.
      * Affected by server aliases defined in the config.
      *
@@ -155,7 +164,9 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         ROLE_NAME((player, plugin) -> player.getRole().getName()
                 .map(name -> name.length() > 3 ? name.substring(0, 3) : name)
                 .orElse("")),
-        SERVER_NAME((player, plugin) -> player.getServerName());
+        SERVER_NAME((player, plugin) -> player.getServerName()),
+        SERVER_GROUP((player, plugin) -> String.valueOf(player.getServerGroupPosition(plugin))),
+        SERVER_GROUP_NAME((player, plugin) -> player.getServerGroup(plugin));
 
         private final BiFunction<TabPlayer, Velocitab, String> elementResolver;
 

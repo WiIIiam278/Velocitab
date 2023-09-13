@@ -115,8 +115,8 @@ public class Settings {
     @YamlComment("Ordered list of elements by which players should be sorted. " +
             "(ROLE_WEIGHT, ROLE_NAME and SERVER_NAME are supported)")
     private List<String> sortPlayersBy = List.of(
-            TabPlayer.SortableElement.ROLE_WEIGHT.name(),
-            TabPlayer.SortableElement.ROLE_NAME.name()
+            "%role_weight%",
+            "%username%"
     );
 
     @Getter
@@ -190,11 +190,8 @@ public class Settings {
     }
 
     @NotNull
-    public List<TabPlayer.SortableElement> getSortingElementList() {
-        return sortPlayersBy.stream()
-                .map(p -> TabPlayer.SortableElement.parse(p).orElseThrow(() ->
-                        new IllegalArgumentException("Invalid sorting element set in config file: " + p)))
-                .toList();
+    public List<String> getSortingElementList() {
+        return sortPlayersBy;
     }
 
 }

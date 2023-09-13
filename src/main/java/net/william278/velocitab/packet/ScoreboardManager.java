@@ -86,6 +86,7 @@ public class ScoreboardManager {
             plugin.getTabList().removeOfflinePlayer(player);
             return;
         }
+        System.out.println("updateRoles " + playerNames.length + " " + role + " " + player.getUsername());
         if (!createdTeams.getOrDefault(player.getUniqueId(), List.of()).contains(role)) {
             dispatchPacket(UpdateTeamsPacket.create(plugin, role, playerNames), player);
             createdTeams.computeIfAbsent(player.getUniqueId(), k -> new ArrayList<>()).add(role);

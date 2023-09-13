@@ -25,6 +25,7 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -38,6 +39,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private final int highestWeight;
     private int headerIndex = 0;
     private int footerIndex = 0;
+    private @Nullable String teamName;
 
     public TabPlayer(@NotNull Player player, @NotNull Role role, int highestWeight) {
         this.player = player;
@@ -99,10 +101,17 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     @NotNull
-    public String getTeamName(@NotNull Velocitab plugin) {
-        return plugin.getSettings().getSortingElementList().stream()
-                .map(element -> element.resolve(this, plugin))
-                .collect(Collectors.joining("-"));
+    public CompletableFuture<String> getTeamName(@NotNull Velocitab plugin) {
+        return plugin.getSortingManager().map(sortingManager -> sortingManager.getTeamName(this))
+                .orElseGet(() -> CompletableFuture.completedFuture(""))
+                .thenApply(teamName -> {
+                    this.teamName = teamName;
+                    return teamName;
+                });
+    }
+
+    public Optional<String> getLastTeamName() {
+        return Optional.ofNullable(teamName);
     }
 
     public void sendHeaderAndFooter(@NotNull PlayerTabList tabList) {

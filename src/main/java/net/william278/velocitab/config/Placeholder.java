@@ -48,7 +48,8 @@ public enum Placeholder {
     SUFFIX((plugin, player) -> player.getRole().getSuffix().orElse("")),
     ROLE((plugin, player) -> player.getRole().getName().orElse("")),
     ROLE_DISPLAY_NAME((plugin, player) -> player.getRole().getDisplayName().orElse("")),
-    DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getTeamName(plugin)));
+    ROLE_WEIGHT((plugin, player) -> Integer.toString(player.getRole().getWeight())),
+    DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getLastTeamName().orElse("")));
 
     /**
      * Function to replace placeholders with a real value

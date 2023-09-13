@@ -65,6 +65,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @NotNull
     protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+        System.out.println("create " + teamName + " " + Arrays.toString(teamMembers));
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.CREATE_TEAM)
@@ -80,6 +81,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @NotNull
     protected static UpdateTeamsPacket addToTeam(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+        System.out.println("addToTeam " + teamName + " " + Arrays.toString(teamMembers));
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.ADD_PLAYERS)
@@ -88,6 +90,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @NotNull
     protected static UpdateTeamsPacket removeFromTeam(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+        System.out.println("removeFromTeam " + teamName + " " + Arrays.toString(teamMembers));
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.REMOVE_PLAYERS)
@@ -102,6 +105,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         }
         if (mode == null) {
             plugin.log(Level.ERROR, String.format(PACKET_ADAPTION_ERROR, "decoding"));
+            return;
         }
 
         optionalManager.get().getPacketAdapter(protocolVersion).decode(byteBuf, this);
@@ -115,6 +119,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         }
         if (mode == null) {
             plugin.log(Level.ERROR, String.format(PACKET_ADAPTION_ERROR, "encoding"));
+            return;
         }
 
         optionalManager.get().getPacketAdapter(protocolVersion).encode(byteBuf, this);

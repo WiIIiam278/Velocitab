@@ -91,6 +91,7 @@ public class PlayerTabList {
         final TabPlayer tabPlayer = plugin.getTabPlayer(joined);
         players.add(tabPlayer);
 
+        tabPlayer.getTeamName(plugin);
 
 
         // Update lists
@@ -106,7 +107,7 @@ public class PlayerTabList {
                             continue;
                         }
 
-                        playerRoles.put(player.getPlayer().getUsername(), player.getTeamName(plugin));
+                        playerRoles.put(player.getPlayer().getUsername(), player.getLastTeamName().orElse(""));
                         tabList.getEntries().stream()
                                 .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
                                 .ifPresentOrElse(
@@ -151,7 +152,7 @@ public class PlayerTabList {
                 );
         plugin.getScoreboardManager().ifPresent(manager -> manager.updateRoles(
                 player.getPlayer(),
-                newPlayer.getTeamName(plugin),
+                newPlayer.getLastTeamName().orElse("a"),
                 newPlayer.getPlayer().getUsername()
         ));
 
@@ -196,11 +197,11 @@ public class PlayerTabList {
             player.getPlayer().getTabList().getEntries().stream()
                     .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
                     .ifPresent(entry -> entry.setDisplayName(displayName));
-            plugin.getScoreboardManager().ifPresent(manager -> manager.updateRoles(
+            player.getTeamName(plugin).thenAccept(t -> plugin.getScoreboardManager().ifPresent(manager -> manager.updateRoles(
                     player.getPlayer(),
-                    tabPlayer.getTeamName(plugin),
+                    t,
                     tabPlayer.getPlayer().getUsername()
-            ));
+            )));
         }));
     }
 

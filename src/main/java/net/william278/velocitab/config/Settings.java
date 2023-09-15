@@ -28,6 +28,7 @@ import net.william278.velocitab.player.TabPlayer;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -66,8 +67,8 @@ public class Settings {
 
     @Getter
     @YamlKey("server_groups")
-    @YamlComment("The servers in each group of servers")
-    private Map<String, List<String>> serverGroups = Map.of("default", List.of("lobby1", "lobby2", "lobby3"));
+    @YamlComment("The servers in each group of servers. The order of groups is important when sorting by SERVER_GROUP.")
+    private LinkedHashMap<String, List<String>> serverGroups = new LinkedHashMap<>(Map.of("default", List.of("lobby1", "lobby2", "lobby3")));
 
     @Getter
     @YamlKey("fallback_enabled")
@@ -92,11 +93,6 @@ public class Settings {
     private Map<String, String> serverDisplayNames = Map.of("very-long-server-name", "VLSN");
 
     @Getter
-    @YamlKey("server_group_order")
-    @YamlComment("Define order of server groups for sorting.")
-    private List<String> serverGroupOrder = List.of("default");
-
-    @Getter
     @YamlKey("enable_papi_hook")
     @YamlComment("Whether to enable the PAPIProxyBridge hook for PAPI support")
     private boolean enablePapiHook = true;
@@ -118,7 +114,7 @@ public class Settings {
 
     @YamlKey("sort_players_by")
     @YamlComment("Ordered list of elements by which players should be sorted. " +
-            "(ROLE_WEIGHT, ROLE_NAME and SERVER_NAME are supported)")
+            "(ROLE_WEIGHT, ROLE_NAME, SERVER_NAME, SERVER_GROUP and SERVER_GROUP_NAME are supported)")
     private List<String> sortPlayersBy = List.of(
             TabPlayer.SortableElement.ROLE_WEIGHT.name(),
             TabPlayer.SortableElement.ROLE_NAME.name()
@@ -132,9 +128,9 @@ public class Settings {
     private int updateRate = 0;
 
     public Settings(@NotNull Velocitab plugin) {
-        this.serverGroups = Map.of("default",
+        this.serverGroups = new LinkedHashMap<>(Map.of("default",
                 plugin.getServer().getAllServers().stream().map(server -> server.getServerInfo().getName()).toList()
-        );
+        ));
     }
 
     @SuppressWarnings("unused")
@@ -187,7 +183,7 @@ public class Settings {
      * @return The ordinal position of the server group
      */
     public int getServerGroupPosition(@NotNull String serverGroupName) {
-        return serverGroupOrder.indexOf(serverGroupName);
+        return List.copyOf(serverGroups.keySet()).indexOf(serverGroupName);
     }
 
     /**

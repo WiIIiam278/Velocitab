@@ -172,7 +172,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
             int position = player.getServerGroupPosition(plugin);
             return position >= 0
                     ? String.format("%0" + Integer.toString(orderSize).length() + "d", position)
-                    : orderSize + player.getServerGroup(plugin);
+                    : String.valueOf(orderSize);
         }),
         SERVER_GROUP_NAME((player, plugin) -> player.getServerGroup(plugin));
 

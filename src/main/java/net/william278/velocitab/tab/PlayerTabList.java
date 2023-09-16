@@ -193,7 +193,7 @@ public class PlayerTabList {
             return;
         }
 
-        players.forEach(player -> tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
+        tabPlayer.getDisplayName(plugin).thenAccept(displayName -> players.forEach(player -> {
             player.getPlayer().getTabList().getEntries().stream()
                     .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
                     .ifPresent(entry -> entry.setDisplayName(displayName));

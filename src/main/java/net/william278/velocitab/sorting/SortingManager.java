@@ -42,7 +42,6 @@ public class SortingManager {
                 .map(e -> Placeholder.replace(e, plugin, player))
                 .toList())
                 .thenApply(v -> v.stream().map(this::adaptValue).toList())
-
                 .thenApply(v -> String.join("-", v));
     }
 
@@ -51,9 +50,8 @@ public class SortingManager {
             return "";
         }
         if (value.matches("[0-9]+")) {
-            int weight = Integer.parseInt(value);
-//            System.out.println(weight + " " + (weight >= 0 ? 0 : 1) + String.format("%0" + intSortSize + "d", Integer.parseInt(Strings.repeat("9", intSortSize)) - Math.abs(weight)));
-            return (weight >= 0 ? 0 : 1) + String.format("%0" + intSortSize + "d", Integer.parseInt(Strings.repeat("9", intSortSize)) - Math.abs(weight));//
+            int integer = Integer.parseInt(value);
+            return (integer >= 0 ? 0 : 1) + String.format("%0" + intSortSize + "d", Integer.parseInt(Strings.repeat("9", intSortSize)) - Math.abs(integer));//
         }
 
         if (value.length() > 4) {

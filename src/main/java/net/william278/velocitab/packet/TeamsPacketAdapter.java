@@ -35,8 +35,6 @@ public abstract class TeamsPacketAdapter {
 
     private final Set<ProtocolVersion> protocolVersions;
 
-    public abstract void decode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet);
-
     public abstract void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet);
 
     @NotNull

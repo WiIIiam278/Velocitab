@@ -29,7 +29,6 @@ import lombok.experimental.Accessors;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.event.Level;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,8 +43,6 @@ import java.util.stream.Collectors;
 @Accessors(fluent = true)
 public class UpdateTeamsPacket implements MinecraftPacket {
 
-    private static final String PACKET_ADAPTION_ERROR = "Something went wrong while %s a UpdateTeamsPacket, if your " +
-            "server is on 1.8.x and you are using ViaVersion, please disable 'auto-team' in the config.yml and reload.";
     private final Velocitab plugin;
 
     private String teamName;
@@ -96,25 +93,15 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @Override
     public void decode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
-        final Optional<ScoreboardManager> optionalManager = plugin.getScoreboardManager();
-        if (optionalManager.isEmpty()) {
-            return;
-        }
-        if (mode == null) {
-            plugin.log(Level.ERROR, String.format(PACKET_ADAPTION_ERROR, "decoding"));
-        }
-
-        optionalManager.get().getPacketAdapter(protocolVersion).decode(byteBuf, this);
+        throw new UnsupportedOperationException("Operation not supported");
     }
 
     @Override
     public void encode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
         final Optional<ScoreboardManager> optionalManager = plugin.getScoreboardManager();
+
         if (optionalManager.isEmpty()) {
             return;
-        }
-        if (mode == null) {
-            plugin.log(Level.ERROR, String.format(PACKET_ADAPTION_ERROR, "encoding"));
         }
 
         optionalManager.get().getPacketAdapter(protocolVersion).encode(byteBuf, this);

@@ -48,32 +48,6 @@ public class Protocol403Adapter extends TeamsPacketAdapter {
     }
 
     @Override
-    public void decode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet) {
-        packet.teamName(ProtocolUtils.readString(byteBuf));
-        UpdateTeamsPacket.UpdateMode mode = UpdateTeamsPacket.UpdateMode.byId(byteBuf.readByte());
-        if (mode == UpdateTeamsPacket.UpdateMode.REMOVE_TEAM) {
-            return;
-        }
-        if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.UPDATE_INFO) {
-            packet.displayName(ProtocolUtils.readString(byteBuf));
-            packet.friendlyFlags(UpdateTeamsPacket.FriendlyFlag.fromBitMask(byteBuf.readByte()));
-            packet.nameTagVisibility(UpdateTeamsPacket.NameTagVisibility.byId(ProtocolUtils.readString(byteBuf)));
-            packet.collisionRule(UpdateTeamsPacket.CollisionRule.byId(ProtocolUtils.readString(byteBuf)));
-            packet.color(byteBuf.readByte());
-            packet.prefix(ProtocolUtils.readString(byteBuf));
-            packet.suffix(ProtocolUtils.readString(byteBuf));
-        }
-        if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.ADD_PLAYERS || mode == UpdateTeamsPacket.UpdateMode.REMOVE_PLAYERS) {
-            int entityCount = ProtocolUtils.readVarInt(byteBuf);
-            List<String> entities = new ArrayList<>(entityCount);
-            for (int j = 0; j < entityCount; j++) {
-                entities.add(ProtocolUtils.readString(byteBuf));
-            }
-            packet.entities(entities);
-        }
-    }
-
-    @Override
     public void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet) {
         ProtocolUtils.writeString(byteBuf, packet.teamName());
         UpdateTeamsPacket.UpdateMode mode = packet.mode();

@@ -17,11 +17,13 @@ sort_players_by:
 ### List of elements
 The following sorting elements are supported:
 
-| Sorting element | Description                                        |
-|:---------------:|----------------------------------------------------|
-|  `ROLE_WEIGHT`  | The weight of the player's primary LuckPerms group |
-|   `ROLE_NAME`   | The name of the player's primary LuckPerms group   |
-|  `SERVER_NAME`  | The name of the server the player is connected to  |
+|   Sorting element   | Description                                             |
+|:-------------------:|---------------------------------------------------------|
+|    `ROLE_WEIGHT`    | The weight of the player's primary LuckPerms group      |
+|     `ROLE_NAME`     | The name of the player's primary LuckPerms group        |
+|    `SERVER_NAME`    | The name of the server the player is connected to       |
+|   `SERVER_GROUP`    | The order in which the groups are designated            |
+| `SERVER_GROUP_NAME` | The name of the server group the player is connected to |
 
 ## Technical details
 In Minecraft, the TAB list is sorted by the client; the server does not handle the actual display order of names in the list. Players are sorted first by the name of their scoreboard team, then by their name. This is why having a proxy TAB plugin sort players is a surprisingly complex feature request!

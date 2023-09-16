@@ -43,8 +43,6 @@ import java.util.stream.Collectors;
 @Accessors(fluent = true)
 public class UpdateTeamsPacket implements MinecraftPacket {
 
-    private static final String PACKET_ADAPTION_ERROR = "Something went wrong while %s a UpdateTeamsPacket, if your " +
-            "server is on 1.8.x and you are using ViaVersion, please disable 'auto-team' in the config.yml and reload.";
     private Velocitab plugin;
 
     private String teamName;

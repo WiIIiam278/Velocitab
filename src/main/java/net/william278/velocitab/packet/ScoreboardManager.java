@@ -125,15 +125,15 @@ public class ScoreboardManager {
                     .direction(ProtocolUtils.Direction.CLIENTBOUND)
                     .packetSupplier(() -> new UpdateTeamsPacket(plugin))
                     .stateRegistry(StateRegistry.PLAY)
-                    .mapping(0x3E, MINECRAFT_1_8, false)
-                    .mapping(0x44, MINECRAFT_1_12_2, false)
-                    .mapping(0x47, MINECRAFT_1_13, false)
-                    .mapping(0x4B, MINECRAFT_1_14, false)
-                    .mapping(0x4C, MINECRAFT_1_15, false)
-                    .mapping(0x55, MINECRAFT_1_17, false)
-                    .mapping(0x58, MINECRAFT_1_19_1, false)
-                    .mapping(0x56, MINECRAFT_1_19_3, false)
-                    .mapping(0x5A, MINECRAFT_1_19_4, false);
+                    .mapping(0x3E, MINECRAFT_1_8, true)
+                    .mapping(0x44, MINECRAFT_1_12_2, true)
+                    .mapping(0x47, MINECRAFT_1_13, true)
+                    .mapping(0x4B, MINECRAFT_1_14, true)
+                    .mapping(0x4C, MINECRAFT_1_15, true)
+                    .mapping(0x55, MINECRAFT_1_17, true)
+                    .mapping(0x58, MINECRAFT_1_19_1, true)
+                    .mapping(0x56, MINECRAFT_1_19_3, true)
+                    .mapping(0x5A, MINECRAFT_1_19_4, true);
             packetRegistration.register();
         } catch (Throwable e) {
             plugin.log(Level.ERROR, "Failed to register UpdateTeamsPacket", e);

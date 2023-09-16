@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 @Accessors(fluent = true)
 public class UpdateTeamsPacket implements MinecraftPacket {
 
-    private Velocitab plugin;
+    private final Velocitab plugin;
 
     private String teamName;
     private UpdateMode mode;

@@ -29,7 +29,6 @@ import lombok.experimental.Accessors;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.event.Level;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,7 +45,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     private static final String PACKET_ADAPTION_ERROR = "Something went wrong while %s a UpdateTeamsPacket, if your " +
             "server is on 1.8.x and you are using ViaVersion, please disable 'auto-team' in the config.yml and reload.";
-    private final Velocitab plugin;
+    private Velocitab plugin;
 
     private String teamName;
     private UpdateMode mode;
@@ -65,7 +64,6 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @NotNull
     protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
-        System.out.println("Creating team " + teamName);
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.CREATE_TEAM)
@@ -81,7 +79,6 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @NotNull
     protected static UpdateTeamsPacket addToTeam(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
-        System.out.println("Adding to team " + teamName);
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.ADD_PLAYERS)
@@ -90,7 +87,6 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @NotNull
     protected static UpdateTeamsPacket removeFromTeam(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
-        System.out.println("Removing from team " + teamName);
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.REMOVE_PLAYERS)
@@ -99,25 +95,15 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @Override
     public void decode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
-        final Optional<ScoreboardManager> optionalManager = plugin.getScoreboardManager();
-        if (optionalManager.isEmpty()) {
-            return;
-        }
-        if (mode == null) {
-            plugin.log(Level.ERROR, String.format(PACKET_ADAPTION_ERROR, "decoding"));
-        }
-
-        optionalManager.get().getPacketAdapter(protocolVersion).decode(byteBuf, this);
+        throw new UnsupportedOperationException("Operation not supported");
     }
 
     @Override
     public void encode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
         final Optional<ScoreboardManager> optionalManager = plugin.getScoreboardManager();
+
         if (optionalManager.isEmpty()) {
             return;
-        }
-        if (mode == null) {
-            plugin.log(Level.ERROR, String.format(PACKET_ADAPTION_ERROR, "encoding"));
         }
 
         optionalManager.get().getPacketAdapter(protocolVersion).encode(byteBuf, this);

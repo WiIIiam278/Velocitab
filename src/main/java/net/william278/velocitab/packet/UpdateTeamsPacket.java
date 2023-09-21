@@ -26,23 +26,25 @@ import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import io.netty.buffer.ByteBuf;
 import lombok.*;
 import lombok.experimental.Accessors;
-import org.apache.commons.text.StringEscapeUtils;
+import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @ToString
 @AllArgsConstructor
-@NoArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Accessors(fluent = true)
 public class UpdateTeamsPacket implements MinecraftPacket {
+
+    private final Velocitab plugin;
 
     private String teamName;
     private UpdateMode mode;
@@ -55,76 +57,75 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     private String suffix;
     private List<String> entities;
 
+    public UpdateTeamsPacket(@NotNull Velocitab plugin) {
+        this.plugin = plugin;
+    }
+
     @NotNull
-    protected static UpdateTeamsPacket create(@NotNull String teamName, @NotNull String... teamMembers) {
-        return new UpdateTeamsPacket()
+    protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+        return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.CREATE_TEAM)
-                .displayName(getChatString(teamName))
+                .displayName(teamName)
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nameTagVisibility(NameTagVisibility.ALWAYS)
                 .collisionRule(CollisionRule.ALWAYS)
                 .color(15)
-                .prefix(getChatString(""))
-                .suffix(getChatString(""))
+                .prefix("")
+                .suffix("")
                 .entities(Arrays.asList(teamMembers));
     }
 
     @NotNull
-    protected static UpdateTeamsPacket create(@NotNull String teamName, @NotNull String displayName, @Nullable String prefix, @Nullable String suffix, @NotNull String... teamMembers) {
-        return new UpdateTeamsPacket()
+    protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String displayName, @Nullable String prefix, @Nullable String suffix, @NotNull String... teamMembers) {
+        return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.CREATE_TEAM)
-                .displayName(getChatString(displayName))
+                .displayName(displayName)
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nameTagVisibility(NameTagVisibility.ALWAYS)
                 .collisionRule(CollisionRule.ALWAYS)
                 .color(getLastColor(prefix))
-                .prefix(getChatString(prefix == null ? "" : prefix))
-                .suffix(getChatString(suffix == null ? "" : suffix))
+                .prefix(prefix == null ? "" : prefix)
+                .suffix(suffix == null ? "" : suffix)
                 .entities(Arrays.asList(teamMembers));
     }
 
     @NotNull
-    protected static UpdateTeamsPacket changeNameTag(@NotNull String teamName, @Nullable String prefix, @Nullable String suffix) {
-        return new UpdateTeamsPacket()
+    protected static UpdateTeamsPacket changeNameTag(@NotNull Velocitab plugin, @NotNull String teamName, @Nullable String prefix, @Nullable String suffix) {
+        return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.UPDATE_INFO)
-                .displayName(getChatString(teamName))
+                .displayName(teamName)
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nameTagVisibility(NameTagVisibility.ALWAYS)
                 .collisionRule(CollisionRule.ALWAYS)
                 .color(getLastColor(prefix))
-                .prefix(getChatString(prefix == null ? "" : prefix))
-                .suffix(getChatString(suffix == null ? "" : suffix));
+                .prefix(prefix == null ? "" : prefix)
+                .suffix(suffix == null ? "" : suffix);
     }
 
     @NotNull
-    protected static UpdateTeamsPacket addToTeam(@NotNull String teamName, @NotNull String... teamMembers) {
-        return new UpdateTeamsPacket()
+    protected static UpdateTeamsPacket addToTeam(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+        return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.ADD_PLAYERS)
                 .entities(Arrays.asList(teamMembers));
     }
 
     @NotNull
-    protected static UpdateTeamsPacket removeFromTeam(@NotNull String teamName, @NotNull String... teamMembers) {
-        return new UpdateTeamsPacket()
+    protected static UpdateTeamsPacket removeFromTeam(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+        return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.REMOVE_PLAYERS)
                 .entities(Arrays.asList(teamMembers));
     }
 
     @NotNull
-    protected static UpdateTeamsPacket removeTeam(@NotNull String teamName) {
-        return new UpdateTeamsPacket()
+    protected static UpdateTeamsPacket removeTeam(@NotNull Velocitab plugin, @NotNull String teamName) {
+        return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.REMOVE_TEAM);
-    }
-
-    @NotNull
-    private static String getChatString(@NotNull String string) {
-        return "{\"text\":\"" + StringEscapeUtils.escapeJson(string) + "\"}";
     }
 
     public static int getLastColor(@Nullable String text) {
@@ -172,7 +173,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
             this.colorChar= colorChar;
             this.id = id;
         }
-        
+
         public static int getColorId(char var) {
             return Arrays.stream(values()).filter(color -> color.colorChar == var).map(c -> c.id).findFirst().orElse(15);
         }
@@ -180,51 +181,18 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @Override
     public void decode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
-        teamName = ProtocolUtils.readString(byteBuf);
-        mode = UpdateMode.byId(byteBuf.readByte());
-        if (mode == UpdateMode.REMOVE_TEAM) {
-            return;
-        }
-        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.UPDATE_INFO) {
-            displayName = ProtocolUtils.readString(byteBuf);
-            friendlyFlags = FriendlyFlag.fromBitMask(byteBuf.readByte());
-            nameTagVisibility = NameTagVisibility.byId(ProtocolUtils.readString(byteBuf));
-            collisionRule = CollisionRule.byId(ProtocolUtils.readString(byteBuf));
-            color = byteBuf.readByte();
-            prefix = ProtocolUtils.readString(byteBuf);
-            suffix = ProtocolUtils.readString(byteBuf);
-        }
-        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.ADD_PLAYERS || mode == UpdateMode.REMOVE_PLAYERS) {
-            int entityCount = ProtocolUtils.readVarInt(byteBuf);
-            entities = new ArrayList<>(entityCount);
-            for (int j = 0; j < entityCount; j++) {
-                entities.add(ProtocolUtils.readString(byteBuf));
-            }
-        }
+        throw new UnsupportedOperationException("Operation not supported");
     }
 
     @Override
     public void encode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
-        ProtocolUtils.writeString(byteBuf, teamName);
-        byteBuf.writeByte(mode.id());
-        if (mode == UpdateMode.REMOVE_TEAM) {
+        final Optional<ScoreboardManager> optionalManager = plugin.getScoreboardManager();
+
+        if (optionalManager.isEmpty()) {
             return;
         }
-        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.UPDATE_INFO) {
-            ProtocolUtils.writeString(byteBuf, displayName);
-            byteBuf.writeByte(FriendlyFlag.toBitMask(friendlyFlags));
-            ProtocolUtils.writeString(byteBuf, nameTagVisibility.id());
-            ProtocolUtils.writeString(byteBuf, collisionRule.id());
-            byteBuf.writeByte(color);
-            ProtocolUtils.writeString(byteBuf, prefix);
-            ProtocolUtils.writeString(byteBuf, suffix);
-        }
-        if (mode == UpdateMode.CREATE_TEAM || mode == UpdateMode.ADD_PLAYERS || mode == UpdateMode.REMOVE_PLAYERS) {
-            ProtocolUtils.writeVarInt(byteBuf, entities != null ? entities.size() : 0);
-            for (String entity : entities != null ? entities : new ArrayList<String>()) {
-                ProtocolUtils.writeString(byteBuf, entity);
-            }
-        }
+
+        optionalManager.get().getPacketAdapter(protocolVersion).encode(byteBuf, this);
     }
 
     @Override

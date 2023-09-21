@@ -19,6 +19,7 @@
 
 package net.william278.velocitab.packet;
 
+import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
@@ -39,6 +40,8 @@ public class ScoreboardManager {
 
     private PacketRegistration<UpdateTeamsPacket> packetRegistration;
     private final Velocitab plugin;
+    private final Map<UUID, Map<String, String>> roleMappings;
+    private final Set<TeamsPacketAdapter> versions;
     private final Map<UUID, String> createdTeams;
     private final Map<String, String> nametags;
 
@@ -46,6 +49,23 @@ public class ScoreboardManager {
         this.plugin = velocitab;
         this.createdTeams = new ConcurrentHashMap<>();
         this.nametags = new ConcurrentHashMap<>();
+        this.roleMappings = new HashMap<>();
+        this.versions = new HashSet<>();
+        this.registerVersions();
+    }
+
+    private void registerVersions() {
+        versions.add(new Protocol403Adapter());
+        versions.add(new Protocol340Adapter());
+        versions.add(new Protocol48Adapter());
+    }
+
+    @NotNull
+    public TeamsPacketAdapter getPacketAdapter(@NotNull ProtocolVersion version) {
+        return versions.stream()
+                .filter(adapter -> adapter.getProtocolVersions().contains(version))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No adapter found for protocol version " + version));
     }
 
     public void resetCache(@NotNull Player player) {
@@ -168,15 +188,17 @@ public class ScoreboardManager {
         try {
             packetRegistration = PacketRegistration.of(UpdateTeamsPacket.class)
                     .direction(ProtocolUtils.Direction.CLIENTBOUND)
-                    .packetSupplier(UpdateTeamsPacket::new)
+                    .packetSupplier(() -> new UpdateTeamsPacket(plugin))
                     .stateRegistry(StateRegistry.PLAY)
-                    .mapping(0x47, MINECRAFT_1_13, false)
-                    .mapping(0x4B, MINECRAFT_1_14, false)
-                    .mapping(0x4C, MINECRAFT_1_15, false)
-                    .mapping(0x55, MINECRAFT_1_17, false)
-                    .mapping(0x58, MINECRAFT_1_19_1, false)
-                    .mapping(0x56, MINECRAFT_1_19_3, false)
-                    .mapping(0x5A, MINECRAFT_1_19_4, false);
+                    .mapping(0x3E, MINECRAFT_1_8, true)
+                    .mapping(0x44, MINECRAFT_1_12_2, true)
+                    .mapping(0x47, MINECRAFT_1_13, true)
+                    .mapping(0x4B, MINECRAFT_1_14, true)
+                    .mapping(0x4C, MINECRAFT_1_15, true)
+                    .mapping(0x55, MINECRAFT_1_17, true)
+                    .mapping(0x58, MINECRAFT_1_19_1, true)
+                    .mapping(0x56, MINECRAFT_1_19_3, true)
+                    .mapping(0x5A, MINECRAFT_1_19_4, true);
             packetRegistration.register();
         } catch (Throwable e) {
             plugin.log(Level.ERROR, "Failed to register UpdateTeamsPacket", e);

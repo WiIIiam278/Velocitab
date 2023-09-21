@@ -28,6 +28,7 @@ import net.william278.velocitab.player.TabPlayer;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -71,8 +72,8 @@ public class Settings {
 
     @Getter
     @YamlKey("server_groups")
-    @YamlComment("The servers in each group of servers")
-    private Map<String, List<String>> serverGroups = Map.of("default", List.of("lobby1", "lobby2", "lobby3"));
+    @YamlComment("The servers in each group of servers. The order of groups is important when sorting by SERVER_GROUP.")
+    private LinkedHashMap<String, List<String>> serverGroups = new LinkedHashMap<>(Map.of("default", List.of("lobby1", "lobby2", "lobby3")));
 
     @Getter
     @YamlKey("fallback_enabled")
@@ -118,7 +119,7 @@ public class Settings {
 
     @YamlKey("sort_players_by")
     @YamlComment("Ordered list of elements by which players should be sorted. " +
-            "(ROLE_WEIGHT, ROLE_NAME and SERVER_NAME are supported)")
+            "(ROLE_WEIGHT, ROLE_NAME, SERVER_NAME, SERVER_GROUP and SERVER_GROUP_NAME are supported)")
     private List<String> sortPlayersBy = List.of(
             TabPlayer.SortableElement.ROLE_WEIGHT.name(),
             TabPlayer.SortableElement.ROLE_NAME.name()
@@ -132,9 +133,9 @@ public class Settings {
     private int updateRate = 0;
 
     public Settings(@NotNull Velocitab plugin) {
-        this.serverGroups = Map.of("default",
+        this.serverGroups = new LinkedHashMap<>(Map.of("default",
                 plugin.getServer().getAllServers().stream().map(server -> server.getServerInfo().getName()).toList()
-        );
+        ));
     }
 
     @SuppressWarnings("unused")
@@ -188,6 +189,16 @@ public class Settings {
     @NotNull
     public String getServerDisplayName(@NotNull String serverName) {
         return serverDisplayNames.getOrDefault(serverName, serverName);
+    }
+
+    /**
+     * Get the ordinal position of the server group
+     *
+     * @param serverGroupName The server group name
+     * @return The ordinal position of the server group
+     */
+    public int getServerGroupPosition(@NotNull String serverGroupName) {
+        return List.copyOf(serverGroups.keySet()).indexOf(serverGroupName);
     }
 
     /**

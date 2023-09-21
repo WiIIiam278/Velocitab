@@ -91,40 +91,42 @@ public class PlayerTabList {
         final TabPlayer tabPlayer = plugin.getTabPlayer(joined);
         players.add(tabPlayer);
 
-        tabPlayer.getTeamName(plugin);
+        tabPlayer.getTeamName(plugin).thenAccept(t -> {
+            plugin.getServer().getScheduler()
+                    .buildTask(plugin, () -> {
+                        final TabList tabList = joined.getTabList();
+                        final Map<String, String> playerRoles = new HashMap<>();
+
+                        for (TabPlayer player : players) {
+                            // Skip players on other servers if the setting is enabled
+                            if (plugin.getSettings().isOnlyListPlayersInSameGroup() && serversInGroup.isPresent()
+                                    && !serversInGroup.get().contains(player.getServerName())) {
+                                continue;
+                            }
+
+                            playerRoles.put(player.getPlayer().getUsername(), player.getLastTeamName().orElse(""));
+                            tabList.getEntries().stream()
+                                    .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
+                                    .ifPresentOrElse(
+                                            entry -> player.getDisplayName(plugin).thenAccept(entry::setDisplayName),
+                                            () -> createEntry(player, tabList).thenAccept(tabList::addEntry)
+                                    );
+                            addPlayerToTabList(player, tabPlayer);
+
+                            player.sendHeaderAndFooter(this);
+
+                        }
+
+
+                        plugin.getScoreboardManager().ifPresent(manager -> manager.setRoles(joined, playerRoles));
+                    })
+                    .delay(500, TimeUnit.MILLISECONDS)
+                    .schedule();
+        });
 
 
         // Update lists
-        plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> {
-                    final TabList tabList = joined.getTabList();
-                    final Map<String, String> playerRoles = new HashMap<>();
 
-                    for (TabPlayer player : players) {
-                        // Skip players on other servers if the setting is enabled
-                        if (plugin.getSettings().isOnlyListPlayersInSameGroup() && serversInGroup.isPresent()
-                            && !serversInGroup.get().contains(player.getServerName())) {
-                            continue;
-                        }
-
-                        playerRoles.put(player.getPlayer().getUsername(), player.getLastTeamName().orElse(""));
-                        tabList.getEntries().stream()
-                                .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
-                                .ifPresentOrElse(
-                                        entry -> player.getDisplayName(plugin).thenAccept(entry::setDisplayName),
-                                        () -> createEntry(player, tabList).thenAccept(tabList::addEntry)
-                                );
-                        addPlayerToTabList(player, tabPlayer);
-
-                        player.sendHeaderAndFooter(this);
-
-                    }
-
-
-                    plugin.getScoreboardManager().ifPresent(manager -> manager.setRoles(joined, playerRoles));
-                })
-                .delay(500, TimeUnit.MILLISECONDS)
-                .schedule();
     }
 
     @NotNull
@@ -150,11 +152,15 @@ public class PlayerTabList {
                         () -> createEntry(newPlayer, player.getPlayer().getTabList())
                                 .thenAccept(entry -> player.getPlayer().getTabList().addEntry(entry))
                 );
-        plugin.getScoreboardManager().ifPresent(manager -> manager.updateRoles(
-                player.getPlayer(),
-                newPlayer.getLastTeamName().orElse("a"),
-                newPlayer.getPlayer().getUsername()
-        ));
+
+        newPlayer.getTeamName(plugin).thenAccept(t -> {
+            plugin.getScoreboardManager().ifPresent(manager -> manager.updateRoles(
+                    player.getPlayer(),
+                    t,
+                    newPlayer.getPlayer().getUsername()
+            ));
+        });
+
 
     }
 

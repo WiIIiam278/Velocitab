@@ -31,7 +31,6 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 public final class TabPlayer implements Comparable<TabPlayer> {
     private final Player player;
@@ -124,11 +123,17 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     @NotNull
-    public String getTeamName(@NotNull Velocitab plugin) {
-        return plugin.getSettings().getSortingElementList().stream()
-                .map(element -> element.resolve(this, plugin))
-                .collect(Collectors.joining("-"))
-                + getPlayer().getUniqueId().toString().substring(0, 3);
+    public CompletableFuture<String> getTeamName(@NotNull Velocitab plugin) {
+        return plugin.getSortingManager().map(sortingManager -> sortingManager.getTeamName(this))
+                .orElseGet(() -> CompletableFuture.completedFuture(""))
+                .thenApply(teamName -> {
+                    this.teamName = teamName;
+                    return teamName;
+                });
+    }
+
+    public Optional<String> getLastTeamName() {
+        return Optional.ofNullable(teamName);
     }
 
 
@@ -137,11 +142,19 @@ public final class TabPlayer implements Comparable<TabPlayer> {
                 .thenAccept(footer -> player.sendPlayerListHeaderAndFooter(header, footer)));
     }
 
+    public int getHeaderIndex() {
+        return headerIndex;
+    }
+
     public void incrementHeaderIndex(@NotNull Velocitab plugin) {
         headerIndex++;
         if (headerIndex >= plugin.getSettings().getHeaderListSize(getServerGroup(plugin))) {
             headerIndex = 0;
         }
+    }
+
+    public int getFooterIndex() {
+        return footerIndex;
     }
 
     public void incrementFooterIndex(@NotNull Velocitab plugin) {

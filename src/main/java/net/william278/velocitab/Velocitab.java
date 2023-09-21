@@ -31,6 +31,7 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
+import lombok.Getter;
 import net.william278.annotaml.Annotaml;
 import net.william278.desertwell.util.UpdateChecker;
 import net.william278.desertwell.util.Version;
@@ -75,6 +76,8 @@ public class Velocitab {
     private List<Hook> hooks;
     private ScoreboardManager scoreboardManager;
     private SortingManager sortingManager;
+    @Getter
+    private boolean isActive;
 
     @Inject
     public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path dataDirectory) {
@@ -93,6 +96,7 @@ public class Velocitab {
         registerCommands();
         registerMetrics();
         checkForUpdates();
+        isActive = true;
         logger.info("Successfully enabled Velocitab");
     }
 
@@ -101,6 +105,7 @@ public class Velocitab {
         server.getScheduler().tasksByPlugin(this).forEach(ScheduledTask::cancel);
         disableScoreboardManager();
         getLuckPermsHook().ifPresent(LuckPermsHook::close);
+        isActive = false;
         logger.info("Successfully disabled Velocitab");
     }
 

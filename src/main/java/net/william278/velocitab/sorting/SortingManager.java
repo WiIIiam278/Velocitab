@@ -23,6 +23,7 @@ import com.google.common.base.Strings;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
+import org.slf4j.event.Level;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -31,7 +32,6 @@ import java.util.stream.Collectors;
 public class SortingManager {
 
     private final Velocitab plugin;
-    private final int intSortSize = 3;
 
     public SortingManager(Velocitab plugin) {
         this.plugin = plugin;
@@ -41,8 +41,21 @@ public class SortingManager {
         return allOf(plugin.getSettings().getSortingElementList().stream()
                 .map(e -> Placeholder.replace(e, plugin, player))
                 .toList())
-                .thenApply(v -> v.stream().map(this::adaptValue).toList())
-                .thenApply(v -> String.join("-", v));
+                .thenApply(v -> v.stream().map(this::adaptValue).collect(Collectors.toList()))
+                .thenApply(v -> handleList(player, v));
+    }
+
+    private String handleList(TabPlayer player, List<String> values) {
+        String result = String.join("", values);
+
+        if (result.length() > 12) {
+            result = result.substring(0, 12);
+            plugin.log(Level.WARN, "Sorting element list is too long, truncating to 16 characters");
+        }
+
+        result += player.getPlayer().getUniqueId().toString().substring(0, 4);
+
+        return result;
     }
 
     private String adaptValue(String value) {
@@ -51,10 +64,11 @@ public class SortingManager {
         }
         if (value.matches("[0-9]+")) {
             int integer = Integer.parseInt(value);
+            int intSortSize = 3;
             return (integer >= 0 ? 0 : 1) + String.format("%0" + intSortSize + "d", Integer.parseInt(Strings.repeat("9", intSortSize)) - Math.abs(integer));//
         }
 
-        if (value.length() > 4) {
+        if (value.length() > 6) {
             return value.substring(0, 4);
         }
 

@@ -26,6 +26,7 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.event.Level;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -42,6 +43,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private int footerIndex = 0;
     @Getter
     private Component lastDisplayname;
+    private String teamName;
 
     public TabPlayer(@NotNull Player player, @NotNull Role role, int highestWeight) {
         this.player = player;
@@ -129,6 +131,9 @@ public final class TabPlayer implements Comparable<TabPlayer> {
                 .thenApply(teamName -> {
                     this.teamName = teamName;
                     return teamName;
+                }).exceptionally(e -> {
+                    plugin.log(Level.ERROR,  "Failed to get team name for " + player.getUsername(), e);
+                    return "";
                 });
     }
 
@@ -142,19 +147,11 @@ public final class TabPlayer implements Comparable<TabPlayer> {
                 .thenAccept(footer -> player.sendPlayerListHeaderAndFooter(header, footer)));
     }
 
-    public int getHeaderIndex() {
-        return headerIndex;
-    }
-
     public void incrementHeaderIndex(@NotNull Velocitab plugin) {
         headerIndex++;
         if (headerIndex >= plugin.getSettings().getHeaderListSize(getServerGroup(plugin))) {
             headerIndex = 0;
         }
-    }
-
-    public int getFooterIndex() {
-        return footerIndex;
     }
 
     public void incrementFooterIndex(@NotNull Velocitab plugin) {

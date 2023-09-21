@@ -62,21 +62,6 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     }
 
     @NotNull
-    protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
-        return new UpdateTeamsPacket(plugin)
-                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
-                .mode(UpdateMode.CREATE_TEAM)
-                .displayName(teamName)
-                .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
-                .nameTagVisibility(NameTagVisibility.ALWAYS)
-                .collisionRule(CollisionRule.ALWAYS)
-                .color(15)
-                .prefix("")
-                .suffix("")
-                .entities(Arrays.asList(teamMembers));
-    }
-
-    @NotNull
     protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String displayName, @Nullable String prefix, @Nullable String suffix, @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)

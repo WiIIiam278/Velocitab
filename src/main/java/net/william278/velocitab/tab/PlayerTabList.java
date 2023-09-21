@@ -36,9 +36,7 @@ import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -94,8 +92,6 @@ public class PlayerTabList {
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
                     final TabList tabList = joined.getTabList();
-                    final Map<String, String> playerRoles = new HashMap<>();
-
                     for (TabPlayer player : players) {
                         // Skip players on other servers if the setting is enabled
                         if (plugin.getSettings().isOnlyListPlayersInSameGroup() && serversInGroup.isPresent()
@@ -103,7 +99,6 @@ public class PlayerTabList {
                             continue;
                         }
 
-                        playerRoles.put(player.getPlayer().getUsername(), player.getTeamName(plugin));
                         tabList.getEntries().stream()
                                 .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
                                 .ifPresentOrElse(

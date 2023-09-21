@@ -32,7 +32,7 @@ public class PAPIProxyBridgeHook extends Hook {
 
     public PAPIProxyBridgeHook(@NotNull Velocitab plugin) {
         super(plugin);
-        this.api = PlaceholderAPI.getInstance();
+        this.api = PlaceholderAPI.createInstance();
         this.api.setCacheExpiry(Math.max(0, plugin.getSettings().getPapiCacheTime()));
     }
 

@@ -182,7 +182,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
                     ? String.format("%0" + Integer.toString(orderSize).length() + "d", position)
                     : String.valueOf(orderSize);
         }),
-        SERVER_GROUP_NAME((player, plugin) -> player.getServerGroup(plugin));
+        SERVER_GROUP_NAME(TabPlayer::getServerGroup);
 
         private final BiFunction<TabPlayer, Velocitab, String> elementResolver;
 

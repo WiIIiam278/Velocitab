@@ -40,7 +40,6 @@ public class ScoreboardManager {
 
     private PacketRegistration<UpdateTeamsPacket> packetRegistration;
     private final Velocitab plugin;
-    private final Map<UUID, Map<String, String>> roleMappings;
     private final Set<TeamsPacketAdapter> versions;
     private final Map<UUID, String> createdTeams;
     private final Map<String, String> nametags;
@@ -49,7 +48,6 @@ public class ScoreboardManager {
         this.plugin = velocitab;
         this.createdTeams = new ConcurrentHashMap<>();
         this.nametags = new ConcurrentHashMap<>();
-        this.roleMappings = new HashMap<>();
         this.versions = new HashSet<>();
         this.registerVersions();
     }
@@ -71,7 +69,7 @@ public class ScoreboardManager {
     public void resetCache(@NotNull Player player) {
         String team = createdTeams.remove(player.getUniqueId());
         if (team != null) {
-            dispatchGroupPacket(UpdateTeamsPacket.removeTeam(team), player);
+            dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, team), player);
         }
     }
 
@@ -86,17 +84,17 @@ public class ScoreboardManager {
         TabPlayer tabPlayer = plugin.getTabPlayer(player);
 
         tabPlayer.getNametag(plugin).thenAccept(nametag -> {
-            String[] split = nametag.split("%username%");
+            String[] split = nametag.split("%username%", 2);
             String prefix = split[0];
             String suffix = split.length > 1 ? split[1] : "";
 
             if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
                 createdTeams.computeIfAbsent(player.getUniqueId(), k -> role);
-                this.nametags.put(role, prefix + suffix);
-                dispatchGroupPacket(UpdateTeamsPacket.create(role, "", prefix, suffix, new String[]{name}), player);
-            } else if (!this.nametags.getOrDefault(role, "").equals(prefix + suffix)) {
-                this.nametags.put(role, prefix + suffix);
-                dispatchGroupPacket(UpdateTeamsPacket.changeNameTag(role, prefix, suffix), player);
+                this.nametags.put(role, prefix + ":::" + suffix);
+                dispatchGroupPacket(UpdateTeamsPacket.create(plugin, role, "", prefix, suffix, name), player);
+            } else if (!this.nametags.getOrDefault(role, "").equals(prefix  + ":::" + suffix)) {
+                this.nametags.put(role, prefix  + ":::" + suffix);
+                dispatchGroupPacket(UpdateTeamsPacket.changeNameTag(plugin, role, prefix, suffix), player);
             }
         }).exceptionally(e -> {
             plugin.log(Level.ERROR, "Failed to update role for " + player.getUsername(), e);
@@ -140,10 +138,11 @@ public class ScoreboardManager {
                 return;
             }
 
-            String[] split = nametag.split("%username%");
+            String[] split = nametag.split(":::", 2);
             String prefix = split[0];
             String suffix = split.length > 1 ? split[1] : "";
-            dispatchPacket(UpdateTeamsPacket.create(role, "", prefix, suffix, new String[]{p.getUsername()}), player);
+
+            dispatchPacket(UpdateTeamsPacket.create(plugin, role, "", prefix, suffix, p.getUsername()), player);
         });
     }
 

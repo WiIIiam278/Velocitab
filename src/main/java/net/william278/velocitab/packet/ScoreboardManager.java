@@ -82,7 +82,7 @@ public class ScoreboardManager {
         final String name = player.getUsername();
         final TabPlayer tabPlayer = plugin.getTabPlayer(player);
         tabPlayer.getNametag(plugin).thenAccept(nametag -> {
-            String[] split = nametag.split("%username%", 2);
+            String[] split = nametag.split(player.getUsername(), 2);
             String prefix = split[0];
             String suffix = split.length > 1 ? split[1] : "";
 

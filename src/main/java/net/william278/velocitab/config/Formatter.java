@@ -81,7 +81,7 @@ public enum Formatter {
 
     @NotNull
     public String formatLegacySymbols(@NotNull String text, @NotNull TabPlayer player, @NotNull Velocitab plugin) {
-        return LegacyComponentSerializer..legacySection()
+        return LegacyComponentSerializer.legacySection()
                 .serialize(format(text, player, plugin));
     }
     @NotNull

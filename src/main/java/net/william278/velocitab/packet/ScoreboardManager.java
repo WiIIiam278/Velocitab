@@ -126,14 +126,12 @@ public class ScoreboardManager {
                 return;
             }
 
-            String role = createdTeams.getOrDefault(p.getUniqueId(), "");
-
+            final String role = createdTeams.getOrDefault(p.getUniqueId(), "");
             if (role.isEmpty()) {
                 return;
             }
 
-            String nametag = nametags.getOrDefault(role, "");
-
+            final String nametag = nametags.getOrDefault(role, "");
             if (nametag.isEmpty()) {
                 return;
             }

@@ -118,7 +118,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     public CompletableFuture<String> getNametag(@NotNull Velocitab plugin) {
         final String serverGroup = plugin.getSettings().getServerGroup(getServerName());
         return Placeholder.replace(plugin.getSettings().getNametag(serverGroup), plugin, this)
-                .thenApply(formatted -> plugin.getFormatter().formatLegacySymbols(formatted)
+                .thenApply(formatted -> plugin.getFormatter().formatLegacySymbols(formatted, this, plugin)
                         .replace(player.getUsername(), "%username%"));
 
     }

@@ -20,6 +20,7 @@
 package net.william278.velocitab.player;
 
 import com.velocitypowered.api.proxy.Player;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
@@ -36,8 +37,12 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private final Player player;
     private final Role role;
     private final int highestWeight;
+    @Getter
     private int headerIndex = 0;
+    @Getter
     private int footerIndex = 0;
+    @Getter
+    private Component lastDisplayname;
 
     public TabPlayer(@NotNull Player player, @NotNull Role role, int highestWeight) {
         this.player = player;
@@ -105,7 +110,15 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     public CompletableFuture<Component> getDisplayName(@NotNull Velocitab plugin) {
         final String serverGroup = plugin.getSettings().getServerGroup(getServerName());
         return Placeholder.replace(plugin.getSettings().getFormat(serverGroup), plugin, this)
-                .thenApply(formatted -> plugin.getFormatter().format(formatted, this, plugin));
+                .thenApply(formatted -> plugin.getFormatter().format(formatted, this, plugin))
+                .thenApply(c -> this.lastDisplayname = c);
+    }
+
+    @NotNull
+    public CompletableFuture<String> getNametag(@NotNull Velocitab plugin) {
+        final String serverGroup = plugin.getSettings().getServerGroup(getServerName());
+        return Placeholder.replace(plugin.getSettings().getNametag(serverGroup), plugin, this)
+                .thenApply(formatted -> plugin.getFormatter().formatLegacySymbols(formatted, this, plugin));
 
     }
 
@@ -113,16 +126,14 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     public String getTeamName(@NotNull Velocitab plugin) {
         return plugin.getSettings().getSortingElementList().stream()
                 .map(element -> element.resolve(this, plugin))
-                .collect(Collectors.joining("-"));
+                .collect(Collectors.joining("-"))
+                + getPlayer().getUniqueId().toString().substring(0, 3);
     }
+
 
     public void sendHeaderAndFooter(@NotNull PlayerTabList tabList) {
         tabList.getHeader(this).thenAccept(header -> tabList.getFooter(this)
                 .thenAccept(footer -> player.sendPlayerListHeaderAndFooter(header, footer)));
-    }
-
-    public int getHeaderIndex() {
-        return headerIndex;
     }
 
     public void incrementHeaderIndex(@NotNull Velocitab plugin) {
@@ -130,10 +141,6 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         if (headerIndex >= plugin.getSettings().getHeaderListSize(getServerGroup(plugin))) {
             headerIndex = 0;
         }
-    }
-
-    public int getFooterIndex() {
-        return footerIndex;
     }
 
     public void incrementFooterIndex(@NotNull Velocitab plugin) {
@@ -174,7 +181,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
                     ? String.format("%0" + Integer.toString(orderSize).length() + "d", position)
                     : String.valueOf(orderSize);
         }),
-        SERVER_GROUP_NAME((player, plugin) -> player.getServerGroup(plugin));
+        SERVER_GROUP_NAME(TabPlayer::getServerGroup);
 
         private final BiFunction<TabPlayer, Velocitab, String> elementResolver;
 

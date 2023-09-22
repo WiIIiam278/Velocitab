@@ -30,6 +30,7 @@ import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -61,18 +62,32 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     }
 
     @NotNull
-    protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+    protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String displayName, @Nullable String prefix, @Nullable String suffix, @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.CREATE_TEAM)
+                .displayName(displayName)
+                .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
+                .nameTagVisibility(NameTagVisibility.ALWAYS)
+                .collisionRule(CollisionRule.ALWAYS)
+                .color(getLastColor(prefix))
+                .prefix(prefix == null ? "" : prefix)
+                .suffix(suffix == null ? "" : suffix)
+                .entities(Arrays.asList(teamMembers));
+    }
+
+    @NotNull
+    protected static UpdateTeamsPacket changeNameTag(@NotNull Velocitab plugin, @NotNull String teamName, @Nullable String prefix, @Nullable String suffix) {
+        return new UpdateTeamsPacket(plugin)
+                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .mode(UpdateMode.UPDATE_INFO)
                 .displayName(teamName)
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nameTagVisibility(NameTagVisibility.ALWAYS)
                 .collisionRule(CollisionRule.ALWAYS)
-                .color(15)
-                .prefix("")
-                .suffix("")
-                .entities(Arrays.asList(teamMembers));
+                .color(getLastColor(prefix))
+                .prefix(prefix == null ? "" : prefix)
+                .suffix(suffix == null ? "" : suffix);
     }
 
     @NotNull
@@ -89,6 +104,64 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.REMOVE_PLAYERS)
                 .entities(Arrays.asList(teamMembers));
+    }
+
+    @NotNull
+    protected static UpdateTeamsPacket removeTeam(@NotNull Velocitab plugin, @NotNull String teamName) {
+        return new UpdateTeamsPacket(plugin)
+                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .mode(UpdateMode.REMOVE_TEAM);
+    }
+
+    public static int getLastColor(@Nullable String text) {
+        if (text == null) {
+            return 15;
+        }
+        int intvar = text.lastIndexOf("§");
+
+        if (intvar == -1 || intvar == text.length() - 1) {
+            return 15;
+        }
+
+        String last = text.substring(intvar, intvar + 2);
+        return TeamColor.getColorId(last.charAt(1));
+    }
+
+    public enum TeamColor {
+        BLACK('0', 0),
+        DARK_BLUE('1', 1),
+        DARK_GREEN('2', 2),
+        DARK_AQUA('3', 3),
+        DARK_RED('4', 4),
+        DARK_PURPLE('5', 5),
+        GOLD('6', 6),
+        GRAY('7', 7),
+        DARK_GRAY('8', 8),
+        BLUE('9', 9),
+        GREEN('a', 10),
+        AQUA('b', 11),
+        RED('c', 12),
+        LIGHT_PURPLE('d', 13),
+        YELLOW('e', 14),
+        WHITE('f', 15),
+        OBFUSCATED('k', 16),
+        BOLD('l', 17),
+        STRIKETHROUGH('m', 18),
+        UNDERLINED('n', 19),
+        ITALIC('o', 20),
+        RESET('r', 21);
+
+        private final char colorChar;
+        private final int id;
+
+        TeamColor(char colorChar, int id) {
+            this.colorChar= colorChar;
+            this.id = id;
+        }
+
+        public static int getColorId(char var) {
+            return Arrays.stream(values()).filter(color -> color.colorChar == var).map(c -> c.id).findFirst().orElse(15);
+        }
     }
 
     @Override

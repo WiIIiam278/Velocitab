@@ -36,9 +36,7 @@ import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -67,7 +65,6 @@ public class PlayerTabList {
         final Player joined = event.getPlayer();
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined));
 
-
         // Remove the player from the tracking list if they are switching servers
         final RegisteredServer previousServer = event.getPreviousServer();
         if (previousServer == null) {
@@ -76,7 +73,7 @@ public class PlayerTabList {
 
         // Get the servers in the group from the joined server name
         // If the server is not in a group, use fallback
-        Optional<List<String>> serversInGroup = getSiblings(joined.getCurrentServer()
+        Optional<List<String>> serversInGroup = getGroupNames(joined.getCurrentServer()
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
                 .orElse("?"));
@@ -91,22 +88,17 @@ public class PlayerTabList {
         final TabPlayer tabPlayer = plugin.getTabPlayer(joined);
         players.add(tabPlayer);
 
-
-
         // Update lists
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
                     final TabList tabList = joined.getTabList();
-                    final Map<String, String> playerRoles = new HashMap<>();
-
                     for (TabPlayer player : players) {
                         // Skip players on other servers if the setting is enabled
                         if (plugin.getSettings().isOnlyListPlayersInSameGroup() && serversInGroup.isPresent()
-                            && !serversInGroup.get().contains(player.getServerName())) {
+                                && !serversInGroup.get().contains(player.getServerName())) {
                             continue;
                         }
 
-                        playerRoles.put(player.getPlayer().getUsername(), player.getTeamName(plugin));
                         tabList.getEntries().stream()
                                 .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
                                 .ifPresentOrElse(
@@ -114,13 +106,13 @@ public class PlayerTabList {
                                         () -> createEntry(player, tabList).thenAccept(tabList::addEntry)
                                 );
                         addPlayerToTabList(player, tabPlayer);
-
                         player.sendHeaderAndFooter(this);
-
                     }
 
-
-                    plugin.getScoreboardManager().ifPresent(manager -> manager.setRoles(joined, playerRoles));
+                    plugin.getScoreboardManager().ifPresent(s -> {
+                        s.resendAllNameTags(joined);
+                        s.updateRole(joined, plugin.getTabPlayer(joined).getTeamName(plugin));
+                    });
                 })
                 .delay(500, TimeUnit.MILLISECONDS)
                 .schedule();
@@ -149,11 +141,6 @@ public class PlayerTabList {
                         () -> createEntry(newPlayer, player.getPlayer().getTabList())
                                 .thenAccept(entry -> player.getPlayer().getTabList().addEntry(entry))
                 );
-        plugin.getScoreboardManager().ifPresent(manager -> manager.updateRoles(
-                player.getPlayer(),
-                newPlayer.getTeamName(plugin),
-                newPlayer.getPlayer().getUsername()
-        ));
 
     }
 
@@ -177,6 +164,9 @@ public class PlayerTabList {
                 }))
                 .delay(500, TimeUnit.MILLISECONDS)
                 .schedule();
+        // Delete player team
+        plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(event.getPlayer()));
+
     }
 
     // Replace a player in the tab list
@@ -192,16 +182,27 @@ public class PlayerTabList {
             return;
         }
 
-        players.forEach(player -> tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
-            player.getPlayer().getTabList().getEntries().stream()
-                    .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
-                    .ifPresent(entry -> entry.setDisplayName(displayName));
-            plugin.getScoreboardManager().ifPresent(manager -> manager.updateRoles(
-                    player.getPlayer(),
-                    tabPlayer.getTeamName(plugin),
-                    tabPlayer.getPlayer().getUsername()
-            ));
-        }));
+        plugin.getScoreboardManager().ifPresent(manager -> manager.updateRole(
+                tabPlayer.getPlayer(),
+                tabPlayer.getTeamName(plugin)
+        ));
+    }
+
+    public void updatePlayerDisplayName(TabPlayer tabPlayer) {
+        Component lastDisplayName = tabPlayer.getLastDisplayname();
+        tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
+            if (displayName == null || displayName.equals(lastDisplayName)) return;
+
+            players.forEach(player ->
+                    player.getPlayer().getTabList().getEntries().stream()
+                            .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
+                            .ifPresent(entry -> entry.setDisplayName(displayName)));
+        });
+
+    }
+
+    public void updateDisplayNames() {
+        players.forEach(this::updatePlayerDisplayName);
     }
 
     public CompletableFuture<Component> getHeader(@NotNull TabPlayer player) {
@@ -231,6 +232,7 @@ public class PlayerTabList {
                         this.updatePlayer(player);
                         player.sendHeaderAndFooter(this);
                     });
+                    updateDisplayNames();
                 })
                 .repeat(Math.max(200, updateRate), TimeUnit.MILLISECONDS)
                 .schedule();
@@ -255,6 +257,7 @@ public class PlayerTabList {
                 this.updatePlayer(player);
                 player.sendHeaderAndFooter(this);
             });
+            updateDisplayNames();
         }
 
     }
@@ -269,7 +272,7 @@ public class PlayerTabList {
      * @return The servers in the same group as the given server, empty if the server is not in a group and fallback is disabled
      */
     @NotNull
-    public Optional<List<String>> getSiblings(String serverName) {
+    public Optional<List<String>> getGroupNames(String serverName) {
         return plugin.getSettings().getServerGroups().values().stream()
                 .filter(servers -> servers.contains(serverName))
                 .findFirst()
@@ -283,6 +286,24 @@ public class PlayerTabList {
                     }
                     return Optional.of(this.fallbackServers.stream().toList());
                 });
+    }
+
+    /**
+     * Get the servers in the same group as the given server, as an optional list of {@link ServerInfo}
+     * <p>
+     * If the server is not in a group, use the fallback group
+     * If the fallback is disabled, return an empty optional
+     *
+     * @param serverName The server name
+     * @return The servers in the same group as the given server, empty if the server is not in a group and fallback is disabled
+     */
+    @NotNull
+    public List<RegisteredServer> getGroupServers(String serverName) {
+        return plugin.getServer().getAllServers().stream()
+                .filter(server -> plugin.getSettings().getServerGroups().values().stream()
+                        .filter(servers -> servers.contains(serverName))
+                        .anyMatch(servers -> servers.contains(server.getServerInfo().getName())))
+                .toList();
     }
 
     @Subscribe

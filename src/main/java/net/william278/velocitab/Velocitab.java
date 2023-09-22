@@ -95,6 +95,7 @@ public class Velocitab {
     @Subscribe
     public void onProxyShutdown(@NotNull ProxyShutdownEvent event) {
         disableScoreboardManager();
+        getLuckPermsHook().ifPresent(LuckPermsHook::close);
         logger.info("Successfully disabled Velocitab");
     }
 
@@ -119,6 +120,12 @@ public class Velocitab {
                     new File(dataDirectory.toFile(), "config.yml"),
                     new Settings(this)
             ).get();
+
+            settings.getNametags().values().stream()
+                    .filter(nametag -> !nametag.contains("%username%")).forEach(nametag -> {
+                        logger.warn("Nametag '" + nametag + "' does not contain %username% - removing");
+                        settings.getNametags().remove(nametag);
+                    });
         } catch (IOException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             logger.error("Failed to load config file: " + e.getMessage(), e);
         }
@@ -156,7 +163,7 @@ public class Velocitab {
     }
 
     private void disableScoreboardManager() {
-        if (scoreboardManager !=null && settings.isSortPlayers()) {
+        if (scoreboardManager != null && settings.isSortPlayers()) {
             scoreboardManager.unregisterPacket();
         }
     }
@@ -182,6 +189,10 @@ public class Velocitab {
                 getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE),
                 getLuckPermsHook().map(LuckPermsHook::getHighestWeight).orElse(0)
         );
+    }
+
+    public Optional<TabPlayer> getTabPlayer(String name) {
+        return server.getPlayer(name).map(this::getTabPlayer);
     }
 
     private void registerCommands() {

@@ -65,6 +65,10 @@ public enum Placeholder {
         }
         final String replaced = format;
 
+        if (!replaced.matches("%.*?%")) {
+            return CompletableFuture.completedFuture(replaced);
+        }
+
         return plugin.getPAPIProxyBridgeHook()
                 .map(hook -> hook.formatPlaceholders(replaced, player.getPlayer()))
                 .orElse(CompletableFuture.completedFuture(replaced));

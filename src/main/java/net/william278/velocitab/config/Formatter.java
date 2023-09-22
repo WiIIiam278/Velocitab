@@ -80,10 +80,10 @@ public enum Formatter {
     }
 
     @NotNull
-    public String formatLegacySymbols(@NotNull String text) {
-        return text.replaceAll("&", "§");
+    public String formatLegacySymbols(@NotNull String text, @NotNull TabPlayer player, @NotNull Velocitab plugin) {
+        return LegacyComponentSerializer..legacySection()
+                .serialize(format(text, player, plugin));
     }
-
     @NotNull
     public String escape(@NotNull String text) {
         return escaper.apply(text);

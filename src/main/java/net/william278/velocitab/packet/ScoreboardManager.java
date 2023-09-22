@@ -79,12 +79,10 @@ public class ScoreboardManager {
             return;
         }
 
-        String name = player.getUsername();
-
-        TabPlayer tabPlayer = plugin.getTabPlayer(player);
-
+        final String name = player.getUsername();
+        final TabPlayer tabPlayer = plugin.getTabPlayer(player);
         tabPlayer.getNametag(plugin).thenAccept(nametag -> {
-            String[] split = nametag.split("%username%", 2);
+            String[] split = nametag.split(player.getUsername(), 2);
             String prefix = split[0];
             String suffix = split.length > 1 ? split[1] : "";
 
@@ -114,8 +112,7 @@ public class ScoreboardManager {
             return;
         }
 
-        Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
-
+        final Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
         if (optionalServerConnection.isEmpty()) {
             return;
         }
@@ -131,14 +128,12 @@ public class ScoreboardManager {
                 return;
             }
 
-            String role = createdTeams.getOrDefault(p.getUniqueId(), "");
-
+            final String role = createdTeams.getOrDefault(p.getUniqueId(), "");
             if (role.isEmpty()) {
                 return;
             }
 
-            String nametag = nametags.getOrDefault(role, "");
-
+            final String nametag = nametags.getOrDefault(role, "");
             if (nametag.isEmpty()) {
                 return;
             }

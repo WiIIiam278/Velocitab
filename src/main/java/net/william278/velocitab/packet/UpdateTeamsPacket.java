@@ -119,7 +119,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         }
         int intvar = text.lastIndexOf("§");
 
-        if(intvar == -1 || intvar == text.length() - 1) {
+        if (intvar == -1 || intvar == text.length() - 1) {
             return 15;
         }
 

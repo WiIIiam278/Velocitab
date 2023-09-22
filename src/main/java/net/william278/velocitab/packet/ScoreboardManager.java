@@ -79,10 +79,8 @@ public class ScoreboardManager {
             return;
         }
 
-        String name = player.getUsername();
-
-        TabPlayer tabPlayer = plugin.getTabPlayer(player);
-
+        final String name = player.getUsername();
+        final TabPlayer tabPlayer = plugin.getTabPlayer(player);
         tabPlayer.getNametag(plugin).thenAccept(nametag -> {
             String[] split = nametag.split("%username%", 2);
             String prefix = split[0];

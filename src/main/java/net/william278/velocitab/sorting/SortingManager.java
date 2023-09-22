@@ -25,6 +25,8 @@ import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 import org.slf4j.event.Level;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -38,9 +40,8 @@ public class SortingManager {
     }
 
     public CompletableFuture<String> getTeamName(TabPlayer player) {
-        return allOf(plugin.getSettings().getSortingElementList().stream()
-                .map(e -> Placeholder.replace(e, plugin, player))
-                .toList())
+        return Placeholder.replace(String.join(":::", plugin.getSettings().getSortingElementList()), plugin, player)
+                .thenApply(s -> Arrays.asList(s.split(":::")))
                 .thenApply(v -> v.stream().map(this::adaptValue).collect(Collectors.toList()))
                 .thenApply(v -> handleList(player, v));
     }
@@ -73,15 +74,5 @@ public class SortingManager {
         }
 
         return value;
-    }
-
-    private <T> CompletableFuture<List<T>> allOf(List<CompletableFuture<T>> futuresList) {
-        CompletableFuture<Void> allFuturesResult =
-                CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0]));
-        return allFuturesResult.thenApply(v ->
-                futuresList.stream().
-                        map(CompletableFuture::join).
-                        collect(Collectors.<T>toList())
-        );
     }
 }

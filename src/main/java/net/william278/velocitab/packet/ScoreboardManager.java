@@ -109,8 +109,7 @@ public class ScoreboardManager {
             return;
         }
 
-        Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
-
+        final Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
         if (optionalServerConnection.isEmpty()) {
             return;
         }

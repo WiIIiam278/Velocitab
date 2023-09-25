@@ -118,7 +118,7 @@ public class Settings {
 
     @YamlKey("sorting_placeholders")
     @YamlComment("Ordered list of elements by which players should be sorted. " +
-            "(Correct values are both internal placeholders and (if enabled) PAPI placeholders)")
+            "(Correct values are both internal placeholders and, if enabled, PAPI placeholders)")
     private List<String> sortingPlaceholders = List.of(
             "%role_weight%",
             "%username%"

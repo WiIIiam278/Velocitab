@@ -47,10 +47,10 @@ papi_cache_time: 30000
 enable_miniplaceholders_hook: true
 # Whether to sort players in the TAB list.
 sort_players: true
-# Ordered list of elements by which players should be sorted. (ROLE_WEIGHT, ROLE_NAME and SERVER_NAME are supported)
-sort_players_by:
-- ROLE_WEIGHT
-- ROLE_NAME
+# Ordered list of elements by which players should be sorted. (Correct values are both internal placeholders and, if enabled, PAPI placeholders)
+sorting_placeholders:
+- %role_weight%
+- %username%
 # How often in milliseconds to periodically update the TAB list, including header and footer, for all users.
 # If set to 0, TAB will be updated on player join/leave instead. (1s = 1000ms)
 update_rate: 0

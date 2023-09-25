@@ -88,7 +88,7 @@ public class ScoreboardManager {
 
             if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
 
-                if(createdTeams.containsKey(player.getUniqueId())) {
+                if (createdTeams.containsKey(player.getUniqueId())) {
                     dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, createdTeams.get(player.getUniqueId())), player);
                 }
 

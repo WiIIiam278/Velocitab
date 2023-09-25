@@ -34,9 +34,7 @@ import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class LuckPermsHook extends Hook {
@@ -44,11 +42,14 @@ public class LuckPermsHook extends Hook {
     private int highestWeight = Role.DEFAULT_WEIGHT;
     private final LuckPerms api;
     private final EventSubscription<UserDataRecalculateEvent> event;
+    private final Map<UUID, Long> lastUpdate;
 
     public LuckPermsHook(@NotNull Velocitab plugin) throws IllegalStateException {
         super(plugin);
         this.api = LuckPermsProvider.get();
+        lastUpdate = new HashMap<>();
         event = api.getEventBus().subscribe(plugin, UserDataRecalculateEvent.class, this::onLuckPermsGroupUpdate);
+
     }
 
     public void close() {
@@ -76,6 +77,12 @@ public class LuckPermsHook extends Hook {
     }
 
     public void onLuckPermsGroupUpdate(@NotNull UserDataRecalculateEvent event) {
+        // Prevent duplicate events
+        if (lastUpdate.getOrDefault(event.getUser().getUniqueId(), 0L) > System.currentTimeMillis() - 100) {
+            return;
+        }
+        lastUpdate.put(event.getUser().getUniqueId(), System.currentTimeMillis());
+
         final PlayerTabList tabList = plugin.getTabList();
         plugin.getServer().getPlayer(event.getUser().getUniqueId())
                 .ifPresent(player -> plugin.getServer().getScheduler()

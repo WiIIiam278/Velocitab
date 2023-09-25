@@ -87,7 +87,12 @@ public class ScoreboardManager {
             String suffix = split.length > 1 ? split[1] : "";
 
             if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
-                createdTeams.computeIfAbsent(player.getUniqueId(), k -> role);
+
+                if (createdTeams.containsKey(player.getUniqueId())) {
+                    dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, createdTeams.get(player.getUniqueId())), player);
+                }
+
+                createdTeams.put(player.getUniqueId(), role);
                 this.nametags.put(role, prefix + ":::" + suffix);
                 dispatchGroupPacket(UpdateTeamsPacket.create(plugin, role, "", prefix, suffix, name), player);
             } else if (!this.nametags.getOrDefault(role, "").equals(prefix  + ":::" + suffix)) {

@@ -24,11 +24,13 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.event.Level;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
+import java.util.regex.Pattern;
 
 public enum Placeholder {
 
@@ -48,12 +50,14 @@ public enum Placeholder {
     SUFFIX((plugin, player) -> player.getRole().getSuffix().orElse("")),
     ROLE((plugin, player) -> player.getRole().getName().orElse("")),
     ROLE_DISPLAY_NAME((plugin, player) -> player.getRole().getDisplayName().orElse("")),
-    DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getTeamName(plugin)));
+    ROLE_WEIGHT((plugin, player) -> Integer.toString(player.getRole().getWeight())),
+    DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getLastTeamName().orElse("")));
 
     /**
      * Function to replace placeholders with a real value
      */
     private final BiFunction<Velocitab, TabPlayer, String> replacer;
+    private final static Pattern pattern = Pattern.compile("%.*?%");
 
     Placeholder(@NotNull BiFunction<Velocitab, TabPlayer, String> replacer) {
         this.replacer = replacer;
@@ -65,13 +69,16 @@ public enum Placeholder {
         }
         final String replaced = format;
 
-        if (!replaced.matches("%.*?%")) {
+        if (!pattern.matcher(replaced).find()) {
             return CompletableFuture.completedFuture(replaced);
         }
 
         return plugin.getPAPIProxyBridgeHook()
                 .map(hook -> hook.formatPlaceholders(replaced, player.getPlayer()))
-                .orElse(CompletableFuture.completedFuture(replaced));
+                .orElse(CompletableFuture.completedFuture(replaced)).exceptionally(e -> {
+                    plugin.log(Level.ERROR, "An error occurred whilst parsing placeholders: " + e.getMessage());
+                    return replaced;
+                });
     }
 
 }

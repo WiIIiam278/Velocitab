@@ -26,12 +26,12 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.event.Level;
 
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 public final class TabPlayer implements Comparable<TabPlayer> {
     private final Player player;
@@ -43,6 +43,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private int footerIndex = 0;
     @Getter
     private Component lastDisplayname;
+    private String teamName;
 
     public TabPlayer(@NotNull Player player, @NotNull Role role, int highestWeight) {
         this.player = player;
@@ -123,11 +124,20 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     @NotNull
-    public String getTeamName(@NotNull Velocitab plugin) {
-        return plugin.getSettings().getSortingElementList().stream()
-                .map(element -> element.resolve(this, plugin))
-                .collect(Collectors.joining("-"))
-                + getPlayer().getUniqueId().toString().substring(0, 3);
+    public CompletableFuture<String> getTeamName(@NotNull Velocitab plugin) {
+        return plugin.getSortingManager().map(sortingManager -> sortingManager.getTeamName(this))
+                .orElseGet(() -> CompletableFuture.completedFuture(""))
+                .thenApply(teamName -> {
+                    this.teamName = teamName;
+                    return teamName;
+                }).exceptionally(e -> {
+                    plugin.log(Level.ERROR,  "Failed to get team name for " + player.getUsername(), e);
+                    return "";
+                });
+    }
+
+    public Optional<String> getLastTeamName() {
+        return Optional.ofNullable(teamName);
     }
 
 

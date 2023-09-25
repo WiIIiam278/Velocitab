@@ -24,7 +24,6 @@ import net.william278.annotaml.YamlComment;
 import net.william278.annotaml.YamlFile;
 import net.william278.annotaml.YamlKey;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.player.TabPlayer;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -117,12 +116,12 @@ public class Settings {
     @YamlComment("Whether to sort players in the TAB list.")
     private boolean sortPlayers = true;
 
-    @YamlKey("sort_players_by")
+    @YamlKey("sorting_placeholders")
     @YamlComment("Ordered list of elements by which players should be sorted. " +
-            "(ROLE_WEIGHT, ROLE_NAME, SERVER_NAME, SERVER_GROUP and SERVER_GROUP_NAME are supported)")
-    private List<String> sortPlayersBy = List.of(
-            TabPlayer.SortableElement.ROLE_WEIGHT.name(),
-            TabPlayer.SortableElement.ROLE_NAME.name()
+            "(Correct values are both internal placeholders and (if enabled) PAPI placeholders)")
+    private List<String> sortingPlaceholders = List.of(
+            "%role_weight%",
+            "%username%"
     );
 
     @Getter
@@ -216,11 +215,8 @@ public class Settings {
     }
 
     @NotNull
-    public List<TabPlayer.SortableElement> getSortingElementList() {
-        return sortPlayersBy.stream()
-                .map(p -> TabPlayer.SortableElement.parse(p).orElseThrow(() ->
-                        new IllegalArgumentException("Invalid sorting element set in config file: " + p)))
-                .toList();
+    public List<String> getSortingElements() {
+        return sortingPlaceholders;
     }
 
 }

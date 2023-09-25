@@ -65,6 +65,7 @@ public class PlayerTabList {
         final Player joined = event.getPlayer();
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined));
 
+
         // Remove the player from the tracking list if they are switching servers
         final RegisteredServer previousServer = event.getPreviousServer();
         if (previousServer == null) {
@@ -106,12 +107,15 @@ public class PlayerTabList {
                                         () -> createEntry(player, tabList).thenAccept(tabList::addEntry)
                                 );
                         addPlayerToTabList(player, tabPlayer);
+
                         player.sendHeaderAndFooter(this);
+
                     }
 
                     plugin.getScoreboardManager().ifPresent(s -> {
                         s.resendAllNameTags(joined);
-                        s.updateRole(joined, plugin.getTabPlayer(joined).getTeamName(plugin));
+                        plugin.getTabPlayer(joined).getTeamName(plugin)
+                                .thenAccept(t -> s.updateRole(joined, t));
                     });
                 })
                 .delay(500, TimeUnit.MILLISECONDS)
@@ -182,10 +186,14 @@ public class PlayerTabList {
             return;
         }
 
-        plugin.getScoreboardManager().ifPresent(manager -> manager.updateRole(
-                tabPlayer.getPlayer(),
-                tabPlayer.getTeamName(plugin)
-        ));
+        tabPlayer.getTeamName(plugin).thenAccept(teamName -> {
+            if (teamName == null) return;
+
+            plugin.getScoreboardManager().ifPresent(manager -> manager.updateRole(
+                    tabPlayer.getPlayer(),
+                    teamName
+            ));
+        });
     }
 
     public void updatePlayerDisplayName(TabPlayer tabPlayer) {

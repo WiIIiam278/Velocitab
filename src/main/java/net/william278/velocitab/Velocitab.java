@@ -30,6 +30,8 @@ import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.scheduler.ScheduledTask;
+import lombok.Getter;
 import net.william278.annotaml.Annotaml;
 import net.william278.desertwell.util.UpdateChecker;
 import net.william278.desertwell.util.Version;
@@ -43,6 +45,7 @@ import net.william278.velocitab.hook.PAPIProxyBridgeHook;
 import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.bstats.charts.SimplePie;
 import org.bstats.velocity.Metrics;
@@ -72,6 +75,7 @@ public class Velocitab {
     private PlayerTabList tabList;
     private List<Hook> hooks;
     private ScoreboardManager scoreboardManager;
+    private SortingManager sortingManager;
 
     @Inject
     public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path dataDirectory) {
@@ -84,6 +88,7 @@ public class Velocitab {
     public void onProxyInitialization(@NotNull ProxyInitializeEvent event) {
         loadSettings();
         loadHooks();
+        prepareSortingManager();
         prepareScoreboardManager();
         prepareTabList();
         registerCommands();
@@ -94,6 +99,7 @@ public class Velocitab {
 
     @Subscribe
     public void onProxyShutdown(@NotNull ProxyShutdownEvent event) {
+        server.getScheduler().tasksByPlugin(this).forEach(ScheduledTask::cancel);
         disableScoreboardManager();
         getLuckPermsHook().ifPresent(LuckPermsHook::close);
         logger.info("Successfully disabled Velocitab");
@@ -155,6 +161,12 @@ public class Velocitab {
         Hook.AVAILABLE.forEach(availableHook -> availableHook.apply(this).ifPresent(hooks::add));
     }
 
+    private void prepareSortingManager() {
+        if (settings.isSortPlayers()) {
+            this.sortingManager = new SortingManager(this);
+        }
+    }
+
     private void prepareScoreboardManager() {
         if (settings.isSortPlayers()) {
             this.scoreboardManager = new ScoreboardManager(this);
@@ -171,6 +183,10 @@ public class Velocitab {
     @NotNull
     public Optional<ScoreboardManager> getScoreboardManager() {
         return Optional.ofNullable(scoreboardManager);
+    }
+
+    public Optional<SortingManager> getSortingManager() {
+        return Optional.ofNullable(sortingManager);
     }
 
     @NotNull

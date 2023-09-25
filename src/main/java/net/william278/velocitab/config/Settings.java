@@ -126,9 +126,10 @@ public class Settings {
 
     @Getter
     @YamlKey("update_rate")
-    @YamlComment("How often in milliseconds to periodically update the TAB list, including header and footer, for all users.\n" +
-            "If set to 0, TAB will be updated on player join/leave instead. (1s = 1000ms)\n" +
-            "The minimal update rate is 200ms, anything lower will automatically be set to 200ms.")
+    @YamlComment("""
+            How often in milliseconds to periodically update the TAB list, including header and footer, for all users.
+            If set to 0, TAB will be updated on player join/leave instead. (1s = 1000ms)
+            The minimal update rate is 200ms, anything lower will automatically be set to 200ms.""")
     private int updateRate = 0;
 
     public Settings(@NotNull Velocitab plugin) {

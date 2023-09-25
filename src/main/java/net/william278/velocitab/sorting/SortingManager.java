@@ -66,7 +66,7 @@ public class SortingManager {
         if (value.matches("[0-9]+")) {
             int integer = Integer.parseInt(value);
             int intSortSize = 3;
-            return (integer >= 0 ? 0 : 1) + String.format("%0" + intSortSize + "d", Integer.parseInt(Strings.repeat("9", intSortSize)) - Math.abs(integer));//
+            return (integer >= 0 ? 0 : 1) + String.format("%0" + intSortSize + "d", Integer.parseInt(Strings.repeat("9", intSortSize)) - Math.abs(integer));
         }
 
         if (value.length() > 6) {

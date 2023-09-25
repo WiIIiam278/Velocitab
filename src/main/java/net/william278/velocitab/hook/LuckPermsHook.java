@@ -77,7 +77,10 @@ public class LuckPermsHook extends Hook {
     }
 
     public void onLuckPermsGroupUpdate(@NotNull UserDataRecalculateEvent event) {
-        if (lastUpdate.getOrDefault(event.getUser().getUniqueId(), 0L) > System.currentTimeMillis() - 100) return; // Prevent duplicate events
+        // Prevent duplicate events
+        if (lastUpdate.getOrDefault(event.getUser().getUniqueId(), 0L) > System.currentTimeMillis() - 100) {
+            return;
+        }
         lastUpdate.put(event.getUser().getUniqueId(), System.currentTimeMillis());
 
         final PlayerTabList tabList = plugin.getTabList();

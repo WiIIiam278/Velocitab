@@ -25,7 +25,6 @@ import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 import org.slf4j.event.Level;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -34,14 +33,15 @@ import java.util.stream.Collectors;
 public class SortingManager {
 
     private final Velocitab plugin;
+    private static final String DELIMITER = ":::";
 
     public SortingManager(Velocitab plugin) {
         this.plugin = plugin;
     }
 
     public CompletableFuture<String> getTeamName(TabPlayer player) {
-        return Placeholder.replace(String.join(":::", plugin.getSettings().getSortingElementList()), plugin, player)
-                .thenApply(s -> Arrays.asList(s.split(":::")))
+        return Placeholder.replace(String.join(DELIMITER, plugin.getSettings().getSortingElements()), plugin, player)
+                .thenApply(s -> Arrays.asList(s.split(DELIMITER)))
                 .thenApply(v -> v.stream().map(this::adaptValue).collect(Collectors.toList()))
                 .thenApply(v -> handleList(player, v));
     }

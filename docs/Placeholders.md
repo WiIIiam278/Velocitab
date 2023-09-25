@@ -17,7 +17,9 @@ Placeholders can be included in the header, footer and player name format of the
 | `%suffix%`               | The player's suffix (from LuckPerms)              | `&c `              |
 | `%role%`                 | The player's primary LuckPerms group name         | `admin`            |
 | `%role_display_name%`    | The player's primary LuckPerms group display name | `Admin`            |
-| `%debug_team_name%`      | Internal team value, used for list sorting        | `1_alpha_William2` |
+| `%server_group%`         | The name of the server group the player is on     | `default`          |
+| `%server_group_index%`   | Indexed order of the server group in the list     | `0`                |
+| `%debug_team_name%`      | (Debug) Player's team name, used for [[Sorting]]  | `1alphaWilliam278` |
 
 ### Customising server display names
 You can make use of the `server_display_names` feature in `config.yml` to customise how server display name appear when using the `%server%` placeholder. In the below example, if a user is connected to a server with the name "`very-long-server-`name" and the player name format for the group that server belongs to includes a `%server%` placeholder, the placeholder would be replaced with "`VSLN`" instead of the full server name.

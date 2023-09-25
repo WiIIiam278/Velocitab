@@ -51,6 +51,8 @@ public enum Placeholder {
     ROLE((plugin, player) -> player.getRole().getName().orElse("")),
     ROLE_DISPLAY_NAME((plugin, player) -> player.getRole().getDisplayName().orElse("")),
     ROLE_WEIGHT((plugin, player) -> Integer.toString(player.getRole().getWeight())),
+    SERVER_GROUP((plugin, player) -> player.getServerGroup(plugin)),
+    SERVER_GROUP_INDEX((plugin, player) -> Integer.toString(player.getServerGroupPosition(plugin))),
     DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getLastTeamName().orElse("")));
 
     /**

@@ -43,7 +43,7 @@ public class Protocol403Adapter extends TeamsPacketAdapter {
                 ProtocolVersion.MINECRAFT_1_17_1,
                 ProtocolVersion.MINECRAFT_1_18_2,
                 ProtocolVersion.MINECRAFT_1_19_4,
-                ProtocolVersion.MINECRAFT_1_20
+                ProtocolVersion.MINECRAFT_1_20,
         ));
     }
 

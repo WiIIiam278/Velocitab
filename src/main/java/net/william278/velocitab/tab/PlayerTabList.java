@@ -89,6 +89,7 @@ public class PlayerTabList {
         final TabPlayer tabPlayer = plugin.getTabPlayer(joined);
         players.add(tabPlayer);
 
+        boolean isVanished = plugin.getVanishManager().isVanished(joined.getUsername());
         // Update lists
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
@@ -100,13 +101,26 @@ public class PlayerTabList {
                             continue;
                         }
 
-                        tabList.getEntries().stream()
-                                .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
-                                .ifPresentOrElse(
-                                        entry -> player.getDisplayName(plugin).thenAccept(entry::setDisplayName),
-                                        () -> createEntry(player, tabList).thenAccept(tabList::addEntry)
-                                );
-                        addPlayerToTabList(player, tabPlayer);
+                        if (!isVanished || plugin.getVanishManager().canSee(player.getPlayer().getUsername(), joined.getUsername())) { // check if current player can see the joined player
+                            addPlayerToTabList(player, tabPlayer);
+                        } else {
+                            player.getPlayer().getTabList().removeEntry(joined.getUniqueId());
+                        }
+
+                        if ((plugin.getVanishManager().isVanished(player.getPlayer().getUsername()) ||
+                                !plugin.getVanishManager().canSee(joined.getUsername(), player.getPlayer().getUsername())) && player.getPlayer() != joined) { // check if joined player can see the current player
+                            tabList.removeEntry(player.getPlayer().getUniqueId());
+                        } else {
+
+                            tabList.getEntries().stream()
+                                    .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
+                                    .ifPresentOrElse(
+                                            entry -> player.getDisplayName(plugin).thenAccept(entry::setDisplayName),
+                                            () -> createEntry(player, tabList).thenAccept(tabList::addEntry)
+                                    );
+
+                        }
+
 
                         player.sendHeaderAndFooter(this);
 
@@ -201,12 +215,22 @@ public class PlayerTabList {
         tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
             if (displayName == null || displayName.equals(lastDisplayName)) return;
 
-            players.forEach(player ->
-                    player.getPlayer().getTabList().getEntries().stream()
-                            .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
-                            .ifPresent(entry -> entry.setDisplayName(displayName)));
-        });
+            boolean isVanished = plugin.getVanishManager().isVanished(tabPlayer.getPlayer().getUsername());
 
+            players.forEach(player -> {
+
+                if (isVanished && !plugin.getVanishManager().canSee(player.getPlayer().getUsername(), tabPlayer.getPlayer().getUsername())) {
+                    System.out.println("Player " + player.getPlayer().getUsername() + " cannot see " + tabPlayer.getPlayer().getUsername());
+                    return;
+                }
+
+                player.getPlayer().getTabList().getEntries().stream()
+                        .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
+                        .ifPresent(entry -> entry.setDisplayName(displayName));
+
+            });
+
+        });
     }
 
     public void updateDisplayNames() {

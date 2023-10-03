@@ -95,8 +95,8 @@ public class ScoreboardManager {
                 createdTeams.put(player.getUniqueId(), role);
                 this.nametags.put(role, prefix + ":::" + suffix);
                 dispatchGroupPacket(UpdateTeamsPacket.create(plugin, role, "", prefix, suffix, name), player);
-            } else if (!this.nametags.getOrDefault(role, "").equals(prefix  + ":::" + suffix)) {
-                this.nametags.put(role, prefix  + ":::" + suffix);
+            } else if (!this.nametags.getOrDefault(role, "").equals(prefix + ":::" + suffix)) {
+                this.nametags.put(role, prefix + ":::" + suffix);
                 dispatchGroupPacket(UpdateTeamsPacket.changeNameTag(plugin, role, prefix, suffix), player);
             }
         }).exceptionally(e -> {
@@ -108,7 +108,7 @@ public class ScoreboardManager {
 
     public void resendAllNameTags(Player player) {
 
-        if(!plugin.getSettings().areNametagsEnabled()) {
+        if (!plugin.getSettings().areNametagsEnabled()) {
             return;
         }
 
@@ -173,6 +173,13 @@ public class ScoreboardManager {
 
         siblings.forEach(s -> {
             s.getPlayersConnected().forEach(p -> {
+
+                boolean canSee = !plugin.getVanishManager().isVanished(p.getUsername()) || plugin.getVanishManager().canSee(player.getUsername(), player.getUsername());
+
+                if (!canSee) {
+                    return;
+                }
+
                 try {
                     final ConnectedPlayer connectedPlayer = (ConnectedPlayer) p;
                     connectedPlayer.getConnection().write(packet);

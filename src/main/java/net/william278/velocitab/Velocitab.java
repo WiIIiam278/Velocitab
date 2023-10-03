@@ -47,6 +47,7 @@ import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
+import net.william278.velocitab.vanish.VanishManager;
 import org.bstats.charts.SimplePie;
 import org.bstats.velocity.Metrics;
 import org.jetbrains.annotations.NotNull;
@@ -76,6 +77,8 @@ public class Velocitab {
     private List<Hook> hooks;
     private ScoreboardManager scoreboardManager;
     private SortingManager sortingManager;
+    @Getter
+    private VanishManager vanishManager;
 
     @Inject
     public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path dataDirectory) {
@@ -91,6 +94,7 @@ public class Velocitab {
         prepareSortingManager();
         prepareScoreboardManager();
         prepareTabList();
+        prepareVanishManager();
         registerCommands();
         registerMetrics();
         checkForUpdates();
@@ -178,6 +182,10 @@ public class Velocitab {
         if (scoreboardManager != null && settings.isSortPlayers()) {
             scoreboardManager.unregisterPacket();
         }
+    }
+
+    private void prepareVanishManager() {
+        this.vanishManager = new VanishManager(this);
     }
 
     @NotNull

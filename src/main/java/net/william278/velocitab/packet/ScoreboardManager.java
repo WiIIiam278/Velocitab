@@ -155,32 +155,27 @@ public class ScoreboardManager {
         try {
             final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
             connectedPlayer.getConnection().write(packet);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             plugin.log(Level.ERROR, "Failed to dispatch packet (is the client or server modded or using an illegal version?)", e);
         }
     }
 
     private void dispatchGroupPacket(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
-        Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
-
+        final Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
         if (optionalServerConnection.isEmpty()) {
             return;
         }
 
-        RegisteredServer serverInfo = optionalServerConnection.get().getServer();
-
-        List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
-
-        siblings.forEach(s -> {
-            s.getPlayersConnected().forEach(p -> {
-                try {
-                    final ConnectedPlayer connectedPlayer = (ConnectedPlayer) p;
-                    connectedPlayer.getConnection().write(packet);
-                } catch (Exception e) {
-                    plugin.log(Level.ERROR, "Failed to dispatch packet (is the client or server modded or using an illegal version?)", e);
-                }
-            });
-        });
+        final RegisteredServer serverInfo = optionalServerConnection.get().getServer();
+        final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
+        siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
+            try {
+                final ConnectedPlayer connectedPlayer = (ConnectedPlayer) connected;
+                connectedPlayer.getConnection().write(packet);
+            } catch (Throwable e) {
+                plugin.log(Level.ERROR, "Failed to dispatch packet (unsupported client or server version)", e);
+            }
+        }));
     }
 
     public void registerPacket() {

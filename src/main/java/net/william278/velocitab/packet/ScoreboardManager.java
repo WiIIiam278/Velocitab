@@ -95,8 +95,8 @@ public class ScoreboardManager {
                 createdTeams.put(player.getUniqueId(), role);
                 this.nametags.put(role, prefix + ":::" + suffix);
                 dispatchGroupPacket(UpdateTeamsPacket.create(plugin, role, "", prefix, suffix, name), player);
-            } else if (!this.nametags.getOrDefault(role, "").equals(prefix  + ":::" + suffix)) {
-                this.nametags.put(role, prefix  + ":::" + suffix);
+            } else if (!this.nametags.getOrDefault(role, "").equals(prefix + ":::" + suffix)) {
+                this.nametags.put(role, prefix + ":::" + suffix);
                 dispatchGroupPacket(UpdateTeamsPacket.changeNameTag(plugin, role, prefix, suffix), player);
             }
         }).exceptionally(e -> {
@@ -108,7 +108,7 @@ public class ScoreboardManager {
 
     public void resendAllNameTags(Player player) {
 
-        if(!plugin.getSettings().areNametagsEnabled()) {
+        if (!plugin.getSettings().areNametagsEnabled()) {
             return;
         }
 
@@ -197,7 +197,8 @@ public class ScoreboardManager {
                     .mapping(0x55, MINECRAFT_1_17, true)
                     .mapping(0x58, MINECRAFT_1_19_1, true)
                     .mapping(0x56, MINECRAFT_1_19_3, true)
-                    .mapping(0x5A, MINECRAFT_1_19_4, true);
+                    .mapping(0x5A, MINECRAFT_1_19_4, true)
+                    .mapping(0x5C, MINECRAFT_1_20_2, true);
             packetRegistration.register();
         } catch (Throwable e) {
             plugin.log(Level.ERROR, "Failed to register UpdateTeamsPacket", e);

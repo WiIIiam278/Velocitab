@@ -61,7 +61,9 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     }
 
     @NotNull
-    protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String displayName, @Nullable String prefix, @Nullable String suffix, @NotNull String... teamMembers) {
+    protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName,
+                                              @NotNull String displayName, @Nullable String prefix,
+                                              @Nullable String suffix, @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.CREATE_TEAM)
@@ -76,7 +78,8 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     }
 
     @NotNull
-    protected static UpdateTeamsPacket changeNameTag(@NotNull Velocitab plugin, @NotNull String teamName, @Nullable String prefix, @Nullable String suffix) {
+    protected static UpdateTeamsPacket changeNameTag(@NotNull Velocitab plugin, @NotNull String teamName,
+                                                     @Nullable String prefix, @Nullable String suffix) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.UPDATE_INFO)
@@ -90,7 +93,8 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     }
 
     @NotNull
-    protected static UpdateTeamsPacket addToTeam(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+    protected static UpdateTeamsPacket addToTeam(@NotNull Velocitab plugin, @NotNull String teamName,
+                                                 @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.ADD_PLAYERS)
@@ -98,7 +102,8 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     }
 
     @NotNull
-    protected static UpdateTeamsPacket removeFromTeam(@NotNull Velocitab plugin, @NotNull String teamName, @NotNull String... teamMembers) {
+    protected static UpdateTeamsPacket removeFromTeam(@NotNull Velocitab plugin, @NotNull String teamName,
+                                                      @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.REMOVE_PLAYERS)
@@ -159,7 +164,10 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         }
 
         public static int getColorId(char var) {
-            return Arrays.stream(values()).filter(color -> color.colorChar == var).map(c -> c.id).findFirst().orElse(15);
+            return Arrays.stream(values())
+                    .filter(color -> color.colorChar == var)
+                    .map(c -> c.id).findFirst()
+                    .orElse(15);
         }
     }
 
@@ -201,6 +209,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
             return id;
         }
 
+        @Nullable
         public static UpdateMode byId(byte id) {
             return Arrays.stream(values())
                     .filter(mode -> mode.id == id)

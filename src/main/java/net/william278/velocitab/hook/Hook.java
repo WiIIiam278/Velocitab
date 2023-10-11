@@ -35,7 +35,7 @@ public abstract class Hook {
                     try {
                         plugin.log("Successfully hooked into LuckPerms");
                         return Optional.of(new LuckPermsHook(plugin));
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         plugin.log(Level.WARN, "LuckPerms hook was not loaded: " + e.getMessage(), e);
                     }
                 }
@@ -46,7 +46,7 @@ public abstract class Hook {
                     try {
                         plugin.log("Successfully hooked into PAPIProxyBridge");
                         return Optional.of(new PAPIProxyBridgeHook(plugin));
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         plugin.log(Level.WARN, "PAPIProxyBridge hook was not loaded: " + e.getMessage(), e);
                     }
                 }
@@ -57,7 +57,7 @@ public abstract class Hook {
                     try {
                         plugin.log("Successfully hooked into MiniPlaceholders");
                         return Optional.of(new MiniPlaceholdersHook(plugin));
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         plugin.log(Level.WARN, "MiniPlaceholders hook was not loaded: " + e.getMessage(), e);
                     }
                 }

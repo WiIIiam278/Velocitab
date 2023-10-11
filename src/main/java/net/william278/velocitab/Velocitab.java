@@ -31,7 +31,6 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
-import lombok.Getter;
 import net.william278.annotaml.Annotaml;
 import net.william278.desertwell.util.UpdateChecker;
 import net.william278.desertwell.util.Version;
@@ -207,6 +206,7 @@ public class Velocitab {
         );
     }
 
+    @SuppressWarnings("unused")
     public Optional<TabPlayer> getTabPlayer(String name) {
         return server.getPlayer(name).map(this::getTabPlayer);
     }

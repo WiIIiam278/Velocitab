@@ -195,10 +195,6 @@ public class PlayerTabList {
         }
 
         tabPlayer.getTeamName(plugin).thenAccept(teamName -> {
-            if (teamName == null) {
-                return;
-            }
-
             plugin.getScoreboardManager().ifPresent(manager -> manager.updateRole(
                     tabPlayer.getPlayer(),
                     teamName

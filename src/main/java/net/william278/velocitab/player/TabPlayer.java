@@ -128,6 +128,10 @@ public final class TabPlayer implements Comparable<TabPlayer> {
 
     @NotNull
     public CompletableFuture<String> getTeamName(@NotNull Velocitab plugin) {
+        if (!plugin.getSettings().isSortPlayers()) {
+            return CompletableFuture.completedFuture("");
+        }
+
         final String sortingFormat = String.join("", plugin.getSettings().getSortingElements());
         return Placeholder.replace(sortingFormat, plugin, this) // Replace placeholders
                 .thenApply(formatted -> formatted.length() > 12 ? formatted.substring(0, 12) : formatted) // Truncate

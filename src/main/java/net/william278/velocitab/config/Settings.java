@@ -190,7 +190,7 @@ public class Settings {
                 nametags.getOrDefault(serverGroup, ""));
     }
 
-    public boolean areNametagsEnabled() {
+    public boolean doNametags() {
         return !nametags.isEmpty();
     }
 

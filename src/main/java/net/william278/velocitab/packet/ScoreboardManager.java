@@ -38,6 +38,7 @@ import static com.velocitypowered.api.network.ProtocolVersion.*;
 
 public class ScoreboardManager {
 
+    private static final String NAMETAG_DELIMITER = ":::";
     private PacketRegistration<UpdateTeamsPacket> packetRegistration;
     private final Velocitab plugin;
     private final Set<TeamsPacketAdapter> versions;
@@ -87,16 +88,15 @@ public class ScoreboardManager {
             String suffix = split.length > 1 ? split[1] : "";
 
             if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
-
                 if (createdTeams.containsKey(player.getUniqueId())) {
                     dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, createdTeams.get(player.getUniqueId())), player);
                 }
 
                 createdTeams.put(player.getUniqueId(), role);
-                this.nametags.put(role, prefix + ":::" + suffix);
+                this.nametags.put(role, prefix + NAMETAG_DELIMITER + suffix);
                 dispatchGroupPacket(UpdateTeamsPacket.create(plugin, role, "", prefix, suffix, name), player);
-            } else if (!this.nametags.getOrDefault(role, "").equals(prefix + ":::" + suffix)) {
-                this.nametags.put(role, prefix + ":::" + suffix);
+            } else if (!this.nametags.getOrDefault(role, "").equals(prefix + NAMETAG_DELIMITER + suffix)) {
+                this.nametags.put(role, prefix + NAMETAG_DELIMITER + suffix);
                 dispatchGroupPacket(UpdateTeamsPacket.changeNameTag(plugin, role, prefix, suffix), player);
             }
         }).exceptionally(e -> {
@@ -107,8 +107,7 @@ public class ScoreboardManager {
 
 
     public void resendAllNameTags(Player player) {
-
-        if (!plugin.getSettings().areNametagsEnabled()) {
+        if (!plugin.getSettings().doNametags()) {
             return;
         }
 
@@ -138,10 +137,9 @@ public class ScoreboardManager {
                 return;
             }
 
-            String[] split = nametag.split(":::", 2);
-            String prefix = split[0];
-            String suffix = split.length > 1 ? split[1] : "";
-
+            final String[] split = nametag.split(NAMETAG_DELIMITER, 2);
+            final String prefix = split[0];
+            final String suffix = split.length > 1 ? split[1] : "";
             dispatchPacket(UpdateTeamsPacket.create(plugin, role, "", prefix, suffix, p.getUsername()), player);
         });
     }

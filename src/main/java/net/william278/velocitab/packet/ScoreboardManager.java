@@ -67,7 +67,7 @@ public class ScoreboardManager {
     }
 
     public void resetCache(@NotNull Player player) {
-        String team = createdTeams.remove(player.getUniqueId());
+        final String team = createdTeams.remove(player.getUniqueId());
         if (team != null) {
             dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, team), player);
         }
@@ -117,12 +117,12 @@ public class ScoreboardManager {
             return;
         }
 
-        RegisteredServer serverInfo = optionalServerConnection.get().getServer();
-
-        List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
-
-        List<Player> players = siblings.stream().map(RegisteredServer::getPlayersConnected).flatMap(Collection::stream).toList();
-
+        final RegisteredServer serverInfo = optionalServerConnection.get().getServer();
+        final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
+        final List<Player> players = siblings.stream()
+                .map(RegisteredServer::getPlayersConnected)
+                .flatMap(Collection::stream)
+                .toList();
         players.forEach(p -> {
             if (p == player || !p.isActive()) {
                 return;
@@ -156,7 +156,7 @@ public class ScoreboardManager {
             final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
             connectedPlayer.getConnection().write(packet);
         } catch (Throwable e) {
-            plugin.log(Level.ERROR, "Failed to dispatch packet (is the client or server modded or using an illegal version?)", e);
+            plugin.log(Level.ERROR, "Failed to dispatch packet (unsupported client or server version)", e);
         }
     }
 

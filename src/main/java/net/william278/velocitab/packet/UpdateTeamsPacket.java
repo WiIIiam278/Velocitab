@@ -121,13 +121,12 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         if (text == null) {
             return 15;
         }
-        int intvar = text.lastIndexOf("§");
-
-        if (intvar == -1 || intvar == text.length() - 1) {
+        int lastFormatIndex = text.lastIndexOf("§");
+        if (lastFormatIndex == -1 || lastFormatIndex == text.length() - 1) {
             return 15;
         }
 
-        String last = text.substring(intvar, intvar + 2);
+        final String last = text.substring(lastFormatIndex, lastFormatIndex + 2);
         return TeamColor.getColorId(last.charAt(1));
     }
 
@@ -159,7 +158,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         private final int id;
 
         TeamColor(char colorChar, int id) {
-            this.colorChar= colorChar;
+            this.colorChar = colorChar;
             this.id = id;
         }
 
@@ -183,7 +182,6 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         if (optionalManager.isEmpty()) {
             return;
         }
-
         optionalManager.get().getPacketAdapter(protocolVersion).encode(byteBuf, this);
     }
 

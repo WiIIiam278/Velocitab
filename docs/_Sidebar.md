@@ -5,6 +5,7 @@
 ## Documentation
 * 👥 [[Server Groups]]
 * 🎨 [[Formatting]]
+* 📛 [[Nametags]]
 * 📊 [[Sorting]]
 * ✍️ [[Placeholders]]
 * ✨ [[Animations]]

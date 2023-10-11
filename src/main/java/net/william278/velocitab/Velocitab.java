@@ -167,14 +167,14 @@ public class Velocitab {
     }
 
     private void prepareScoreboardManager() {
-        if (settings.isSortPlayers()) {
+        if (settings.isSendScoreboardPackets()) {
             this.scoreboardManager = new ScoreboardManager(this);
             scoreboardManager.registerPacket();
         }
     }
 
     private void disableScoreboardManager() {
-        if (scoreboardManager != null && settings.isSortPlayers()) {
+        if (scoreboardManager != null && settings.isSendScoreboardPackets()) {
             scoreboardManager.unregisterPacket();
         }
     }

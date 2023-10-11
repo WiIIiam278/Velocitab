@@ -44,7 +44,6 @@ import net.william278.velocitab.hook.PAPIProxyBridgeHook;
 import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
-import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.bstats.charts.SimplePie;
 import org.bstats.velocity.Metrics;
@@ -74,7 +73,6 @@ public class Velocitab {
     private PlayerTabList tabList;
     private List<Hook> hooks;
     private ScoreboardManager scoreboardManager;
-    private SortingManager sortingManager;
 
     @Inject
     public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path dataDirectory) {
@@ -87,7 +85,6 @@ public class Velocitab {
     public void onProxyInitialization(@NotNull ProxyInitializeEvent event) {
         loadSettings();
         loadHooks();
-        prepareSortingManager();
         prepareScoreboardManager();
         prepareTabList();
         registerCommands();
@@ -160,12 +157,6 @@ public class Velocitab {
         Hook.AVAILABLE.forEach(availableHook -> availableHook.apply(this).ifPresent(hooks::add));
     }
 
-    private void prepareSortingManager() {
-        if (settings.isSortPlayers()) {
-            this.sortingManager = new SortingManager(this);
-        }
-    }
-
     private void prepareScoreboardManager() {
         if (settings.isSendScoreboardPackets()) {
             this.scoreboardManager = new ScoreboardManager(this);
@@ -182,10 +173,6 @@ public class Velocitab {
     @NotNull
     public Optional<ScoreboardManager> getScoreboardManager() {
         return Optional.ofNullable(scoreboardManager);
-    }
-
-    public Optional<SortingManager> getSortingManager() {
-        return Optional.ofNullable(sortingManager);
     }
 
     @NotNull

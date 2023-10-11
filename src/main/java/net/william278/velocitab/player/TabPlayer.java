@@ -28,10 +28,8 @@ import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiFunction;
 
 public final class TabPlayer implements Comparable<TabPlayer> {
     private final Player player;
@@ -59,6 +57,11 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     @NotNull
     public Role getRole() {
         return role;
+    }
+
+    @NotNull
+    public String getRoleWeightString() {
+        return getRole().getWeightString(highestWeight);
     }
 
     /**
@@ -125,13 +128,13 @@ public final class TabPlayer implements Comparable<TabPlayer> {
 
     @NotNull
     public CompletableFuture<String> getTeamName(@NotNull Velocitab plugin) {
-        return plugin.getSortingManager().map(sortingManager -> sortingManager.getTeamName(this))
-                .orElseGet(() -> CompletableFuture.completedFuture(""))
-                .thenApply(teamName -> {
-                    this.teamName = teamName;
-                    return teamName;
-                }).exceptionally(e -> {
-                    plugin.log(Level.ERROR,  "Failed to get team name for " + player.getUsername(), e);
+        final String sortingFormat = String.join("", plugin.getSettings().getSortingElements());
+        return Placeholder.replace(sortingFormat, plugin, this) // Replace placeholders
+                .thenApply(formatted -> formatted.length() > 12 ? formatted.substring(0, 12) : formatted) // Truncate
+                .thenApply(truncated -> truncated + getPlayer().getUniqueId().toString().substring(0, 4)) // Make unique
+                .thenApply(teamName -> this.teamName = teamName)
+                .exceptionally(e -> {
+                    plugin.log(Level.ERROR, "Failed to get team name for " + player.getUsername(), e);
                     return "";
                 });
     }
@@ -172,41 +175,6 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     @Override
     public boolean equals(Object obj) {
         return obj instanceof TabPlayer other && player.getUniqueId().equals(other.player.getUniqueId());
-    }
-
-    /**
-     * Elements for sorting players
-     */
-    @SuppressWarnings("unused")
-    public enum SortableElement {
-        ROLE_WEIGHT((player, plugin) -> player.getRole().getWeightString(player.highestWeight)),
-        ROLE_NAME((player, plugin) -> player.getRole().getName()
-                .map(name -> name.length() > 3 ? name.substring(0, 3) : name)
-                .orElse("")),
-        SERVER_NAME((player, plugin) -> player.getServerName()),
-        SERVER_GROUP((player, plugin) -> {
-            int orderSize = plugin.getSettings().getServerGroups().size();
-            int position = player.getServerGroupPosition(plugin);
-            return position >= 0
-                    ? String.format("%0" + Integer.toString(orderSize).length() + "d", position)
-                    : String.valueOf(orderSize);
-        }),
-        SERVER_GROUP_NAME(TabPlayer::getServerGroup);
-
-        private final BiFunction<TabPlayer, Velocitab, String> elementResolver;
-
-        SortableElement(@NotNull BiFunction<TabPlayer, Velocitab, String> elementResolver) {
-            this.elementResolver = elementResolver;
-        }
-
-        @NotNull
-        private String resolve(@NotNull TabPlayer tabPlayer, @NotNull Velocitab plugin) {
-            return elementResolver.apply(tabPlayer, plugin);
-        }
-
-        public static Optional<SortableElement> parse(@NotNull String s) {
-            return Arrays.stream(values()).filter(element -> element.name().equalsIgnoreCase(s)).findFirst();
-        }
     }
 
 }

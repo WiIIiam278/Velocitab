@@ -69,10 +69,9 @@ public class PlayerTabList {
         final Player joined = event.getPlayer();
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined));
 
-
         // Remove the player from the tracking list if they are switching servers
         final RegisteredServer previousServer = event.getPreviousServer();
-        if (previousServer == null) {
+        if (previousServer != null) {
             players.removeIf(player -> player.getPlayer().getUniqueId().equals(joined.getUniqueId()));
         }
 

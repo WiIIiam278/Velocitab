@@ -35,15 +35,16 @@ jobs:
           modrinth-id: Q10irTG0
           modrinth-featured: true
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          modrinth-version-type: release
           hangar-id: William278/Velocitab
           hangar-token: ${{ secrets.HANGAR_API_KEY }}
+          hangar-version-type: Release
           hangar-game-versions: |
             3.2
           files: target/Velocitab-*.jar
           name: Velocitab v${{ github.event.release.tag_name }}
           version: ${{ github.event.release.tag_name }}
           changelog: ${{ github.event.release.body }}
-          version-type: release
           loaders: |
             velocity
           dependencies: |

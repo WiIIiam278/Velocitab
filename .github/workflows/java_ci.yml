@@ -39,15 +39,16 @@ jobs:
           modrinth-id: Q10irTG0
           modrinth-featured: false
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          modrinth-version-type: alpha
           hangar-id: William278/Velocitab
           hangar-token: ${{ secrets.HANGAR_API_KEY }}
+          hangar-version-type: Alpha
           hangar-game-versions: |
             3.2
           files: target/Velocitab-*.jar
           name: Velocitab v${{ env.version_name }}
           version: ${{ env.version_name }}
           changelog: ${{ github.event.head_commit.message }}
-          version-type: alpha
           loaders: |
             velocity
           dependencies: |

@@ -112,18 +112,6 @@ public class LuckPermsHook extends Hook {
         return group.getWeight().orElse(Role.DEFAULT_WEIGHT);
     }
 
-    public int getHighestWeight() {
-        if (highestWeight == Role.DEFAULT_WEIGHT) {
-            api.getGroupManager().getLoadedGroups().forEach(group -> {
-                final OptionalInt weight = group.getWeight();
-                if (weight.isPresent() && weight.getAsInt() > highestWeight) {
-                    highestWeight = weight.getAsInt();
-                }
-            });
-        }
-        return highestWeight;
-    }
-
     private User getUser(@NotNull UUID uuid) {
         return api.getUserManager().getUser(uuid);
     }

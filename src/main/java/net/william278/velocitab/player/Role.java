@@ -79,9 +79,9 @@ public class Role implements Comparable<Role> {
     public String compressNumber(double number) {
         int wholePart = (int) number;
 
-        char decimalChar = (char) ((number - wholePart) * Character.MAX_VALUE);
+        final char decimalChar = (char) ((number - wholePart) * Character.MAX_VALUE);
 
-        List<Character> charList = new ArrayList<>();
+        final List<Character> charList = new ArrayList<>();
 
         while (wholePart > 0) {
             char digit = (char) (wholePart % Character.MAX_VALUE);
@@ -95,11 +95,7 @@ public class Role implements Comparable<Role> {
             charList.add((char) 0);
         }
 
-        String charString = charList.stream().map(String::valueOf).collect(Collectors.joining());
-
-        charString += decimalChar;
-
-        return charString;
+        return charList.stream().map(String::valueOf).collect(Collectors.joining()) + decimalChar;
     }
 
 }

@@ -56,11 +56,8 @@ jobs:
             papiproxybridge | suggests | *
             miniplaceholders | suggests | *
           game-versions: |
-            1.16.5
-            1.17.1
-            1.18.2
-            1.19.4
-            1.20.2
+            1.8.9
+            >= 1.12.2 <= 1.20.2
           java: 16
       - name: Upload GitHub Artifact
         uses: actions/upload-artifact@v2

@@ -50,7 +50,7 @@ public enum Placeholder {
     SUFFIX((plugin, player) -> player.getRole().getSuffix().orElse("")),
     ROLE((plugin, player) -> player.getRole().getName().orElse("")),
     ROLE_DISPLAY_NAME((plugin, player) -> player.getRole().getDisplayName().orElse("")),
-    ROLE_WEIGHT((plugin, player) -> Integer.toString(player.getRole().getWeight())),
+    ROLE_WEIGHT((plugin, player) -> player.getRoleWeightString()),
     SERVER_GROUP((plugin, player) -> player.getServerGroup(plugin)),
     SERVER_GROUP_INDEX((plugin, player) -> Integer.toString(player.getServerGroupPosition(plugin))),
     DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getLastTeamName().orElse("")));
@@ -65,7 +65,8 @@ public enum Placeholder {
         this.replacer = replacer;
     }
 
-    public static CompletableFuture<String> replace(@NotNull String format, @NotNull Velocitab plugin, @NotNull TabPlayer player) {
+    public static CompletableFuture<String> replace(@NotNull String format, @NotNull Velocitab plugin,
+                                                    @NotNull TabPlayer player) {
         for (Placeholder placeholder : values()) {
             format = format.replace("%" + placeholder.name().toLowerCase() + "%", placeholder.replacer.apply(plugin, player));
         }
@@ -81,6 +82,11 @@ public enum Placeholder {
                     plugin.log(Level.ERROR, "An error occurred whilst parsing placeholders: " + e.getMessage());
                     return replaced;
                 });
+    }
+
+    @NotNull
+    public static String formatSortableInt(int value, int maxValue) {
+        return String.format("%0" + Integer.toString(maxValue).length() + "d", maxValue - value);
     }
 
 }

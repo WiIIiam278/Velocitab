@@ -46,22 +46,27 @@ public class Settings {
     private boolean checkForUpdates = true;
 
     @YamlKey("headers")
-    @YamlComment("Header(s) to display above the TAB list for each server group." +
-            "\nList multiple headers and set update_rate to the number of ticks between frames for basic animations")
-    private Map<String, List<String>> headers = Map.of("default", List.of("&rainbow&Running Velocitab by William278"));
+    @YamlComment("Header(s) to display above the TAB list for each server group."
+            + "\nList multiple headers and set update_rate to the number of ticks between frames for basic animations")
+    private Map<String, List<String>> headers = Map.of(
+            "default",
+            List.of("&rainbow&Running Velocitab by William278")
+    );
 
     @YamlKey("footers")
     @YamlComment("Footer(s) to display below the TAB list for each server group, same as headers.")
     private Map<String, List<String>> footers = Map.of(
             "default",
-            List.of("[There are currently %players_online%/%max_players_online% players online](gray)"));
+            List.of("[There are currently %players_online%/%max_players_online% players online](gray)")
+    );
 
     @YamlKey("formats")
     private Map<String, String> formats = Map.of("default", "&7[%server%] &f%prefix%%username%");
 
     @Getter
     @YamlKey("nametags")
-    @YamlComment("Nametag(s) to display above players' heads for each server group. To disable, set to empty")
+    @YamlComment("Nametag(s) to display above players' heads for each server group. Set to empty to disable."
+            + "\nNametag formats must contain a %username%. Docs: https://william278.net/docs/velocitab/nametags")
     private Map<String, String> nametags = Map.of("default", "&f%prefix%%username%&f%suffix%");
 
     @Getter
@@ -72,12 +77,15 @@ public class Settings {
     @Getter
     @YamlKey("server_groups")
     @YamlComment("The servers in each group of servers. The order of groups is important when sorting by SERVER_GROUP.")
-    private LinkedHashMap<String, List<String>> serverGroups = new LinkedHashMap<>(Map.of("default", List.of("lobby1", "lobby2", "lobby3")));
+    private LinkedHashMap<String, List<String>> serverGroups = new LinkedHashMap<>(Map.of(
+            "default",
+            List.of("lobby1", "lobby2", "lobby3"))
+    );
 
     @Getter
     @YamlKey("fallback_enabled")
-    @YamlComment("All servers which are not in other groups will be put in the fallback group.\n" +
-            "\"false\" will exclude them from Velocitab.")
+    @YamlComment("All servers which are not in other groups will be put in the fallback group."
+            + "\n\"false\" will exclude them from Velocitab.")
     private boolean fallbackEnabled = true;
 
     @Getter
@@ -92,8 +100,8 @@ public class Settings {
 
     @Getter
     @YamlKey("server_display_names")
-    @YamlComment("Define custom names to be shown in the TAB list for specific server names.\n" +
-            "If no custom display name is provided for a server, its original name will be used.")
+    @YamlComment("Define custom names to be shown in the TAB list for specific server names."
+            + "\nIf no custom display name is provided for a server, its original name will be used.")
     private Map<String, String> serverDisplayNames = Map.of("very-long-server-name", "VLSN");
 
     @Getter
@@ -110,6 +118,12 @@ public class Settings {
     @YamlKey("enable_miniplaceholders_hook")
     @YamlComment("If you are using MINIMESSAGE formatting, enable this to support MiniPlaceholders in formatting.")
     private boolean enableMiniPlaceholdersHook = true;
+
+    @Getter
+    @YamlKey("send_scoreboard_packets")
+    @YamlComment("Whether to send scoreboard teams packets. Required for player list sorting and nametag formatting."
+            + "\nTurn this off if you're using scoreboard teams on backend servers.")
+    private boolean sendScoreboardPackets = true;
 
     @Getter
     @YamlKey("sort_players")
@@ -176,7 +190,7 @@ public class Settings {
                 nametags.getOrDefault(serverGroup, ""));
     }
 
-    public boolean areNametagsEnabled() {
+    public boolean doNametags() {
         return !nametags.isEmpty();
     }
 

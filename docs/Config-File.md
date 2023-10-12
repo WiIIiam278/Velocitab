@@ -65,6 +65,9 @@ Which formatting and the header/footer to use for a player's TAB list is determi
 ### Formatting
 Velocitab supports the full range of modern color formatting, including RGB colors and gradients, through either MineDown or MiniMessage syntax. See [[Formatting]] for more information.
 
+## Nametags
+As well as updating the text in the TAB menu, Velocitab supports updating player nametags (the text displayed above their heads). See [[Nametags]] for more information.
+
 ### Animations
 Velocitab supports basic header and footer animations by adding multiple frames of animation and setting the update rate to a value greater than 0.
 

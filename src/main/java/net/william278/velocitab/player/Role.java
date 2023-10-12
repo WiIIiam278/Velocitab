@@ -20,6 +20,7 @@
 package net.william278.velocitab.player;
 
 import lombok.Getter;
+import net.william278.velocitab.config.Placeholder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,7 +71,7 @@ public class Role implements Comparable<Role> {
 
     @NotNull
     protected String getWeightString(int highestWeight) {
-        return String.format("%0" + Integer.toString(highestWeight).length() + "d", highestWeight - weight);
+        return Placeholder.formatSortableInt(weight, highestWeight);
     }
 
 }

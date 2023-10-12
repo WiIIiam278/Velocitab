@@ -89,8 +89,7 @@ public class LuckPermsHook extends Hook {
                         .buildTask(plugin, () -> {
                             final TabPlayer updatedPlayer = new TabPlayer(
                                     player,
-                                    getRoleFromMetadata(event.getData().getMetaData()),
-                                    getHighestWeight()
+                                    getRoleFromMetadata(event.getData().getMetaData())
                             );
                             tabList.replacePlayer(updatedPlayer);
                             tabList.updatePlayer(updatedPlayer);

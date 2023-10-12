@@ -188,8 +188,7 @@ public class Velocitab {
     @NotNull
     public TabPlayer getTabPlayer(@NotNull Player player) {
         return new TabPlayer(player,
-                getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE),
-                getLuckPermsHook().map(LuckPermsHook::getHighestWeight).orElse(0)
+                getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE)
         );
     }
 

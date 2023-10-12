@@ -34,7 +34,6 @@ import java.util.concurrent.CompletableFuture;
 public final class TabPlayer implements Comparable<TabPlayer> {
     private final Player player;
     private final Role role;
-    private final int highestWeight;
     @Getter
     private int headerIndex = 0;
     @Getter
@@ -43,10 +42,9 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private Component lastDisplayname;
     private String teamName;
 
-    public TabPlayer(@NotNull Player player, @NotNull Role role, int highestWeight) {
+    public TabPlayer(@NotNull Player player, @NotNull Role role) {
         this.player = player;
         this.role = role;
-        this.highestWeight = highestWeight;
     }
 
     @NotNull
@@ -61,7 +59,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
 
     @NotNull
     public String getRoleWeightString() {
-        return getRole().getWeightString(highestWeight);
+        return getRole().getWeightString();
     }
 
     /**

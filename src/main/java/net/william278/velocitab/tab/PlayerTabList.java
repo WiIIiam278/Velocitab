@@ -69,10 +69,9 @@ public class PlayerTabList {
         final Player joined = event.getPlayer();
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined));
 
-
         // Remove the player from the tracking list if they are switching servers
         final RegisteredServer previousServer = event.getPreviousServer();
-        if (previousServer == null) {
+        if (previousServer != null) {
             players.removeIf(player -> player.getPlayer().getUniqueId().equals(joined.getUniqueId()));
         }
 
@@ -106,9 +105,10 @@ public class PlayerTabList {
                             continue;
                         }
 
+                        // Create or update TAB list entries for all players
                         tabList.getEntries().stream()
-                                .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
-                                .ifPresentOrElse(
+                                .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId()))
+                                .findFirst().ifPresentOrElse(
                                         entry -> player.getDisplayName(plugin).thenAccept(entry::setDisplayName),
                                         () -> createEntry(player, tabList).thenAccept(tabList::addEntry)
                                 );
@@ -195,9 +195,11 @@ public class PlayerTabList {
         }
 
         tabPlayer.getTeamName(plugin).thenAccept(teamName -> {
+            if (teamName.isBlank()) {
+                return;
+            }
             plugin.getScoreboardManager().ifPresent(manager -> manager.updateRole(
-                    tabPlayer.getPlayer(),
-                    teamName
+                    tabPlayer.getPlayer(), teamName
             ));
         });
     }

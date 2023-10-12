@@ -1,13 +1,9 @@
-# Builds, tests the project with Gradle
-name: Java CI
+# Publishes a release to Modrinth and Hangar when a release is published on GitHub.
+name: Release Test & Publish
 
 on:
-  push:
-    branches: [ 'master' ]
-    paths-ignore:
-      - 'docs/**'
-      - 'workflows/**'
-      - 'README.md'
+  release:
+    types: [ published ]
 
 permissions:
   contents: read
@@ -37,18 +33,18 @@ jobs:
         uses: WiIIiam278/mc-publish@hangar
         with:
           modrinth-id: Q10irTG0
-          modrinth-featured: false
+          modrinth-featured: true
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          modrinth-version-type: alpha
+          modrinth-version-type: release
           hangar-id: William278/Velocitab
           hangar-token: ${{ secrets.HANGAR_API_KEY }}
-          hangar-version-type: Alpha
+          hangar-version-type: Release
           hangar-game-versions: |
             3.2
           files: target/Velocitab-*.jar
-          name: Velocitab v${{ env.version_name }}
-          version: ${{ env.version_name }}
-          changelog: ${{ github.event.head_commit.message }}
+          name: Velocitab v${{ github.event.release.tag_name }}
+          version: ${{ github.event.release.tag_name }}
+          changelog: ${{ github.event.release.body }}
           loaders: |
             velocity
           dependencies: |

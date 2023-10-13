@@ -1,6 +1,6 @@
 Velocitab supports formatting the nametags of players (the text displayed above their heads). This can be used to display a player's rank, group, or other information using placeholders. Please note some limitations apply.
 
-[Nametags being updated by Velocitab in-game](https://raw.githubusercontent.com/WiIIiam278/Velocitab/master/images/nametags.png)
+![Nametags being updated by Velocitab in-game](https://raw.githubusercontent.com/WiIIiam278/Velocitab/master/images/nametags.png)
 
 > **Note:** This feature requires sending Update Teams packets. `send_scoreboard_packets` must be enabled in the [`config.yml` file](config-file) for this to work. [More details...](sorting#compatibility-issues)
 
@@ -30,4 +30,5 @@ Only players on servers which are part of groups that specify nametag formats wi
 Nametags must adhere to the following restrictions:
 * A %username% placeholder must be present. This is used for delimiting the scoreboard prefix, name, and suffix to facilitate formatting.
 * Only legacy colors can be used in formats. If RGB colors are specified, they will automatically be downsampled to the nearest legacy color. This is a limitation of the scoreboard team system.
+* Nametags cannot contain newlines (must be on a single line)
 * Gradients are not supported.

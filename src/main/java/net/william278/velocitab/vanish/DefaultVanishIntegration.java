@@ -22,17 +22,11 @@ package net.william278.velocitab.vanish;
 public class DefaultVanishIntegration implements VanishIntegration {
     @Override
     public boolean canSee(String name, String otherName) {
-        if (otherName.equals("AlexDev_") && name.equals("AlexDalf03")) {
-            return false;
-        }
         return true;
     }
 
     @Override
     public boolean isVanished(String name) {
-        if (name.equals("AlexDev_")) {
-            return true;
-        }
         return false;
     }
 

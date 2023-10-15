@@ -39,7 +39,6 @@ import java.util.concurrent.TimeUnit;
 
 public class LuckPermsHook extends Hook {
 
-    private int highestWeight = Role.DEFAULT_WEIGHT;
     private final LuckPerms api;
     private final EventSubscription<UserDataRecalculateEvent> event;
     private final Map<UUID, Long> lastUpdate;
@@ -87,13 +86,9 @@ public class LuckPermsHook extends Hook {
         plugin.getServer().getPlayer(event.getUser().getUniqueId())
                 .ifPresent(player -> plugin.getServer().getScheduler()
                         .buildTask(plugin, () -> {
-                            final TabPlayer updatedPlayer = new TabPlayer(
-                                    player,
-                                    getRoleFromMetadata(event.getData().getMetaData())
-                            );
-                            tabList.replacePlayer(updatedPlayer);
-                            tabList.updatePlayer(updatedPlayer);
-                            tabList.updatePlayerDisplayName(updatedPlayer);
+                            TabPlayer tabPlayer = tabList.getTabPlayer(player).orElseThrow();
+                            tabPlayer.setRole(getRoleFromMetadata(event.getData().getMetaData()));
+                            tabList.updatePlayerDisplayName(tabPlayer);
                         })
                         .delay(500, TimeUnit.MILLISECONDS)
                         .schedule());

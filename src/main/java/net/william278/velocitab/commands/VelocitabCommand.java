@@ -20,13 +20,18 @@
 package net.william278.velocitab.commands;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
+import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.william278.desertwell.about.AboutMenu;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.api.VelocitabAPI;
 import org.jetbrains.annotations.NotNull;
 
 public final class VelocitabCommand {
@@ -69,6 +74,21 @@ public final class VelocitabCommand {
                             return Command.SINGLE_SUCCESS;
                         })
                 )
+                .then(LiteralArgumentBuilder.<CommandSource>literal("name")
+                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("name", StringArgumentType.word())
+                                .executes(ctx -> {
+
+                                    if (!(ctx.getSource() instanceof Player player)) {
+                                        ctx.getSource().sendMessage(Component.text("You must be a player to use this command!", MAIN_COLOR));
+                                        return Command.SINGLE_SUCCESS;
+                                    }
+
+                                    String name = StringArgumentType.getString(ctx, "name");
+                                    VelocitabAPI.getInstance().setCustomPlayerName(player, name);
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                        )
+                )
                 .then(LiteralArgumentBuilder.<CommandSource>literal("reload")
                         .requires(src -> src.hasPermission("velocitab.command.reload"))
                         .executes(ctx -> {
@@ -91,7 +111,7 @@ public final class VelocitabCommand {
                                 }
                                 ctx.getSource().sendMessage(Component
                                         .text("An update for velocitab is available. " +
-                                              "Please update to " + checked.getLatestVersion(), MAIN_COLOR));
+                                                "Please update to " + checked.getLatestVersion(), MAIN_COLOR));
                             });
                             return Command.SINGLE_SUCCESS;
                         })

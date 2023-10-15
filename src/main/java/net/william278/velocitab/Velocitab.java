@@ -28,13 +28,13 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
-import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import lombok.Getter;
 import net.william278.annotaml.Annotaml;
 import net.william278.desertwell.util.UpdateChecker;
 import net.william278.desertwell.util.Version;
+import net.william278.velocitab.api.VelocitabAPI;
 import net.william278.velocitab.commands.VelocitabCommand;
 import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.config.Settings;
@@ -77,6 +77,7 @@ public class Velocitab {
     private ScoreboardManager scoreboardManager;
     @Getter
     private VanishManager vanishManager;
+    private VelocitabAPI velocitabAPI;
 
     @Inject
     public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path dataDirectory) {
@@ -95,6 +96,7 @@ public class Velocitab {
         registerCommands();
         registerMetrics();
         checkForUpdates();
+        prepareAPI();
         logger.info("Successfully enabled Velocitab");
     }
 
@@ -194,16 +196,8 @@ public class Velocitab {
         server.getEventManager().register(this, tabList);
     }
 
-    @NotNull
-    public TabPlayer getTabPlayer(@NotNull Player player) {
-        return new TabPlayer(player,
-                getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE)
-        );
-    }
-
-    @SuppressWarnings("unused")
-    public Optional<TabPlayer> getTabPlayer(String name) {
-        return server.getPlayer(name).map(this::getTabPlayer);
+    private void prepareAPI() {
+       VelocitabAPI.register(this);
     }
 
     private void registerCommands() {

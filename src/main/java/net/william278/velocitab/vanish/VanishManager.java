@@ -19,9 +19,13 @@
 
 package net.william278.velocitab.vanish;
 
+import com.velocitypowered.api.proxy.Player;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.player.TabPlayer;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class VanishManager {
 
@@ -30,11 +34,15 @@ public class VanishManager {
 
     public VanishManager(Velocitab plugin) {
         this.plugin = plugin;
-        setIntegration(null);
+        setIntegration(new DefaultVanishIntegration());
     }
 
-    public void setIntegration(VanishIntegration integration) {
-        this.integration = Objects.requireNonNullElseGet(integration, DefaultVanishIntegration::new);
+    public void setIntegration(@NotNull VanishIntegration integration) {
+        this.integration = integration;
+    }
+
+    public @NotNull VanishIntegration getIntegration() {
+        return integration;
     }
 
     public boolean canSee(String name, String otherName) {
@@ -45,12 +53,25 @@ public class VanishManager {
         return integration.isVanished(name);
     }
 
+    public void vanishPlayer(Player player) {
+        Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
 
-    public void vanish(String name) {
+        if(tabPlayer.isEmpty()) {
+            return;
+        }
 
+        plugin.getTabList().vanishPlayer(tabPlayer.get());
+        plugin.getScoreboardManager().ifPresent(scoreboardManager -> scoreboardManager.vanishPlayer(player));
     }
 
-    public void unvanish(String name) {
+    public void unvanishPlayer(Player player) {
+        Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
 
+        if(tabPlayer.isEmpty()) {
+            return;
+        }
+
+        plugin.getTabList().unvanishPlayer(tabPlayer.get());
+        plugin.getScoreboardManager().ifPresent(scoreboardManager -> scoreboardManager.unvanishPlayer(player));
     }
 }

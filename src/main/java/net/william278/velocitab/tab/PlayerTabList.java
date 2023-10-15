@@ -33,6 +33,7 @@ import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
+import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -63,18 +64,17 @@ public class PlayerTabList {
         }
     }
 
+    public Optional<TabPlayer> getTabPlayer(@NotNull Player player) {
+        return players.stream().filter(tabPlayer -> tabPlayer.getPlayer().getUniqueId().equals(player.getUniqueId())).findFirst();
+    }
+
     @SuppressWarnings("UnstableApiUsage")
     @Subscribe
     public void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
         final Player joined = event.getPlayer();
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined));
 
-
-        // Remove the player from the tracking list if they are switching servers
         final RegisteredServer previousServer = event.getPreviousServer();
-        if (previousServer != null) {
-            players.removeIf(player -> player.getPlayer().getUniqueId().equals(joined.getUniqueId()));
-        }
 
         // Get the servers in the group from the joined server name
         // If the server is not in a group, use fallback
@@ -91,8 +91,8 @@ public class PlayerTabList {
             return;
         }
 
-        // Add the player to the tracking list
-        final TabPlayer tabPlayer = plugin.getTabPlayer(joined);
+        // Add the player to the tracking list if they are not already listed
+        final TabPlayer tabPlayer = getTabPlayer(joined).orElseGet(() -> createTabPlayer(joined));
         players.add(tabPlayer);
 
         boolean isVanished = plugin.getVanishManager().isVanished(joined.getUsername());
@@ -134,7 +134,7 @@ public class PlayerTabList {
 
                     plugin.getScoreboardManager().ifPresent(s -> {
                         s.resendAllNameTags(joined);
-                        plugin.getTabPlayer(joined).getTeamName(plugin).thenAccept(t -> s.updateRole(joined, t));
+                        tabPlayer.getTeamName(plugin).thenAccept(t -> s.updateRole(joined, t));
                     });
                 })
                 .delay(500, TimeUnit.MILLISECONDS)
@@ -151,6 +151,16 @@ public class PlayerTabList {
                 .build());
     }
 
+    @NotNull
+    private TabListEntry createEntry(@NotNull TabPlayer player, @NotNull TabList tabList, Component displayName) {
+        return TabListEntry.builder()
+                .profile(player.getPlayer().getGameProfile())
+                .displayName(displayName)
+                .latency(0)
+                .tabList(tabList)
+                .build();
+    }
+
     private void addPlayerToTabList(@NotNull TabPlayer player, @NotNull TabPlayer newPlayer) {
         if (newPlayer.getPlayer().getUniqueId().equals(player.getPlayer().getUniqueId())) {
             return;
@@ -165,6 +175,20 @@ public class PlayerTabList {
                                 .thenAccept(entry -> player.getPlayer().getTabList().addEntry(entry))
                 );
 
+    }
+
+    private void addPlayerToTabList(@NotNull TabPlayer player, @NotNull TabPlayer newPlayer, TabListEntry entry) {
+        if (newPlayer.getPlayer().getUniqueId().equals(player.getPlayer().getUniqueId())) {
+            return;
+        }
+
+        boolean present = player.getPlayer()
+                .getTabList().getEntries().stream()
+                .noneMatch(e -> e.getProfile().getId().equals(newPlayer.getPlayer().getUniqueId()));
+
+        if (present) {
+            player.getPlayer().getTabList().addEntry(entry);
+        }
     }
 
     @Subscribe
@@ -196,10 +220,11 @@ public class PlayerTabList {
 
     }
 
-    // Replace a player in the tab list
-    public void replacePlayer(@NotNull TabPlayer tabPlayer) {
-        players.removeIf(player -> player.getPlayer().getUniqueId().equals(tabPlayer.getPlayer().getUniqueId()));
-        players.add(tabPlayer);
+    @NotNull
+    public TabPlayer createTabPlayer(@NotNull Player player) {
+        return new TabPlayer(player,
+                plugin.getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE)
+        );
     }
 
     // Update a player's name in the tab list
@@ -231,7 +256,6 @@ public class PlayerTabList {
             players.forEach(player -> {
 
                 if (isVanished && !plugin.getVanishManager().canSee(player.getPlayer().getUsername(), tabPlayer.getPlayer().getUsername())) {
-                    System.out.println("Player " + player.getPlayer().getUsername() + " cannot see " + tabPlayer.getPlayer().getUsername());
                     return;
                 }
 
@@ -366,5 +390,34 @@ public class PlayerTabList {
      */
     public void removeOfflinePlayer(@NotNull Player player) {
         players.removeIf(tabPlayer -> tabPlayer.getPlayer().getUniqueId().equals(player.getUniqueId()));
+    }
+
+    public void vanishPlayer(TabPlayer tabPlayer) {
+        players.forEach(p -> {
+            if (p.getPlayer().equals(tabPlayer.getPlayer())) {
+                return;
+            }
+
+            if (!plugin.getVanishManager().canSee(p.getPlayer().getUsername(), tabPlayer.getPlayer().getUsername())) {
+                p.getPlayer().getTabList().removeEntry(tabPlayer.getPlayer().getUniqueId());
+            }
+        });
+    }
+
+    public void unvanishPlayer(TabPlayer tabPlayer) {
+        UUID uuid = tabPlayer.getPlayer().getUniqueId();
+
+        tabPlayer.getDisplayName(plugin).thenAccept(c -> {
+            players.forEach(p -> {
+                if (p.getPlayer().equals(tabPlayer.getPlayer())) {
+                    return;
+                }
+
+                if (!p.getPlayer().getTabList().containsEntry(uuid)) {
+                    createEntry(tabPlayer, p.getPlayer().getTabList(), c);
+                }
+            });
+        });
+
     }
 }

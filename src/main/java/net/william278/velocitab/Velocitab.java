@@ -89,6 +89,7 @@ public class Velocitab {
         loadHooks();
         prepareScoreboardManager();
         prepareTabList();
+        prepareSortingManager();
         registerCommands();
         registerMetrics();
         checkForUpdates();

@@ -44,6 +44,7 @@ import net.william278.velocitab.hook.PAPIProxyBridgeHook;
 import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.bstats.charts.SimplePie;
 import org.bstats.velocity.Metrics;
@@ -73,6 +74,7 @@ public class Velocitab {
     private PlayerTabList tabList;
     private List<Hook> hooks;
     private ScoreboardManager scoreboardManager;
+    private SortingManager sortingManager;
 
     @Inject
     public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path dataDirectory) {
@@ -87,6 +89,7 @@ public class Velocitab {
         loadHooks();
         prepareScoreboardManager();
         prepareTabList();
+        prepareSortingManager();
         registerCommands();
         registerMetrics();
         checkForUpdates();
@@ -168,6 +171,15 @@ public class Velocitab {
         if (scoreboardManager != null && settings.isSendScoreboardPackets()) {
             scoreboardManager.unregisterPacket();
         }
+    }
+
+    private void prepareSortingManager() {
+        this.sortingManager = new SortingManager(this);
+    }
+
+    @NotNull
+    public SortingManager getSortingManager() {
+        return sortingManager;
     }
 
     @NotNull

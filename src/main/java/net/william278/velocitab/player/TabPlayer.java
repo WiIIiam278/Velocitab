@@ -26,7 +26,6 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.event.Level;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -126,19 +125,8 @@ public final class TabPlayer implements Comparable<TabPlayer> {
 
     @NotNull
     public CompletableFuture<String> getTeamName(@NotNull Velocitab plugin) {
-        if (!plugin.getSettings().isSortPlayers()) {
-            return CompletableFuture.completedFuture("");
-        }
-
-        final String sortingFormat = String.join("", plugin.getSettings().getSortingElements());
-        return Placeholder.replace(sortingFormat, plugin, this) // Replace placeholders
-                .thenApply(formatted -> formatted.length() > 12 ? formatted.substring(0, 12) : formatted) // Truncate
-                .thenApply(truncated -> truncated + getPlayer().getUniqueId().toString().substring(0, 4)) // Make unique
-                .thenApply(teamName -> this.teamName = teamName)
-                .exceptionally(e -> {
-                    plugin.log(Level.ERROR, "Failed to get team name for " + player.getUsername(), e);
-                    return "";
-                });
+        return plugin.getSortingManager().getTeamName(this)
+                .thenApply(teamName -> this.teamName = teamName);
     }
 
     public Optional<String> getLastTeamName() {

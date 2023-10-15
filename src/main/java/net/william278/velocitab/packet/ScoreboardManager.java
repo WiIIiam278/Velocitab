@@ -169,7 +169,7 @@ public class ScoreboardManager {
         siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
             try {
 
-                boolean canSee = !plugin.getVanishManager().isVanished(p.getUsername())
+                boolean canSee = !plugin.getVanishManager().isVanished(connected.getUsername())
                         || plugin.getVanishManager().canSee(player.getUsername(), player.getUsername());
 
                 if (!canSee) {

@@ -28,6 +28,7 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import lombok.Getter;
@@ -45,6 +46,7 @@ import net.william278.velocitab.hook.PAPIProxyBridgeHook;
 import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
 import net.william278.velocitab.vanish.VanishManager;
 import org.bstats.charts.SimplePie;
@@ -75,6 +77,7 @@ public class Velocitab {
     private PlayerTabList tabList;
     private List<Hook> hooks;
     private ScoreboardManager scoreboardManager;
+    private SortingManager sortingManager;
     @Getter
     private VanishManager vanishManager;
 
@@ -91,6 +94,7 @@ public class Velocitab {
         loadHooks();
         prepareScoreboardManager();
         prepareTabList();
+        prepareSortingManager();
         prepareVanishManager();
         registerCommands();
         registerMetrics();
@@ -179,6 +183,15 @@ public class Velocitab {
 
     private void prepareVanishManager() {
         this.vanishManager = new VanishManager(this);
+    }
+
+    private void prepareSortingManager() {
+        this.sortingManager = new SortingManager(this);
+    }
+
+    @NotNull
+    public SortingManager getSortingManager() {
+        return sortingManager;
     }
 
     @NotNull

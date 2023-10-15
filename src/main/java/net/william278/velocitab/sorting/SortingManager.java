@@ -67,6 +67,7 @@ public class SortingManager {
         if (value.isEmpty()) {
             return "";
         }
+
         if (value.matches("[0-9]+")) {
             double parsed = Double.parseDouble(value);
             return compressNumber(Integer.MAX_VALUE / 4d - parsed);

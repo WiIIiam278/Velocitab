@@ -75,7 +75,7 @@ public class ScoreboardManager {
     }
 
     public void vanishPlayer(Player player) {
-        if (!plugin.getSettings().doNametags()) {
+        if (!plugin.getSettings().isSortPlayers()) {
             return;
         }
 
@@ -101,7 +101,7 @@ public class ScoreboardManager {
     }
 
     public void unvanishPlayer(Player player) {
-        if (!plugin.getSettings().doNametags()) {
+        if (!plugin.getSettings().isSortPlayers()) {
             return;
         }
 

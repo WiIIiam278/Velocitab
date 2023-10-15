@@ -54,9 +54,8 @@ public class VanishManager {
     }
 
     public void vanishPlayer(Player player) {
-        Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
-
-        if(tabPlayer.isEmpty()) {
+        final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
+        if (tabPlayer.isEmpty()) {
             return;
         }
 
@@ -65,9 +64,8 @@ public class VanishManager {
     }
 
     public void unvanishPlayer(Player player) {
-        Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
-
-        if(tabPlayer.isEmpty()) {
+        final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
+        if (tabPlayer.isEmpty()) {
             return;
         }
 

@@ -173,7 +173,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
      *
      * @param customName The custom name to set
      */
-    public void setCustomName(@NotNull String customName) {
+    public void setCustomName(@Nullable String customName) {
         this.customName = customName;
     }
 

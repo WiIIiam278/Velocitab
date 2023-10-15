@@ -27,6 +27,7 @@ import net.william278.velocitab.tab.PlayerTabList;
 import net.william278.velocitab.vanish.VanishIntegration;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -36,8 +37,7 @@ import java.util.Optional;
  * The Velocitab API class.
  * </p>
  * Retrieve an instance of the API class via {@link #getInstance()}.
- */
-public class VelocitabAPI {
+ */ public class VelocitabAPI {
 
     // Instance of the plugin
     private final Velocitab plugin;
@@ -49,7 +49,7 @@ public class VelocitabAPI {
     }
 
     /**
-     * Entrypoint to the HuskSync API - returns an instance of the API
+     * Entrypoint to the {@link VelocitabAPI} API - returns an instance of the API
      *
      * @return instance of the HuskSync API
      * @since 1.5.2
@@ -63,7 +63,7 @@ public class VelocitabAPI {
     }
 
     /**
-     * <b>(Internal use only)</b> - Register the API for this platform.
+     * <b>(Internal use only)</b> - Register the API.
      *
      * @param plugin the plugin instance
      * @since 3.0
@@ -74,7 +74,7 @@ public class VelocitabAPI {
     }
 
     /**
-     * <b>(Internal use only)</b> - Unregister the API for this platform.
+     * <b>(Internal use only)</b> - Unregister the API.
      */
     @ApiStatus.Internal
     public static void unregister() {
@@ -82,9 +82,9 @@ public class VelocitabAPI {
     }
 
     /**
-     * Returns an option of {@link TabPlayer} instance for the given velocity {@link Player}.
+     * Returns an option of {@link TabPlayer} instance for the given Velocity {@link Player}.
      *
-     * @param player the velocity player to get the {@link TabPlayer} instance for
+     * @param player the Velocity player to get the {@link TabPlayer} instance for
      * @return the {@link TabPlayer} instance for the given player or an empty optional if the player is not in a group server
      * @since 2.0
      */
@@ -99,7 +99,7 @@ public class VelocitabAPI {
      * @param player The player for whom to set the custom name
      * @param name   The custom name to set
      */
-    public void setCustomPlayerName(Player player, String name) {
+    public void setCustomPlayerName(@NotNull Player player, @Nullable String name) {
         getUser(player).ifPresent(tabPlayer -> {
             tabPlayer.setCustomName(name);
             plugin.getTabList().updatePlayerDisplayName(tabPlayer);
@@ -112,7 +112,6 @@ public class VelocitabAPI {
      * @param player The player for whom to get the custom name
      * @return An Optional object containing the custom name, or empty if no custom name has been set.
      */
-
     public Optional<String> getCustomPlayerName(Player player) {
         return getUser(player).flatMap(TabPlayer::getCustomName);
     }
@@ -132,7 +131,7 @@ public class VelocitabAPI {
      *
      * @param vanishIntegration the VanishIntegration to set
      */
-    public void setVanishIntegration(VanishIntegration vanishIntegration) {
+    public void setVanishIntegration(@NotNull VanishIntegration vanishIntegration) {
         plugin.getVanishManager().setIntegration(vanishIntegration);
     }
 
@@ -151,7 +150,7 @@ public class VelocitabAPI {
      *
      * @param player The player to vanish
      */
-    public void vanishPlayer(Player player) {
+    public void vanishPlayer(@NotNull Player player) {
         plugin.getVanishManager().vanishPlayer(player);
     }
 
@@ -160,7 +159,7 @@ public class VelocitabAPI {
      *
      * @param player The player to unvanish
      */
-    public void unvanishPlayer(Player player) {
+    public void unvanishPlayer(@NotNull Player player) {
         plugin.getVanishManager().unvanishPlayer(player);
     }
 

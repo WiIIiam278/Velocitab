@@ -77,7 +77,6 @@ public class Velocitab {
     private ScoreboardManager scoreboardManager;
     @Getter
     private VanishManager vanishManager;
-    private VelocitabAPI velocitabAPI;
 
     @Inject
     public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path dataDirectory) {
@@ -105,6 +104,7 @@ public class Velocitab {
         server.getScheduler().tasksByPlugin(this).forEach(ScheduledTask::cancel);
         disableScoreboardManager();
         getLuckPermsHook().ifPresent(LuckPermsHook::close);
+        VelocitabAPI.unregister();
         logger.info("Successfully disabled Velocitab");
     }
 

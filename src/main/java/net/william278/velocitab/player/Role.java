@@ -23,10 +23,7 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class Role implements Comparable<Role> {
     public static final int DEFAULT_WEIGHT = 0;
@@ -73,7 +70,7 @@ public class Role implements Comparable<Role> {
 
     @NotNull
     protected String getWeightString() {
-        return String.valueOf(weight);
+        return Integer.toString(weight);
     }
 
 

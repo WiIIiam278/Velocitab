@@ -26,7 +26,6 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.event.Level;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -127,10 +126,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     @NotNull
     public CompletableFuture<String> getTeamName(@NotNull Velocitab plugin) {
         return plugin.getSortingManager().getTeamName(this)
-                .thenApply(teamName -> {
-                    this.teamName = teamName;
-                    return teamName;
-                });
+                .thenApply(teamName -> this.teamName = teamName);
     }
 
     public Optional<String> getLastTeamName() {

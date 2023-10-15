@@ -82,9 +82,7 @@ public class SortingManager {
 
     public String compressNumber(double number) {
         int wholePart = (int) number;
-
         final char decimalChar = (char) ((number - wholePart) * Character.MAX_VALUE);
-
         final List<Character> charList = new ArrayList<>();
 
         while (wholePart > 0) {

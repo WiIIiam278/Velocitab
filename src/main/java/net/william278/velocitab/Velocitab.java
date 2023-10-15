@@ -177,7 +177,7 @@ public class Velocitab {
         this.sortingManager = new SortingManager(this);
     }
 
-    public SortingManager getSortingManager() {
+    public @NotNull SortingManager getSortingManager() {
         return sortingManager;
     }
 

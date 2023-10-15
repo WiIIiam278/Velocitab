@@ -23,7 +23,10 @@ import lombok.Getter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Role implements Comparable<Role> {
     public static final int DEFAULT_WEIGHT = 0;
@@ -49,7 +52,7 @@ public class Role implements Comparable<Role> {
 
     @Override
     public int compareTo(@NotNull Role o) {
-        return weight - o.weight;
+        return Double.compare(weight, o.weight);
     }
 
     public Optional<String> getName() {
@@ -69,8 +72,30 @@ public class Role implements Comparable<Role> {
     }
 
     @NotNull
-    protected String getWeightString(int highestWeight) {
-        return String.format("%0" + Integer.toString(highestWeight).length() + "d", highestWeight - weight);
+    protected String getWeightString() {
+        return compressNumber(Integer.MAX_VALUE / 4d - weight);
+    }
+
+    public String compressNumber(double number) {
+        int wholePart = (int) number;
+
+        final char decimalChar = (char) ((number - wholePart) * Character.MAX_VALUE);
+
+        final List<Character> charList = new ArrayList<>();
+
+        while (wholePart > 0) {
+            char digit = (char) (wholePart % Character.MAX_VALUE);
+
+            charList.add(0, digit);
+
+            wholePart /= Character.MAX_VALUE;
+        }
+
+        if (charList.isEmpty()) {
+            charList.add((char) 0);
+        }
+
+        return charList.stream().map(String::valueOf).collect(Collectors.joining()) + decimalChar;
     }
 
 }

@@ -1,5 +1,7 @@
 Velocitab can sort players in the TAB list by a number of "sorting elements." Sorting is enabled by default, and can be disabled with the `sort_players` option in the [`config.yml`](Config-File) file.
 
+> > **Note:** This feature requires sending Update Teams packets. `send_scoreboard_packets` must be enabled in the [`config.yml` file](config-file) for this to work. [More details...](#compatibility-issues)
+
 ## Sortable elements
 To modify what players are sorted by, modify the `sorting_placeholders` list in the [`config.yml`](Config-File) file. This option accepts an ordered list; the first element in the list is what players will be sorted by first, with subsequent elements being used to break ties. The default sorting strategy is to sort first by `%role_weight%` followed by `%username%`.
 
@@ -37,4 +39,4 @@ There are a few compatibility caveats to bear in mind with sorting players in th
 * Some mods can interfere with scoreboard team packets, particularly if they internally deal with managing packets or scoreboard teams.
 * Sending fake scoreboard team packets might not work correctly on some Minecraft server implementations such as [Quilt](https://quiltmc.org/).
 
-In these cases, you may need to disable sorting through the `sort_players` option detailed earlier.
+In these cases, you may need to disable the use of scoreboard packets through the `send_scoreboard_packets` option detailed earlier.

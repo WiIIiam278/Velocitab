@@ -38,6 +38,7 @@ import static com.velocitypowered.api.network.ProtocolVersion.*;
 
 public class ScoreboardManager {
 
+    private static final String NAMETAG_DELIMITER = ":::";
     private PacketRegistration<UpdateTeamsPacket> packetRegistration;
     private final Velocitab plugin;
     private final Set<TeamsPacketAdapter> versions;
@@ -67,7 +68,7 @@ public class ScoreboardManager {
     }
 
     public void resetCache(@NotNull Player player) {
-        String team = createdTeams.remove(player.getUniqueId());
+        final String team = createdTeams.remove(player.getUniqueId());
         if (team != null) {
             dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, team), player);
         }
@@ -87,16 +88,15 @@ public class ScoreboardManager {
             String suffix = split.length > 1 ? split[1] : "";
 
             if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
-
                 if (createdTeams.containsKey(player.getUniqueId())) {
                     dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, createdTeams.get(player.getUniqueId())), player);
                 }
 
                 createdTeams.put(player.getUniqueId(), role);
-                this.nametags.put(role, prefix + ":::" + suffix);
+                this.nametags.put(role, prefix + NAMETAG_DELIMITER + suffix);
                 dispatchGroupPacket(UpdateTeamsPacket.create(plugin, role, "", prefix, suffix, name), player);
-            } else if (!this.nametags.getOrDefault(role, "").equals(prefix + ":::" + suffix)) {
-                this.nametags.put(role, prefix + ":::" + suffix);
+            } else if (!this.nametags.getOrDefault(role, "").equals(prefix + NAMETAG_DELIMITER + suffix)) {
+                this.nametags.put(role, prefix + NAMETAG_DELIMITER + suffix);
                 dispatchGroupPacket(UpdateTeamsPacket.changeNameTag(plugin, role, prefix, suffix), player);
             }
         }).exceptionally(e -> {
@@ -107,8 +107,7 @@ public class ScoreboardManager {
 
 
     public void resendAllNameTags(Player player) {
-
-        if (!plugin.getSettings().areNametagsEnabled()) {
+        if (!plugin.getSettings().doNametags()) {
             return;
         }
 
@@ -117,12 +116,12 @@ public class ScoreboardManager {
             return;
         }
 
-        RegisteredServer serverInfo = optionalServerConnection.get().getServer();
-
-        List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
-
-        List<Player> players = siblings.stream().map(RegisteredServer::getPlayersConnected).flatMap(Collection::stream).toList();
-
+        final RegisteredServer serverInfo = optionalServerConnection.get().getServer();
+        final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
+        final List<Player> players = siblings.stream()
+                .map(RegisteredServer::getPlayersConnected)
+                .flatMap(Collection::stream)
+                .toList();
         players.forEach(p -> {
             if (p == player || !p.isActive()) {
                 return;
@@ -138,10 +137,9 @@ public class ScoreboardManager {
                 return;
             }
 
-            String[] split = nametag.split(":::", 2);
-            String prefix = split[0];
-            String suffix = split.length > 1 ? split[1] : "";
-
+            final String[] split = nametag.split(NAMETAG_DELIMITER, 2);
+            final String prefix = split[0];
+            final String suffix = split.length > 1 ? split[1] : "";
             dispatchPacket(UpdateTeamsPacket.create(plugin, role, "", prefix, suffix, p.getUsername()), player);
         });
     }
@@ -155,39 +153,35 @@ public class ScoreboardManager {
         try {
             final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
             connectedPlayer.getConnection().write(packet);
-        } catch (Exception e) {
-            plugin.log(Level.ERROR, "Failed to dispatch packet (is the client or server modded or using an illegal version?)", e);
+        } catch (Throwable e) {
+            plugin.log(Level.ERROR, "Failed to dispatch packet (unsupported client or server version)", e);
         }
     }
 
     private void dispatchGroupPacket(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
-        Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
-
+        final Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
         if (optionalServerConnection.isEmpty()) {
             return;
         }
 
-        RegisteredServer serverInfo = optionalServerConnection.get().getServer();
+        final RegisteredServer serverInfo = optionalServerConnection.get().getServer();
+        final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
+        siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
+            try {
 
-        List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
-
-        siblings.forEach(s -> {
-            s.getPlayersConnected().forEach(p -> {
-
-                boolean canSee = !plugin.getVanishManager().isVanished(p.getUsername()) || plugin.getVanishManager().canSee(player.getUsername(), player.getUsername());
+                boolean canSee = !plugin.getVanishManager().isVanished(p.getUsername())
+                        || plugin.getVanishManager().canSee(player.getUsername(), player.getUsername());
 
                 if (!canSee) {
                     return;
                 }
 
-                try {
-                    final ConnectedPlayer connectedPlayer = (ConnectedPlayer) p;
-                    connectedPlayer.getConnection().write(packet);
-                } catch (Exception e) {
-                    plugin.log(Level.ERROR, "Failed to dispatch packet (is the client or server modded or using an illegal version?)", e);
-                }
-            });
-        });
+                final ConnectedPlayer connectedPlayer = (ConnectedPlayer) connected;
+                connectedPlayer.getConnection().write(packet);
+            } catch (Throwable e) {
+                plugin.log(Level.ERROR, "Failed to dispatch packet (unsupported client or server version)", e);
+            }
+        }));
     }
 
     public void registerPacket() {
@@ -204,7 +198,8 @@ public class ScoreboardManager {
                     .mapping(0x55, MINECRAFT_1_17, true)
                     .mapping(0x58, MINECRAFT_1_19_1, true)
                     .mapping(0x56, MINECRAFT_1_19_3, true)
-                    .mapping(0x5A, MINECRAFT_1_19_4, true);
+                    .mapping(0x5A, MINECRAFT_1_19_4, true)
+                    .mapping(0x5C, MINECRAFT_1_20_2, true);
             packetRegistration.register();
         } catch (Throwable e) {
             plugin.log(Level.ERROR, "Failed to register UpdateTeamsPacket", e);

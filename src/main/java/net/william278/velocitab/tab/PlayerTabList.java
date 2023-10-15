@@ -42,6 +42,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * The main class for tracking the server TAB list
+ */
 public class PlayerTabList {
     private final Velocitab plugin;
     private final ConcurrentLinkedQueue<TabPlayer> players;
@@ -68,19 +71,21 @@ public class PlayerTabList {
 
         // Remove the player from the tracking list if they are switching servers
         final RegisteredServer previousServer = event.getPreviousServer();
-        if (previousServer == null) {
+        if (previousServer != null) {
             players.removeIf(player -> player.getPlayer().getUniqueId().equals(joined.getUniqueId()));
         }
 
         // Get the servers in the group from the joined server name
         // If the server is not in a group, use fallback
-        Optional<List<String>> serversInGroup = getGroupNames(joined.getCurrentServer()
+        final Optional<List<String>> serversInGroup = getGroupNames(joined.getCurrentServer()
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
                 .orElse("?"));
+
         // If the server is not in a group, use fallback.
-        // If fallback is disabled, permit the player to switch excluded servers without header or footer override
-        if (serversInGroup.isEmpty() && (previousServer != null && !this.fallbackServers.contains(previousServer.getServerInfo().getName()))) {
+        // If fallback is disabled, permit the player to switch excluded servers without a header or footer override
+        if (serversInGroup.isEmpty() &&
+                (previousServer != null && !this.fallbackServers.contains(previousServer.getServerInfo().getName()))) {
             event.getPlayer().sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
             return;
         }
@@ -128,8 +133,7 @@ public class PlayerTabList {
 
                     plugin.getScoreboardManager().ifPresent(s -> {
                         s.resendAllNameTags(joined);
-                        plugin.getTabPlayer(joined).getTeamName(plugin)
-                                .thenAccept(t -> s.updateRole(joined, t));
+                        plugin.getTabPlayer(joined).getTeamName(plugin).thenAccept(t -> s.updateRole(joined, t));
                     });
                 })
                 .delay(500, TimeUnit.MILLISECONDS)
@@ -164,20 +168,24 @@ public class PlayerTabList {
 
     @Subscribe
     public void onPlayerQuit(@NotNull DisconnectEvent event) {
-        if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) return;
+        if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) {
+            return;
+        }
 
         // Remove the player from the tracking list, Print warning if player was not removed
-        if (!players.removeIf(player -> player.getPlayer().getUniqueId().equals(event.getPlayer().getUniqueId()))) {
-            plugin.log("Failed to remove disconnecting player " + event.getPlayer().getUsername() + " (UUID: " + event.getPlayer().getUniqueId() + ")");
+        final UUID uuid = event.getPlayer().getUniqueId();
+        if (!players.removeIf(listed -> listed.getPlayer().getUniqueId().equals(uuid))) {
+            plugin.log(String.format("Failed to remove disconnecting player %s (UUID: %s)",
+                    event.getPlayer().getUsername(), uuid.toString()));
         }
 
         // Remove the player from the tab list of all other players
-        plugin.getServer().getAllPlayers().forEach(player -> player.getTabList().removeEntry(event.getPlayer().getUniqueId()));
+        plugin.getServer().getAllPlayers().forEach(player -> player.getTabList().removeEntry(uuid));
 
         // Update the tab list of all players
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> players.forEach(player -> {
-                    player.getPlayer().getTabList().removeEntry(event.getPlayer().getUniqueId());
+                    player.getPlayer().getTabList().removeEntry(uuid);
                     player.sendHeaderAndFooter(this);
                 }))
                 .delay(500, TimeUnit.MILLISECONDS)
@@ -201,19 +209,21 @@ public class PlayerTabList {
         }
 
         tabPlayer.getTeamName(plugin).thenAccept(teamName -> {
-            if (teamName == null) return;
-
+            if (teamName.isBlank()) {
+                return;
+            }
             plugin.getScoreboardManager().ifPresent(manager -> manager.updateRole(
-                    tabPlayer.getPlayer(),
-                    teamName
+                    tabPlayer.getPlayer(), teamName
             ));
         });
     }
 
     public void updatePlayerDisplayName(TabPlayer tabPlayer) {
-        Component lastDisplayName = tabPlayer.getLastDisplayname();
+        final Component lastDisplayName = tabPlayer.getLastDisplayname();
         tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
-            if (displayName == null || displayName.equals(lastDisplayName)) return;
+            if (displayName == null || displayName.equals(lastDisplayName)) {
+                return;
+            }
 
             boolean isVanished = plugin.getVanishManager().isVanished(tabPlayer.getPlayer().getUsername());
 
@@ -233,10 +243,12 @@ public class PlayerTabList {
         });
     }
 
+    // Update the display names of all listed players
     public void updateDisplayNames() {
         players.forEach(this::updatePlayerDisplayName);
     }
 
+    // Get the component for the TAB list header
     public CompletableFuture<Component> getHeader(@NotNull TabPlayer player) {
         final String header = plugin.getSettings().getHeader(player.getServerGroup(plugin), player.getHeaderIndex());
         player.incrementHeaderIndex(plugin);
@@ -245,6 +257,7 @@ public class PlayerTabList {
                 .thenApply(replaced -> plugin.getFormatter().format(replaced, player, plugin));
     }
 
+    // Get the component for the TAB list footer
     public CompletableFuture<Component> getFooter(@NotNull TabPlayer player) {
         final String footer = plugin.getSettings().getFooter(player.getServerGroup(plugin), player.getFooterIndex());
         player.incrementFooterIndex(plugin);

@@ -1,4 +1,4 @@
-Velocitab supports defining multiple server groups, each providing distinct formatting for players in the TAB list, alongside unique headers and footers. This is useful if you wish to display different information in TAB depending on the server a player is on.
+Velocitab supports defining multiple server groups, each providing distinct formatting for players in the TAB list, alongside unique headers and footers. This is useful if you wish to display different information in TAB depending on the server a player is on. You can also set formatting to use for [[Nametags]] above players' heads per-group.
 
 ## Defining groups
 Groups are defined in the `server_groups` section of `config.yml`, as a list of servers following the group name (by default, a group `default` will be present, alongside a list of servers on your network.
@@ -34,8 +34,8 @@ server_groups:
 ```
 </details>
 
-## Mapping headers, footers & player formats to groups
-Once you've defined your groups, you can modify the `headers`, `footers` and `formats` section of the file with different formats for each group.
+## Mapping headers, footers, user formats, and nametags to groups
+Once you've defined your groups, you can modify the `headers`, `footers`, `formats` and [`nametags`](nametags) section of the file with different formats for each group.
 
 <details>
 <summary>Per-group formats</summary>
@@ -59,10 +59,14 @@ formats:
   lobbies: '&8[Lobby] &7%username%'
   creative: '&e[Creative] &7[%server%] &f%prefix%%username%'
   survival: '&2[Survival (%server%)] &f%prefix%%username%'
+nametags:
+  lobbies: '&8[Lobby] &7%prefix%%username%&7%suffix%'
+  creative: '&e%prefix%%username%&7%suffix%'
+  survival: '&7%prefix%%username%&7%suffix%'
 ```
 </details>
 
-See [[Placeholders]] for how to use placeholders in these formats, and [[Formatting]] for how to format text with colors, and see [[Animations]] for how to create basic animations by adding more headers/footers to each group's list.
+See [[Placeholders]] for how to use placeholders in these formats, and [[Formatting]] for how to format text with colors, and see [[Animations]] for how to create basic animations by adding more headers/footers to each group's list. Note that some formatting limitations apply to nametags &mdash; [[Nametags]] for more information.
 
 ### Adding new lines
 If you want to add a new line to your header or footer format, you can use `\n` to insert one &mdash; but since this gets messy quickly, there's an easier way using the YAML markup pipe character to declare a multiline string:
@@ -80,7 +84,7 @@ footers:
 ```
 </details>
 
-Player name formats may only utilize one line.
+Player name formats and nametags may only utilize one line.
 
 ## Default group
 If a player isn't connected to a server on your network, their TAB menu will be formatted as per the formats defined by `fallback_group` set in `config.yml`, provided `fallback_enabled` is set to `true`.

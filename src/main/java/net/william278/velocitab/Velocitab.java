@@ -47,7 +47,6 @@ import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
-import net.william278.velocitab.vanish.VanishManager;
 import org.bstats.charts.SimplePie;
 import org.bstats.velocity.Metrics;
 import org.jetbrains.annotations.NotNull;
@@ -91,7 +90,6 @@ public class Velocitab {
     public void onProxyInitialization(@NotNull ProxyInitializeEvent event) {
         loadSettings();
         loadHooks();
-        prepareSortingManager();
         prepareScoreboardManager();
         prepareTabList();
         prepareVanishManager();
@@ -165,21 +163,15 @@ public class Velocitab {
         Hook.AVAILABLE.forEach(availableHook -> availableHook.apply(this).ifPresent(hooks::add));
     }
 
-    private void prepareSortingManager() {
-        if (settings.isSortPlayers()) {
-            this.sortingManager = new SortingManager(this);
-        }
-    }
-
     private void prepareScoreboardManager() {
-        if (settings.isSortPlayers()) {
+        if (settings.isSendScoreboardPackets()) {
             this.scoreboardManager = new ScoreboardManager(this);
             scoreboardManager.registerPacket();
         }
     }
 
     private void disableScoreboardManager() {
-        if (scoreboardManager != null && settings.isSortPlayers()) {
+        if (scoreboardManager != null && settings.isSendScoreboardPackets()) {
             scoreboardManager.unregisterPacket();
         }
     }
@@ -191,10 +183,6 @@ public class Velocitab {
     @NotNull
     public Optional<ScoreboardManager> getScoreboardManager() {
         return Optional.ofNullable(scoreboardManager);
-    }
-
-    public Optional<SortingManager> getSortingManager() {
-        return Optional.ofNullable(sortingManager);
     }
 
     @NotNull
@@ -210,11 +198,11 @@ public class Velocitab {
     @NotNull
     public TabPlayer getTabPlayer(@NotNull Player player) {
         return new TabPlayer(player,
-                getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE),
-                getLuckPermsHook().map(LuckPermsHook::getHighestWeight).orElse(0)
+                getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE)
         );
     }
 
+    @SuppressWarnings("unused")
     public Optional<TabPlayer> getTabPlayer(String name) {
         return server.getPlayer(name).map(this::getTabPlayer);
     }

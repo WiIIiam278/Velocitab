@@ -89,8 +89,7 @@ public class LuckPermsHook extends Hook {
                         .buildTask(plugin, () -> {
                             final TabPlayer updatedPlayer = new TabPlayer(
                                     player,
-                                    getRoleFromMetadata(event.getData().getMetaData()),
-                                    getHighestWeight()
+                                    getRoleFromMetadata(event.getData().getMetaData())
                             );
                             tabList.replacePlayer(updatedPlayer);
                             tabList.updatePlayer(updatedPlayer);
@@ -111,18 +110,6 @@ public class LuckPermsHook extends Hook {
     // Get the weight of a group
     private int getGroupWeight(@NotNull Group group) {
         return group.getWeight().orElse(Role.DEFAULT_WEIGHT);
-    }
-
-    public int getHighestWeight() {
-        if (highestWeight == Role.DEFAULT_WEIGHT) {
-            api.getGroupManager().getLoadedGroups().forEach(group -> {
-                final OptionalInt weight = group.getWeight();
-                if (weight.isPresent() && weight.getAsInt() > highestWeight) {
-                    highestWeight = weight.getAsInt();
-                }
-            });
-        }
-        return highestWeight;
     }
 
     private User getUser(@NotNull UUID uuid) {

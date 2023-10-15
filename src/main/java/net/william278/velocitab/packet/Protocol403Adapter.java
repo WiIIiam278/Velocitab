@@ -30,20 +30,38 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Adapter for handling the UpdateTeamsPacket for Minecraft 1.13+
+ * Adapter for handling the UpdateTeamsPacket for Minecraft 1.13.2+
  */
 @SuppressWarnings("DuplicatedCode")
 public class Protocol403Adapter extends TeamsPacketAdapter {
 
     public Protocol403Adapter() {
         super(Set.of(ProtocolVersion.MINECRAFT_1_13_2,
+                ProtocolVersion.MINECRAFT_1_14,
+                ProtocolVersion.MINECRAFT_1_14_1,
+                ProtocolVersion.MINECRAFT_1_14_2,
+                ProtocolVersion.MINECRAFT_1_14_3,
                 ProtocolVersion.MINECRAFT_1_14_4,
+                ProtocolVersion.MINECRAFT_1_15,
+                ProtocolVersion.MINECRAFT_1_15_1,
                 ProtocolVersion.MINECRAFT_1_15_2,
+                ProtocolVersion.MINECRAFT_1_16,
+                ProtocolVersion.MINECRAFT_1_16_1,
+                ProtocolVersion.MINECRAFT_1_16_2,
+                ProtocolVersion.MINECRAFT_1_16_3,
                 ProtocolVersion.MINECRAFT_1_16_4,
+                ProtocolVersion.MINECRAFT_1_17,
                 ProtocolVersion.MINECRAFT_1_17_1,
+                ProtocolVersion.MINECRAFT_1_18,
+                //ProtocolVersion.MINECRAFT_1_18_1,
                 ProtocolVersion.MINECRAFT_1_18_2,
+                ProtocolVersion.MINECRAFT_1_19,
+                ProtocolVersion.MINECRAFT_1_19_1,
+                //ProtocolVersion.MINECRAFT_1_19_2,
+                ProtocolVersion.MINECRAFT_1_19_3,
                 ProtocolVersion.MINECRAFT_1_19_4,
-                ProtocolVersion.MINECRAFT_1_20
+                ProtocolVersion.MINECRAFT_1_20,
+                ProtocolVersion.MINECRAFT_1_20_2
         ));
     }
 

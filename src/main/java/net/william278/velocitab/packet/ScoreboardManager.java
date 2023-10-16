@@ -164,7 +164,7 @@ public class ScoreboardManager {
 
 
     public void resendAllNameTags(Player player) {
-        if (!plugin.getSettings().doNametags()) {
+        if (!plugin.getSettings().isSortPlayers()) {
             return;
         }
 
@@ -179,8 +179,16 @@ public class ScoreboardManager {
                 .map(RegisteredServer::getPlayersConnected)
                 .flatMap(Collection::stream)
                 .toList();
+
+        List<String> roles = new ArrayList<>();
+
         players.forEach(p -> {
             if (p == player || !p.isActive()) {
+                return;
+            }
+
+            if (plugin.getVanishManager().isVanished(p.getUsername()) ||
+                    !plugin.getVanishManager().canSee(player.getUsername(), p.getUsername())) {
                 return;
             }
 
@@ -188,6 +196,13 @@ public class ScoreboardManager {
             if (role.isEmpty()) {
                 return;
             }
+
+            // Prevent duplicate packets
+            if (roles.contains(role)) {
+                return;
+            }
+
+            roles.add(role);
 
             final String nametag = nametags.getOrDefault(role, "");
             if (nametag.isEmpty()) {

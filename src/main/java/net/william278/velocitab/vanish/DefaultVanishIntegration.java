@@ -19,14 +19,20 @@
 
 package net.william278.velocitab.vanish;
 
-public class DefaultVanishIntegration implements VanishIntegration {
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public final class DefaultVanishIntegration implements VanishIntegration {
+
     @Override
-    public boolean canSee(String name, String otherName) {
+    public boolean canSee(@NotNull String name, @NotNull String otherName) {
         return true;
     }
 
     @Override
-    public boolean isVanished(String name) {
+    public boolean isVanished(@NotNull String name) {
         return false;
     }
 

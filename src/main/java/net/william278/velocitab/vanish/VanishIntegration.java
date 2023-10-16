@@ -19,10 +19,12 @@
 
 package net.william278.velocitab.vanish;
 
+import org.jetbrains.annotations.NotNull;
+
 public interface VanishIntegration {
 
-    boolean canSee(String name, String otherName);
+    boolean canSee(@NotNull String name, @NotNull String otherName);
 
-    boolean isVanished(String name);
+    boolean isVanished(@NotNull String name);
 
 }

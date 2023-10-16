@@ -163,7 +163,6 @@ public final class TabPlayer implements Comparable<TabPlayer> {
      *
      * @return An Optional object containing the custom name, or empty if no custom name has been set.
      */
-
     public Optional<String> getCustomName() {
         return Optional.ofNullable(customName);
     }

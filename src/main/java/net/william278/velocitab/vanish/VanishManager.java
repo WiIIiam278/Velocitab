@@ -32,7 +32,7 @@ public class VanishManager {
     private final Velocitab plugin;
     private VanishIntegration integration;
 
-    public VanishManager(Velocitab plugin) {
+    public VanishManager(@NotNull Velocitab plugin) {
         this.plugin = plugin;
         setIntegration(new DefaultVanishIntegration());
     }
@@ -41,19 +41,20 @@ public class VanishManager {
         this.integration = integration;
     }
 
-    public @NotNull VanishIntegration getIntegration() {
+    @NotNull
+    public VanishIntegration getIntegration() {
         return integration;
     }
 
-    public boolean canSee(String name, String otherName) {
+    public boolean canSee(@NotNull String name, @NotNull String otherName) {
         return integration.canSee(name, otherName);
     }
 
-    public boolean isVanished(String name) {
+    public boolean isVanished(@NotNull String name) {
         return integration.isVanished(name);
     }
 
-    public void vanishPlayer(Player player) {
+    public void vanishPlayer(@NotNull Player player) {
         final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
         if (tabPlayer.isEmpty()) {
             return;
@@ -63,7 +64,7 @@ public class VanishManager {
         plugin.getScoreboardManager().ifPresent(scoreboardManager -> scoreboardManager.vanishPlayer(player));
     }
 
-    public void unvanishPlayer(Player player) {
+    public void unvanishPlayer(@NotNull Player player) {
         final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
         if (tabPlayer.isEmpty()) {
             return;

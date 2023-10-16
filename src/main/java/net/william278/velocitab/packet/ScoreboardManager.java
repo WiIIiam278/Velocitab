@@ -126,7 +126,6 @@ public class ScoreboardManager {
         final String[] split = nametag.split(NAMETAG_DELIMITER, 2);
         final String prefix = split[0];
         final String suffix = split.length > 1 ? split[1] : "";
-
         final UpdateTeamsPacket packet = UpdateTeamsPacket.create(plugin, createdTeams.get(player.getUniqueId()), "", prefix, suffix, player.getUsername());
 
         siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> dispatchPacket(packet, connected)));
@@ -226,10 +225,8 @@ public class ScoreboardManager {
         final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
         siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
             try {
-
-                boolean canSee = !plugin.getVanishManager().isVanished(connected.getUsername())
+                final boolean canSee = !plugin.getVanishManager().isVanished(connected.getUsername())
                         || plugin.getVanishManager().canSee(player.getUsername(), player.getUsername());
-
                 if (!canSee) {
                     return;
                 }

@@ -106,30 +106,26 @@ public class PlayerTabList {
                                 && !serversInGroup.get().contains(player.getServerName())) {
                             continue;
                         }
-
-                        if (!isVanished || plugin.getVanishManager().canSee(player.getPlayer().getUsername(), joined.getUsername())) { // check if current player can see the joined player
+                        // check if current player can see the joined player
+                        if (!isVanished || plugin.getVanishManager().canSee(player.getPlayer().getUsername(), joined.getUsername())) {
                             addPlayerToTabList(player, tabPlayer);
                         } else {
                             player.getPlayer().getTabList().removeEntry(joined.getUniqueId());
                         }
-
+                        // check if joined player can see current player
                         if ((plugin.getVanishManager().isVanished(player.getPlayer().getUsername()) ||
-                                !plugin.getVanishManager().canSee(joined.getUsername(), player.getPlayer().getUsername())) && player.getPlayer() != joined) { // check if joined player can see the current player
+                                !plugin.getVanishManager().canSee(joined.getUsername(), player.getPlayer().getUsername())) && player.getPlayer() != joined) {
                             tabList.removeEntry(player.getPlayer().getUniqueId());
                         } else {
-
                             tabList.getEntries().stream()
                                     .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
                                     .ifPresentOrElse(
                                             entry -> player.getDisplayName(plugin).thenAccept(entry::setDisplayName),
                                             () -> createEntry(player, tabList).thenAccept(tabList::addEntry)
                                     );
-
                         }
 
-
                         player.sendHeaderAndFooter(this);
-
                     }
 
                     plugin.getScoreboardManager().ifPresent(s -> {
@@ -182,11 +178,11 @@ public class PlayerTabList {
             return;
         }
 
-        boolean present = player.getPlayer()
+        final boolean isPresent = player.getPlayer()
                 .getTabList().getEntries().stream()
                 .noneMatch(e -> e.getProfile().getId().equals(newPlayer.getPlayer().getUniqueId()));
 
-        if (present) {
+        if (isPresent) {
             player.getPlayer().getTabList().addEntry(entry);
         }
     }
@@ -244,7 +240,7 @@ public class PlayerTabList {
         });
     }
 
-    public void updatePlayerDisplayName(TabPlayer tabPlayer) {
+    public void updatePlayerDisplayName(@NotNull TabPlayer tabPlayer) {
         final Component lastDisplayName = tabPlayer.getLastDisplayname();
         tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
             if (displayName == null || displayName.equals(lastDisplayName)) {
@@ -254,7 +250,6 @@ public class PlayerTabList {
             boolean isVanished = plugin.getVanishManager().isVanished(tabPlayer.getPlayer().getUsername());
 
             players.forEach(player -> {
-
                 if (isVanished && !plugin.getVanishManager().canSee(player.getPlayer().getUsername(), tabPlayer.getPlayer().getUsername())) {
                     return;
                 }
@@ -262,9 +257,7 @@ public class PlayerTabList {
                 player.getPlayer().getTabList().getEntries().stream()
                         .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
                         .ifPresent(entry -> entry.setDisplayName(displayName));
-
             });
-
         });
     }
 
@@ -342,7 +335,7 @@ public class PlayerTabList {
      * @return The servers in the same group as the given server, empty if the server is not in a group and fallback is disabled
      */
     @NotNull
-    public Optional<List<String>> getGroupNames(String serverName) {
+    public Optional<List<String>> getGroupNames(@NotNull String serverName) {
         return plugin.getSettings().getServerGroups().values().stream()
                 .filter(servers -> servers.contains(serverName))
                 .findFirst()
@@ -368,7 +361,7 @@ public class PlayerTabList {
      * @return The servers in the same group as the given server, empty if the server is not in a group and fallback is disabled
      */
     @NotNull
-    public List<RegisteredServer> getGroupServers(String serverName) {
+    public List<RegisteredServer> getGroupServers(@NotNull String serverName) {
         return plugin.getServer().getAllServers().stream()
                 .filter(server -> plugin.getSettings().getServerGroups().values().stream()
                         .filter(servers -> servers.contains(serverName))
@@ -392,7 +385,7 @@ public class PlayerTabList {
         players.removeIf(tabPlayer -> tabPlayer.getPlayer().getUniqueId().equals(player.getUniqueId()));
     }
 
-    public void vanishPlayer(TabPlayer tabPlayer) {
+    public void vanishPlayer(@NotNull TabPlayer tabPlayer) {
         players.forEach(p -> {
             if (p.getPlayer().equals(tabPlayer.getPlayer())) {
                 return;
@@ -404,8 +397,8 @@ public class PlayerTabList {
         });
     }
 
-    public void unvanishPlayer(TabPlayer tabPlayer) {
-        UUID uuid = tabPlayer.getPlayer().getUniqueId();
+    public void unvanishPlayer(@NotNull TabPlayer tabPlayer) {
+        final UUID uuid = tabPlayer.getPlayer().getUniqueId();
 
         tabPlayer.getDisplayName(plugin).thenAccept(c -> {
             players.forEach(p -> {

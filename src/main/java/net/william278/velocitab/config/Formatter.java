@@ -43,7 +43,7 @@ public enum Formatter {
     MINIMESSAGE(
             (text, player, plugin) -> plugin.getMiniPlaceholdersHook()
                     .map(hook -> hook.format(text, player.getPlayer()))
-                    .orElse(MiniMessage.miniMessage().deserialize(text)),
+                    .orElse(MiniMessage.miniMessage().deserialize(parseSections(text))),
             (text) -> MiniMessage.miniMessage().escapeTags(text),
             "MiniMessage"
     ),
@@ -92,6 +92,28 @@ public enum Formatter {
     @NotNull
     public String getName() {
         return name;
+    }
+
+    private static String replaceAmpersandCodesWithSection(String text) {
+        char[] b = text.toCharArray();
+        for (int i = 0; i < b.length - 1; i++) {
+            if (b[i] == '&' && "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx#".indexOf(b[i + 1]) > -1) {
+                b[i] = '§';
+                b[i + 1] = Character.toLowerCase(b[i + 1]);
+            }
+        }
+        return new String(b);
+    }
+
+    public static String parseSections(String text) {
+        String value = MiniMessage.miniMessage().serialize(
+                        LegacyComponentSerializer.legacySection().deserialize(
+                                replaceAmpersandCodesWithSection(text)))
+                .replace("\\<", "<");
+        return MiniMessage.miniMessage().serialize(
+                        LegacyComponentSerializer.legacySection().deserialize(
+                                replaceAmpersandCodesWithSection(text)))
+                .replace("\\<", "<");
     }
 
 }

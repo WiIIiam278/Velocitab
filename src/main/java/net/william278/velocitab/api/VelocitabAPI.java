@@ -112,7 +112,7 @@ import java.util.Optional;
      * @param player The player for whom to get the custom name
      * @return An Optional object containing the custom name, or empty if no custom name has been set.
      */
-    public Optional<String> getCustomPlayerName(Player player) {
+    public Optional<String> getCustomPlayerName(@NotNull Player player) {
         return getUser(player).flatMap(TabPlayer::getCustomName);
     }
 
@@ -141,7 +141,8 @@ import java.util.Optional;
      *
      * @return The VanishIntegration instance associated with the VelocitabAPI
      */
-    public @NotNull VanishIntegration getVanishIntegration() {
+    @NotNull
+    public VanishIntegration getVanishIntegration() {
         return plugin.getVanishManager().getIntegration();
     }
 

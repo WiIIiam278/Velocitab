@@ -24,7 +24,6 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.config.Formatter;
 import org.jetbrains.annotations.NotNull;
 
 public class MiniPlaceholdersHook extends Hook {
@@ -35,7 +34,7 @@ public class MiniPlaceholdersHook extends Hook {
 
     @NotNull
     public Component format(@NotNull String text, @NotNull Audience player) {
-        return MiniMessage.miniMessage().deserialize(Formatter.parseSections(text), MiniPlaceholders.getAudienceGlobalPlaceholders(player));
+        return MiniMessage.miniMessage().deserialize(text, MiniPlaceholders.getAudienceGlobalPlaceholders(player));
     }
 
 }

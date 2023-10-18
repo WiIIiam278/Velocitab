@@ -95,7 +95,7 @@ public class PlayerTabList {
         final TabPlayer tabPlayer = getTabPlayer(joined).orElseGet(() -> createTabPlayer(joined));
         players.add(tabPlayer);
 
-        boolean isVanished = plugin.getVanishManager().isVanished(joined.getUsername());
+        final boolean isVanished = plugin.getVanishManager().isVanished(joined.getUsername());
         // Update lists
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
@@ -129,7 +129,7 @@ public class PlayerTabList {
                     }
 
                     plugin.getScoreboardManager().ifPresent(s -> {
-                        s.resendAllNameTags(joined);
+                        s.resendAllTeams(joined);
                         tabPlayer.getTeamName(plugin).thenAccept(t -> s.updateRole(joined, t));
                     });
                 })
@@ -397,7 +397,7 @@ public class PlayerTabList {
         });
     }
 
-    public void unvanishPlayer(@NotNull TabPlayer tabPlayer) {
+    public void unVanishPlayer(@NotNull TabPlayer tabPlayer) {
         final UUID uuid = tabPlayer.getPlayer().getUniqueId();
 
         tabPlayer.getDisplayName(plugin).thenAccept(c -> {

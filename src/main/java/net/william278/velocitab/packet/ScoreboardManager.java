@@ -74,7 +74,7 @@ public class ScoreboardManager {
         }
     }
 
-    public void vanishPlayer(Player player) {
+    public void vanishPlayer(@NotNull Player player) {
         if (!plugin.getSettings().isSortPlayers()) {
             return;
         }
@@ -100,7 +100,7 @@ public class ScoreboardManager {
         }));
     }
 
-    public void unvanishPlayer(Player player) {
+    public void unVanishPlayer(@NotNull Player player) {
         if (!plugin.getSettings().isSortPlayers()) {
             return;
         }
@@ -140,9 +140,9 @@ public class ScoreboardManager {
         final String name = player.getUsername();
         final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player).orElseThrow();
         tabPlayer.getNametag(plugin).thenAccept(nametag -> {
-            String[] split = nametag.split(player.getUsername(), 2);
-            String prefix = split[0];
-            String suffix = split.length > 1 ? split[1] : "";
+            final String[] split = nametag.split(player.getUsername(), 2);
+            final String prefix = split[0];
+            final String suffix = split.length > 1 ? split[1] : "";
 
             if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
                 if (createdTeams.containsKey(player.getUniqueId())) {
@@ -163,8 +163,8 @@ public class ScoreboardManager {
     }
 
 
-    public void resendAllNameTags(Player player) {
-        if (!plugin.getSettings().isSortPlayers()) {
+    public void resendAllTeams(Player player) {
+        if (!plugin.getSettings().isSendScoreboardPackets()) {
             return;
         }
 
@@ -180,7 +180,7 @@ public class ScoreboardManager {
                 .flatMap(Collection::stream)
                 .toList();
 
-        List<String> roles = new ArrayList<>();
+        final List<String> roles = new ArrayList<>();
 
         players.forEach(p -> {
             if (p == player || !p.isActive()) {

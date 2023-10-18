@@ -35,7 +35,6 @@ import java.util.Optional;
 
 /**
  * The Velocitab API class.
- * </p>
  * Retrieve an instance of the API class via {@link #getInstance()}.
  */ public class VelocitabAPI {
 
@@ -156,12 +155,12 @@ import java.util.Optional;
     }
 
     /**
-     * Unvanishes the given player by showing them in the tab list and scoreboard if enabled.
+     * Un-vanishes the given player by showing them in the tab list and scoreboard if enabled.
      *
      * @param player The player to unvanish
      */
-    public void unvanishPlayer(@NotNull Player player) {
-        plugin.getVanishManager().unvanishPlayer(player);
+    public void unVanishPlayer(@NotNull Player player) {
+        plugin.getVanishManager().unVanishPlayer(player);
     }
 
 

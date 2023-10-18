@@ -83,10 +83,4 @@ public enum Placeholder {
                     return replaced;
                 });
     }
-
-    @NotNull
-    public static String formatSortableInt(int value, int maxValue) {
-        return String.format("%0" + Integer.toString(maxValue).length() + "d", maxValue - value);
-    }
-
 }

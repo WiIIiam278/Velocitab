@@ -24,7 +24,6 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
 import java.util.Optional;
 
 public class VanishManager {
@@ -64,13 +63,13 @@ public class VanishManager {
         plugin.getScoreboardManager().ifPresent(scoreboardManager -> scoreboardManager.vanishPlayer(player));
     }
 
-    public void unvanishPlayer(@NotNull Player player) {
+    public void unVanishPlayer(@NotNull Player player) {
         final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
         if (tabPlayer.isEmpty()) {
             return;
         }
 
-        plugin.getTabList().unvanishPlayer(tabPlayer.get());
-        plugin.getScoreboardManager().ifPresent(scoreboardManager -> scoreboardManager.unvanishPlayer(player));
+        plugin.getTabList().unVanishPlayer(tabPlayer.get());
+        plugin.getScoreboardManager().ifPresent(scoreboardManager -> scoreboardManager.unVanishPlayer(player));
     }
 }

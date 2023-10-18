@@ -21,7 +21,6 @@ package net.william278.velocitab.commands;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.velocitypowered.api.command.BrigadierCommand;
@@ -31,7 +30,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.william278.desertwell.about.AboutMenu;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.api.VelocitabAPI;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 

@@ -23,9 +23,12 @@ jobs:
           java-version: '16'
           distribution: 'temurin'
       - name: Build with Gradle
-        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+        uses: gradle/gradle-build-action@v2
         with:
-          arguments: build
+          arguments: build test publish
+        env:
+          SNAPSHOTS_MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          SNAPSHOTS_MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
       - name: Query Version
         run: |
           echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew properties --no-daemon --console=plain -q | grep "^version:" | awk '{printf $2}')"

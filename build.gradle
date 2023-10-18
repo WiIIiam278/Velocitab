@@ -4,6 +4,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'org.cadixdev.licenser' version '0.6.1'
     id 'org.ajoberstar.grgit' version '5.2.0'
+    id 'maven-publish'
     id 'java'
 }
 
@@ -66,6 +67,15 @@ logger.lifecycle("Building Velocitab ${version} by William278")
 version rootProject.version
 archivesBaseName = "${rootProject.name}"
 
+compileJava.options.encoding = 'UTF-8'
+javadoc.options.encoding = 'UTF-8'
+javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
 shadowJar {
     relocate 'org.apache.commons.text', 'net.william278.velocitab.libraries.commons.text'
     relocate 'org.apache.commons.lang3', 'net.william278.velocitab.libraries.commons.lang3'
@@ -88,6 +98,48 @@ shadowJar {
 }
 jar.dependsOn shadowJar
 clean.delete "$rootDir/target"
+
+publishing {
+    repositories {
+        if (System.getenv("RELEASES_MAVEN_USERNAME") != null) {
+            maven {
+                name = "william278-releases"
+                url = "https://repo.william278.net/releases"
+                credentials {
+                    username = System.getenv("RELEASES_MAVEN_USERNAME")
+                    password = System.getenv("RELEASES_MAVEN_PASSWORD")
+                }
+                authentication {
+                    basic(BasicAuthentication)
+                }
+            }
+        }
+        if (System.getenv("SNAPSHOTS_MAVEN_USERNAME") != null) {
+            maven {
+                name = "william278-snapshots"
+                url = "https://repo.william278.net/snapshots"
+                credentials {
+                    username = System.getenv("SNAPSHOTS_MAVEN_USERNAME")
+                    password = System.getenv("SNAPSHOTS_MAVEN_PASSWORD")
+                }
+                authentication {
+                    basic(BasicAuthentication)
+                }
+            }
+        }
+    }
+
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'net.william278'
+            artifactId = 'velocitab'
+            version = "$rootProject.version"
+            artifact shadowJar
+            artifact javadocJar
+            artifact sourcesJar
+        }
+    }
+}
 
 @SuppressWarnings('GrMethodMayBeStatic')
 def versionMetadata() {

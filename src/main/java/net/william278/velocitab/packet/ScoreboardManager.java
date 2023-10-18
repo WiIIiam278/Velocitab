@@ -163,7 +163,7 @@ public class ScoreboardManager {
     }
 
 
-    public void resendAllTeams(Player player) {
+    public void resendAllTeams(@NotNull Player player) {
         if (!plugin.getSettings().isSendScoreboardPackets()) {
             return;
         }

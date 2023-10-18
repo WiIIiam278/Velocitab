@@ -1,15 +1,28 @@
 <!--suppress ALL -->
 <p align="center">
     <img src="images/banner.png" alt="Velocitab" />
-    <a href="https://modrinth.com/plugin/velocitab">
-        <img src="https://img.shields.io/modrinth/v/velocitab?color=%231bd96a&label=modrinth&logo=modrinth&logoColor=%23fffff" />
-    </a>
     <a href="https://github.com/WiIIiam278/Velocitab/actions/workflows/java_ci.yml">
         <img src="https://img.shields.io/github/actions/workflow/status/WiIIiam278/Velocitab/java_ci.yml?branch=master&logo=github"/>
-    </a>
+    </a> 
+    <a href="https://jitpack.io/#net.william278/Velocitab">
+        <img src="https://img.shields.io/jitpack/version/net.william278/Velocitab?color=%2300fb9a&label=api&logo=gradle" />
+    </a> 
     <a href="https://discord.gg/tVYhJfyDWG">
         <img src="https://img.shields.io/discord/818135932103557162.svg?label=&logo=discord&logoColor=fff&color=7389D8&labelColor=6A7EC2" />
-    </a>
+    </a> 
+    <br/>
+    <b>
+        <a href="https://modrinth.com/plugin/velocitab">Modrinth</a>
+    </b> —
+    <b>
+        <a href="https://william278.net/docs/velocitab/setup">Setup</a>
+    </b> — 
+    <b>
+        <a href="https://william278.net/docs/velocitab/">Docs</a>
+    </b> — 
+    <b>
+        <a href="https://github.com/WiIIiam278/Velocitab/issues">Issues</a>
+    </b>
 </p>
 <br/>
 
@@ -17,40 +30,34 @@
 
 ![Showcase of different TAB menus made with Velocitab.png](images/showcase.png)
 
+## Features
+**⭐ Flexible list sorting** &mdash; Customizable TAB [list sorting](https://william278.net/docs/velocitab/sorting) based on user role, server, placeholder, and more.
+
+**⭐ Versatile formatting support** &mdash; Make your TAB list beautiful with full RGB color support, supporting MiniMessage, MineDown and legacy [formatting modes](https://william278.net/docs/velocitab/formatting).
+
+**⭐ Multiple TAB menus for different servers** &mdash; Create [server groups](https://william278.net/docs/velocitab/server-groups) and configure different TAB lists to show for each group!
+
+**⭐ Animations support** &mdash; Add extra flair to your TAB list or display additional information by creating pretty looking [animations](https://william278.net/docs/velocitab/animations).
+
+**⭐ Player nametags** &mdash; Customize how over-the-head [nametags](https://william278.net/docs/velocitab/nametags) look to help players stand out in-game.
+
+**⭐ Full placeholder support** &mdash; Comes with a robust set of built-in [placeholders](https://william278.net/docs/velocitab/placeholders), MiniPlaceholders support, as well as PAPIProxyBridge for PlaceholderAPI support
+
+**Ready?** [Get started in a new TAB&hellip;](https://william278.net/docs/velocitab/setup)
+
 ## Setup
-Simply add the jar to your Velocity `/plugins/` folder. It's also recommended that you install [LuckPerms](https://luckperms.net) for prefix/suffix/role (and sorting) support. Then, [edit the plugin config.yml](https://william278.net/docs/velocitab/config-file) to your liking.
+We suggest installing [LuckPerms](https://luckperms.net) on your Velocity proxy and backend (Spigot, Paper, Fabric, etc.) servers for prefix/suffix formatting right out the box.
 
-## Configuration
-Velocitab has a simple config file that lets you define a header, footer and format for the player list. You can additionally configure [groups of servers](https://william278.net/docs/velocitab/server-groups) to display different formats in the TAB menu depending on which server the player is viewing it from.
+1. Turn off your Velocity proxy server
+2. [Download](https://github.com/WiIIiam278/Velocitab/releases/latest) and place the plugin jar file in the `/plugins/` folder of your Velocity proxy server.
+3. Start your Velocity proxy, and allow the plugin to generate its config file
+4. Edit the [`config.yml` file](https://william278.net/docs/velocitab/config-file) to your liking
+5. Restart your Velocity proxy again
 
-### Formatting
-Velocitab [supports](https://william278.net/docs/velocitab/formatting) the full range of RGB colors and gradients, with options to use either MineDown (_default_), MiniMessage, or legacy formatting.
-
-### Placeholders
-You can include [placeholders](https://william278.net/docs/velocitab/placeholders) in the header, footer and player name format of the TAB list. The following placeholders are supported:
-
-| Placeholder              | Description                                   | Example            |
-|--------------------------|-----------------------------------------------|--------------------|
-| `%players_online%`       | Players online on the proxy                   | `6`                |
-| `%max_players_online%`   | Player capacity of the proxy                  | `500`              |
-| `%local_players_online%` | Players online on the server the player is on | `3`                |
-| `%current_date%`         | Current real-world date of the server         | `24 Feb 2023`      |
-| `%current_time%`         | Current real-world time of the server         | `21:45:32`         |
-| `%username%`             | The player's username                         | `William278`       |
-| `%server%`               | Name of the server the player is on           | `alpha`            |
-| `%ping%`                 | Ping of the player (in ms)                    | `6`                |
-| `%prefix%`               | The player's prefix (from LuckPerms)          | `&4[Admin]`        |
-| `%suffix%`               | The player's suffix (from LuckPerms)          | `&c `              |
-| `%role%`                 | The player's primary LuckPerms group          | `admin`            |
-| `%debug_team_name%`      | Internal team value, used for list sorting    | `1_alpha_William2` |
-
-PlaceholderAPI placeholders are also supported. To use them, just install [PAPIProxyBridge](https://modrinth.com/plugin/papiproxybridge) on your Velocity proxy and backend Spigot servers. Additionally, a hook for MiniPlaceholders is supported for servers using the MiniMessage formatter.
-
-### Command
-You can use the `/velocitab reload` command to reload the plugin config file (permission: `velocitab.command.reload`), and `/velocitab update` to check for updates (permission: `velocitab.command.update`).
+Need to make a quick config change? You can use the in-game `/velocitab reload` (permission: `velocitab.command.reload`) command, though we recommend restarting your proxy server for any major changes.
 
 ## Building
-To build Velocitab, simply run the following in the root of the repository:
+To build Velocitab, run the following in the root of the repository:
 ```bash
 ./gradlew clean build
 ```

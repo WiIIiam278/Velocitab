@@ -43,7 +43,7 @@ public enum Placeholder {
             .orElse("")),
     CURRENT_DATE((plugin, player) -> DateTimeFormatter.ofPattern("dd MMM yyyy").format(LocalDateTime.now())),
     CURRENT_TIME((plugin, player) -> DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.now())),
-    USERNAME((plugin, player) -> plugin.getFormatter().escape(player.getPlayer().getUsername())),
+    USERNAME((plugin, player) -> plugin.getFormatter().escape(player.getCustomName().orElse(player.getPlayer().getUsername()))),
     SERVER((plugin, player) -> player.getServerDisplayName(plugin)),
     PING((plugin, player) -> Long.toString(player.getPlayer().getPing())),
     PREFIX((plugin, player) -> player.getRole().getPrefix().orElse("")),
@@ -83,10 +83,4 @@ public enum Placeholder {
                     return replaced;
                 });
     }
-
-    @NotNull
-    public static String formatSortableInt(int value, int maxValue) {
-        return String.format("%0" + Integer.toString(maxValue).length() + "d", maxValue - value);
-    }
-
 }

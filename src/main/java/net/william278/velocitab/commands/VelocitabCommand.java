@@ -20,14 +20,20 @@
 package net.william278.velocitab.commands;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
+import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.william278.desertwell.about.AboutMenu;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Optional;
 
 public final class VelocitabCommand {
     private static final TextColor MAIN_COLOR = TextColor.color(0x00FB9A);
@@ -69,6 +75,29 @@ public final class VelocitabCommand {
                             return Command.SINGLE_SUCCESS;
                         })
                 )
+                .then(LiteralArgumentBuilder.<CommandSource>literal("name")
+                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("name", StringArgumentType.word())
+                                .executes(ctx -> {
+                                    if (!(ctx.getSource() instanceof Player player)) {
+                                        ctx.getSource().sendMessage(Component.text("You must be a player to use this command!", MAIN_COLOR));
+                                        return Command.SINGLE_SUCCESS;
+                                    }
+
+                                    String name = StringArgumentType.getString(ctx, "name");
+                                    Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
+
+                                    if (tabPlayer.isEmpty()) {
+                                        ctx.getSource().sendMessage(Component.text("You must in a correct server!", MAIN_COLOR));
+                                        return Command.SINGLE_SUCCESS;
+                                    }
+
+                                    tabPlayer.get().setCustomName(name);
+                                    plugin.getTabList().updatePlayerDisplayName(tabPlayer.get());
+
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                        )
+                )
                 .then(LiteralArgumentBuilder.<CommandSource>literal("reload")
                         .requires(src -> src.hasPermission("velocitab.command.reload"))
                         .executes(ctx -> {
@@ -91,7 +120,7 @@ public final class VelocitabCommand {
                                 }
                                 ctx.getSource().sendMessage(Component
                                         .text("An update for velocitab is available. " +
-                                              "Please update to " + checked.getLatestVersion(), MAIN_COLOR));
+                                                "Please update to " + checked.getLatestVersion(), MAIN_COLOR));
                             });
                             return Command.SINGLE_SUCCESS;
                         })

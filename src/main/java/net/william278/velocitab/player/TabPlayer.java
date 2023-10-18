@@ -21,18 +21,21 @@ package net.william278.velocitab.player;
 
 import com.velocitypowered.api.proxy.Player;
 import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public final class TabPlayer implements Comparable<TabPlayer> {
     private final Player player;
-    private final Role role;
+    @Setter
+    private Role role;
     @Getter
     private int headerIndex = 0;
     @Getter
@@ -40,6 +43,8 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     @Getter
     private Component lastDisplayname;
     private String teamName;
+    @Nullable
+    private String customName;
 
     public TabPlayer(@NotNull Player player, @NotNull Role role) {
         this.player = player;
@@ -151,6 +156,24 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         if (footerIndex >= plugin.getSettings().getFooterListSize(getServerGroup(plugin))) {
             footerIndex = 0;
         }
+    }
+
+    /**
+     * Returns the custom name of the TabPlayer, if it has been set.
+     *
+     * @return An Optional object containing the custom name, or empty if no custom name has been set.
+     */
+    public Optional<String> getCustomName() {
+        return Optional.ofNullable(customName);
+    }
+
+    /**
+     * Sets the custom name of the TabPlayer.
+     *
+     * @param customName The custom name to set
+     */
+    public void setCustomName(@Nullable String customName) {
+        this.customName = customName;
     }
 
     @Override

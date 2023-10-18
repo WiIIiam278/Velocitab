@@ -23,8 +23,8 @@ repositories {
     maven { url = 'https://repo.william278.net/releases/' }
     maven { url = 'https://jitpack.io/' }
     maven { url = 'https://repo.minebench.de/' }
+    maven { url = 'https://maven.elytrium.net/repo/' }
     maven { url = 'https://mvn.exceptionflug.de/repository/exceptionflug-public/' }
-    maven { url = "https://maven.elytrium.net/repo/" }
 }
 
 dependencies {

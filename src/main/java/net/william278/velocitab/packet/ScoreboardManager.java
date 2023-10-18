@@ -74,6 +74,63 @@ public class ScoreboardManager {
         }
     }
 
+    public void vanishPlayer(@NotNull Player player) {
+        if (!plugin.getSettings().isSortPlayers()) {
+            return;
+        }
+
+        final Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
+        if (optionalServerConnection.isEmpty()) {
+            return;
+        }
+
+        final RegisteredServer serverInfo = optionalServerConnection.get().getServer();
+        final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
+        UpdateTeamsPacket packet = UpdateTeamsPacket.removeTeam(plugin, createdTeams.get(player.getUniqueId()));
+
+        siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
+            boolean canSee = !plugin.getVanishManager().isVanished(connected.getUsername())
+                    || plugin.getVanishManager().canSee(player.getUsername(), player.getUsername());
+
+            if (!canSee) {
+                return;
+            }
+
+            dispatchPacket(packet, connected);
+        }));
+    }
+
+    public void unVanishPlayer(@NotNull Player player) {
+        if (!plugin.getSettings().isSortPlayers()) {
+            return;
+        }
+
+        final Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
+        if (optionalServerConnection.isEmpty()) {
+            return;
+        }
+
+        final RegisteredServer serverInfo = optionalServerConnection.get().getServer();
+        final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
+
+        final String role = createdTeams.getOrDefault(player.getUniqueId(), "");
+        if (role.isEmpty()) {
+            return;
+        }
+
+        final String nametag = nametags.getOrDefault(role, "");
+        if (nametag.isEmpty()) {
+            return;
+        }
+
+        final String[] split = nametag.split(NAMETAG_DELIMITER, 2);
+        final String prefix = split[0];
+        final String suffix = split.length > 1 ? split[1] : "";
+        final UpdateTeamsPacket packet = UpdateTeamsPacket.create(plugin, createdTeams.get(player.getUniqueId()), "", prefix, suffix, player.getUsername());
+
+        siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> dispatchPacket(packet, connected)));
+    }
+
     public void updateRole(@NotNull Player player, @NotNull String role) {
         if (!player.isActive()) {
             plugin.getTabList().removeOfflinePlayer(player);
@@ -81,11 +138,11 @@ public class ScoreboardManager {
         }
 
         final String name = player.getUsername();
-        final TabPlayer tabPlayer = plugin.getTabPlayer(player);
+        final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player).orElseThrow();
         tabPlayer.getNametag(plugin).thenAccept(nametag -> {
-            String[] split = nametag.split(player.getUsername(), 2);
-            String prefix = split[0];
-            String suffix = split.length > 1 ? split[1] : "";
+            final String[] split = nametag.split(player.getUsername(), 2);
+            final String prefix = split[0];
+            final String suffix = split.length > 1 ? split[1] : "";
 
             if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
                 if (createdTeams.containsKey(player.getUniqueId())) {
@@ -106,8 +163,8 @@ public class ScoreboardManager {
     }
 
 
-    public void resendAllNameTags(Player player) {
-        if (!plugin.getSettings().doNametags()) {
+    public void resendAllTeams(@NotNull Player player) {
+        if (!plugin.getSettings().isSendScoreboardPackets()) {
             return;
         }
 
@@ -122,8 +179,16 @@ public class ScoreboardManager {
                 .map(RegisteredServer::getPlayersConnected)
                 .flatMap(Collection::stream)
                 .toList();
+
+        final List<String> roles = new ArrayList<>();
+
         players.forEach(p -> {
             if (p == player || !p.isActive()) {
+                return;
+            }
+
+            if (plugin.getVanishManager().isVanished(p.getUsername()) ||
+                    !plugin.getVanishManager().canSee(player.getUsername(), p.getUsername())) {
                 return;
             }
 
@@ -131,6 +196,13 @@ public class ScoreboardManager {
             if (role.isEmpty()) {
                 return;
             }
+
+            // Prevent duplicate packets
+            if (roles.contains(role)) {
+                return;
+            }
+
+            roles.add(role);
 
             final String nametag = nametags.getOrDefault(role, "");
             if (nametag.isEmpty()) {
@@ -168,6 +240,12 @@ public class ScoreboardManager {
         final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
         siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
             try {
+                final boolean canSee = !plugin.getVanishManager().isVanished(connected.getUsername())
+                        || plugin.getVanishManager().canSee(player.getUsername(), player.getUsername());
+                if (!canSee) {
+                    return;
+                }
+
                 final ConnectedPlayer connectedPlayer = (ConnectedPlayer) connected;
                 connectedPlayer.getConnection().write(packet);
             } catch (Throwable e) {

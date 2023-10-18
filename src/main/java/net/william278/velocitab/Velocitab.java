@@ -28,12 +28,13 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
-import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
+import lombok.Getter;
 import net.william278.annotaml.Annotaml;
 import net.william278.desertwell.util.UpdateChecker;
 import net.william278.desertwell.util.Version;
+import net.william278.velocitab.api.VelocitabAPI;
 import net.william278.velocitab.commands.VelocitabCommand;
 import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.config.Settings;
@@ -42,10 +43,9 @@ import net.william278.velocitab.hook.LuckPermsHook;
 import net.william278.velocitab.hook.MiniPlaceholdersHook;
 import net.william278.velocitab.hook.PAPIProxyBridgeHook;
 import net.william278.velocitab.packet.ScoreboardManager;
-import net.william278.velocitab.player.Role;
-import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
+import net.william278.velocitab.vanish.VanishManager;
 import org.bstats.charts.SimplePie;
 import org.bstats.velocity.Metrics;
 import org.jetbrains.annotations.NotNull;
@@ -75,6 +75,8 @@ public class Velocitab {
     private List<Hook> hooks;
     private ScoreboardManager scoreboardManager;
     private SortingManager sortingManager;
+    @Getter
+    private VanishManager vanishManager;
 
     @Inject
     public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path dataDirectory) {
@@ -90,9 +92,11 @@ public class Velocitab {
         prepareScoreboardManager();
         prepareTabList();
         prepareSortingManager();
+        prepareVanishManager();
         registerCommands();
         registerMetrics();
         checkForUpdates();
+        prepareAPI();
         logger.info("Successfully enabled Velocitab");
     }
 
@@ -101,6 +105,7 @@ public class Velocitab {
         server.getScheduler().tasksByPlugin(this).forEach(ScheduledTask::cancel);
         disableScoreboardManager();
         getLuckPermsHook().ifPresent(LuckPermsHook::close);
+        VelocitabAPI.unregister();
         logger.info("Successfully disabled Velocitab");
     }
 
@@ -173,6 +178,10 @@ public class Velocitab {
         }
     }
 
+    private void prepareVanishManager() {
+        this.vanishManager = new VanishManager(this);
+    }
+
     private void prepareSortingManager() {
         this.sortingManager = new SortingManager(this);
     }
@@ -197,16 +206,8 @@ public class Velocitab {
         server.getEventManager().register(this, tabList);
     }
 
-    @NotNull
-    public TabPlayer getTabPlayer(@NotNull Player player) {
-        return new TabPlayer(player,
-                getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE)
-        );
-    }
-
-    @SuppressWarnings("unused")
-    public Optional<TabPlayer> getTabPlayer(String name) {
-        return server.getPlayer(name).map(this::getTabPlayer);
+    private void prepareAPI() {
+       VelocitabAPI.register(this);
     }
 
     private void registerCommands() {

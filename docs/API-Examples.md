@@ -1,6 +1,6 @@
 Velocitab provides an API for vanishing (hiding) and modifying the names of players as they appear in the TAB list for other players.
 
-This page assumes you have read the general [[API]] introduction and that you have both imported Velocitab into your project, added it as a dependency and have an instance of `VelocitabAPI` available. For the examples below it's used an instance called `velocitabAPI`.
+This page assumes you have read the general [[API]] introduction and that you have both imported Velocitab into your project, added it as a dependency and having an instance of `VelocitabAPI` available. For the following examples, an instance called `velocitabAPI` was used.
 
 ## 1. Vanishing/Un-vanishing a player
 

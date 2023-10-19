@@ -1,6 +1,6 @@
 Velocitab can sort players in the TAB list by a number of "sorting elements." Sorting is enabled by default, and can be disabled with the `sort_players` option in the [`config.yml`](Config-File) file.
 
-> > **Note:** This feature requires sending Update Teams packets. `send_scoreboard_packets` must be enabled in the [`config.yml` file](config-file) for this to work. [More details...](#compatibility-issues)
+> **Note:** This feature requires sending Update Teams packets. `send_scoreboard_packets` must be enabled in the [`config.yml` file](config-file) for this to work. [More details...](#compatibility-issues)
 
 ## Sortable elements
 To modify what players are sorted by, modify the `sorting_placeholders` list in the [`config.yml`](Config-File) file. This option accepts an ordered list; the first element in the list is what players will be sorted by first, with subsequent elements being used to break ties. The default sorting strategy is to sort first by `%role_weight%` followed by `%username%`.

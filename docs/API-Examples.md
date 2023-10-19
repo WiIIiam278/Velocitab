@@ -9,6 +9,7 @@ Use `VelocitabAPI#vanishPlayer` to vanish a player. This method takes a Velocity
 
 This will hide a user from all TAB lists (they will not be shown). Note this will remove them at a packet level; Vanish plugins should use this API feature as a utility that forms part of their Vanish implementation.
 Be sure to not remove the entry from TabList with Velocity API or direct packet as the packet would be sent twice and could cause a client-side bug.
+This won't send an EntityRemovePacket so your vanish plugin should send it. On a backend server you can just use Player#hidePlayer and Player#showPlayer.
 
 <details>
 <summary>Example &mdash; Vanishing a player</summary>

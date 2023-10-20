@@ -70,6 +70,11 @@ public class Settings {
     private Map<String, String> nametags = Map.of("default", "&f%prefix%%username%&f%suffix%");
 
     @Getter
+    @YamlKey("remove_nametags")
+    @YamlComment("Whether to remove nametag from players' heads if the nametag associated with their server group is empty.")
+    private boolean removeNametags = false;
+
+    @Getter
     @YamlComment("Which text formatter to use (MINEDOWN, MINIMESSAGE, or LEGACY)")
     @YamlKey("formatting_type")
     private Formatter formatter = Formatter.MINEDOWN;

@@ -26,6 +26,9 @@ send_scoreboard_packets: true
 
 Only players on servers which are part of groups that specify nametag formats will have their nametag formatted. To disable nametag formatting, remove all groups from the `nametags` section of the config file (leaving it empty).
 
+## Removing name tags
+In order to remove nametags, you must remove your nametag format from the config file. If you want to remove nametags for all groups, you can set the `nametags` section to empty `nametags: {}`. After that be sure to set `remove_nametags` to `true` to make sure the nametags are removed from players.
+
 ## Formatting limitations
 Nametags must adhere to the following restrictions:
 * A %username% placeholder must be present. This is used for delimiting the scoreboard prefix, name, and suffix to facilitate formatting.

@@ -2,9 +2,11 @@ This page will walk you through installing Velocitab on a Velocity proxy server.
 
 ## Requirements
 * A Velocity proxy server (running Velocity 3.2.0 or newer)
-* Backend Minecraft servers (running Minecraft version 1.16.5 or newer)&dagger;
+* Backend Minecraft servers. The following Minecraft server versions are fully supported:
+  - Minecraft 1.8&mdash;1.8.9
+  - Minecraft 1.12.2&mdash;latest
 
-&dagger;_Servers that support clients with versions older than 1.16 are not supported, as Velocitab relies on dispatching protocol-compatible packets and modern 1.16 RGB chat color formatting. Users attempting to connect on earlier versions will cause errors to display in your proxy server console._
+&dagger;_Servers that support clients with versions not listed are bit supported, as Velocitab relies on dispatching protocol-compatible packets and modern 1.16 RGB chat color formatting. Users attempting to connect on earlier versions may cause errors to display in your proxy server console._
 
 ## Installation
 1. Download the latest version of [Velocitab](https://modrinth.com/plugin/velocitab)

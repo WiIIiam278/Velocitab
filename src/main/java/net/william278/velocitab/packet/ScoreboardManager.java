@@ -86,6 +86,12 @@ public class ScoreboardManager {
 
         final RegisteredServer serverInfo = optionalServerConnection.get().getServer();
         final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
+
+        final String teamName = createdTeams.get(player.getUniqueId());
+        if (teamName == null) {
+            return;
+        }
+
         UpdateTeamsPacket packet = UpdateTeamsPacket.removeTeam(plugin, createdTeams.get(player.getUniqueId()));
 
         siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
@@ -113,12 +119,12 @@ public class ScoreboardManager {
         final RegisteredServer serverInfo = optionalServerConnection.get().getServer();
         final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
 
-        final String role = createdTeams.getOrDefault(player.getUniqueId(), "");
-        if (role.isEmpty()) {
+        final String teamName = createdTeams.get(player.getUniqueId());
+        if (teamName == null) {
             return;
         }
 
-        final String nametag = nametags.getOrDefault(role, "");
+        final String nametag = nametags.getOrDefault(teamName, "");
         if (nametag.isEmpty()) {
             return;
         }

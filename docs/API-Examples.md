@@ -61,7 +61,7 @@ Optional<String> customName = velocitabAPI.getCustomPlayerName(player);
 ```
 </details>
 
-## 3. Listening to PlayerAddToTabEvent
+## 3. Listening to PlayerAddedToTabEvent
 You can listen to `PlayerAddedToTabEvent` to get notified when a player is added to a group TabList.
 
 <details>

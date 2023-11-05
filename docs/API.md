@@ -9,7 +9,7 @@ The Velocitab API shares version numbering with the plugin itself for consistenc
 
 | API Version |   Velocitab Versions   | Supported |
 |:-----------:|:----------------------:|:---------:|
-|    v1.x     | _v1.5.1&mdash;Current_ |     ✅     |
+|    v1.x     | _v1.5.2&mdash;Current_ |     ✅     |
 
 ## Table of contents
 1. Adding the API to your project

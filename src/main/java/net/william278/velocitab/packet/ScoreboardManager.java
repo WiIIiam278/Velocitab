@@ -67,6 +67,10 @@ public class ScoreboardManager {
                 .orElseThrow(() -> new IllegalArgumentException("No adapter found for protocol version " + version));
     }
 
+    public void close() {
+        plugin.getServer().getAllPlayers().forEach(this::resetCache);
+    }
+
     public void resetCache(@NotNull Player player) {
         final String team = createdTeams.remove(player.getUniqueId());
         if (team != null) {
@@ -92,10 +96,10 @@ public class ScoreboardManager {
             return;
         }
 
-        UpdateTeamsPacket packet = UpdateTeamsPacket.removeTeam(plugin, createdTeams.get(player.getUniqueId()));
+        final UpdateTeamsPacket packet = UpdateTeamsPacket.removeTeam(plugin, teamName);
 
         siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
-            boolean canSee = !plugin.getVanishManager().isVanished(connected.getUsername())
+            final boolean canSee = !plugin.getVanishManager().isVanished(connected.getUsername())
                     || plugin.getVanishManager().canSee(player.getUsername(), player.getUsername());
 
             if (!canSee) {
@@ -145,6 +149,7 @@ public class ScoreboardManager {
 
         final String name = player.getUsername();
         final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player).orElseThrow();
+
         tabPlayer.getNametag(plugin).thenAccept(nametag -> {
             final String[] split = nametag.split(player.getUsername(), 2);
             final String prefix = split[0];

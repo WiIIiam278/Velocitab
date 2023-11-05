@@ -59,6 +59,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Plugin(id = "velocitab")
 public class Velocitab {
@@ -89,10 +90,10 @@ public class Velocitab {
     public void onProxyInitialization(@NotNull ProxyInitializeEvent event) {
         loadSettings();
         loadHooks();
+        prepareVanishManager();
         prepareScoreboardManager();
         prepareTabList();
         prepareSortingManager();
-        prepareVanishManager();
         registerCommands();
         registerMetrics();
         checkForUpdates();
@@ -104,6 +105,7 @@ public class Velocitab {
     public void onProxyShutdown(@NotNull ProxyShutdownEvent event) {
         server.getScheduler().tasksByPlugin(this).forEach(ScheduledTask::cancel);
         disableScoreboardManager();
+        disableTabList();
         getLuckPermsHook().ifPresent(LuckPermsHook::close);
         VelocitabAPI.unregister();
         logger.info("Successfully disabled Velocitab");
@@ -174,7 +176,14 @@ public class Velocitab {
 
     private void disableScoreboardManager() {
         if (scoreboardManager != null && settings.isSendScoreboardPackets()) {
+            scoreboardManager.close();
             scoreboardManager.unregisterPacket();
+        }
+    }
+
+    private void disableTabList() {
+        if (tabList != null) {
+            tabList.close();
         }
     }
 
@@ -204,10 +213,12 @@ public class Velocitab {
     private void prepareTabList() {
         this.tabList = new PlayerTabList(this);
         server.getEventManager().register(this, tabList);
+
+        server.getScheduler().buildTask(this, tabList::load).delay(1, TimeUnit.SECONDS).schedule();
     }
 
     private void prepareAPI() {
-       VelocitabAPI.register(this);
+        VelocitabAPI.register(this);
     }
 
     private void registerCommands() {

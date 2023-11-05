@@ -60,3 +60,19 @@ You can also use `VelocitabAPI#getCustomPlayerName` which accepts a Velocity `Pl
 Optional<String> customName = velocitabAPI.getCustomPlayerName(player);
 ```
 </details>
+
+## 3. Listening to PlayerAddedToTabEvent
+You can listen to `PlayerAddedToTabEvent` to get notified when a player is added to a group TabList.
+
+<details>
+<summary>Example &mdash; Listening to PlayerAddToTabEvent</summary>
+
+```java
+@Subscribe
+public void onPlayerAddToTab(PlayerAddToTabEvent event) {
+    VelocitabAPI velocitabAPI = VelocitabAPI.getInstance();
+    velocitabAPI.setCustomPlayerName(event.getPlayer().getPlayer(), "CustomName");
+}
+```
+
+</details>

@@ -199,7 +199,7 @@ public class PlayerTabList {
                 .build());
     }
 
-    private void createEntry(@NotNull TabPlayer player, @NotNull TabList tabList, @NotNull Component displayName) {
+    private void addEntry(@NotNull TabPlayer player, @NotNull TabList tabList, @NotNull Component displayName) {
         TabListEntry.builder()
                 .profile(player.getPlayer().getGameProfile())
                 .displayName(displayName)
@@ -444,7 +444,7 @@ public class PlayerTabList {
                 }
 
                 if (!p.getPlayer().getTabList().containsEntry(uuid)) {
-                    createEntry(tabPlayer, p.getPlayer().getTabList(), c);
+                    addEntry(tabPlayer, p.getPlayer().getTabList(), c);
                 }
             });
         });

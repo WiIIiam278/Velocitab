@@ -22,6 +22,7 @@ package net.william278.velocitab.api;
 import net.william278.velocitab.player.TabPlayer;
 
 import java.util.List;
+
 public record PlayerAddedToTabEvent(TabPlayer player, String group, List<String> groupServers) {
 
 }

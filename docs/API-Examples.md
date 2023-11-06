@@ -65,11 +65,11 @@ Optional<String> customName = velocitabAPI.getCustomPlayerName(player);
 You can listen to `PlayerAddedToTabEvent` to get notified when a player is added to a group TabList.
 
 <details>
-<summary>Example &mdash; Listening to PlayerAddToTabEvent</summary>
+<summary>Example &mdash; Listening to PlayerAddedToTabEvent</summary>
 
 ```java
 @Subscribe
-public void onPlayerAddToTab(PlayerAddToTabEvent event) {
+public void onPlayerAddedToTab(PlayerAddedToTabEvent event) {
     VelocitabAPI velocitabAPI = VelocitabAPI.getInstance();
     velocitabAPI.setCustomPlayerName(event.getPlayer().getPlayer(), "CustomName");
 }

@@ -71,7 +71,7 @@ You can listen to `PlayerAddedToTabEvent` to get notified when a player is added
 @Subscribe
 public void onPlayerAddedToTab(PlayerAddedToTabEvent event) {
     VelocitabAPI velocitabAPI = VelocitabAPI.getInstance();
-    velocitabAPI.setCustomPlayerName(event.getPlayer().getPlayer(), "CustomName");
+    velocitabAPI.setCustomPlayerName(event.player().getPlayer(), "CustomName");
 }
 ```
 

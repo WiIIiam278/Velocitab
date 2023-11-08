@@ -199,8 +199,8 @@ public class PlayerTabList {
                 .build());
     }
 
-    private void addEntry(@NotNull TabPlayer player, @NotNull TabList tabList, @NotNull Component displayName) {
-        TabListEntry.builder()
+    private TabListEntry createEntry(@NotNull TabPlayer player, @NotNull TabList tabList, @NotNull Component displayName) {
+        return TabListEntry.builder()
                 .profile(player.getPlayer().getGameProfile())
                 .displayName(displayName)
                 .latency(0)
@@ -437,17 +437,15 @@ public class PlayerTabList {
     public void unVanishPlayer(@NotNull TabPlayer tabPlayer) {
         final UUID uuid = tabPlayer.getPlayer().getUniqueId();
 
-        tabPlayer.getDisplayName(plugin).thenAccept(c -> {
-            players.values().forEach(p -> {
-                if (p.getPlayer().equals(tabPlayer.getPlayer())) {
-                    return;
-                }
+        tabPlayer.getDisplayName(plugin).thenAccept(c -> players.values().forEach(p -> {
+            if (p.getPlayer().equals(tabPlayer.getPlayer())) {
+                return;
+            }
 
-                if (!p.getPlayer().getTabList().containsEntry(uuid)) {
-                    addEntry(tabPlayer, p.getPlayer().getTabList(), c);
-                }
-            });
-        });
+            if (!p.getPlayer().getTabList().containsEntry(uuid)) {
+                p.getPlayer().getTabList().addEntry(createEntry(tabPlayer, p.getPlayer().getTabList(), c));
+            }
+        }));
 
     }
 }

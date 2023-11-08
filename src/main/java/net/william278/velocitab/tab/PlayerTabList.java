@@ -444,6 +444,8 @@ public class PlayerTabList {
 
             if (!p.getPlayer().getTabList().containsEntry(uuid)) {
                 p.getPlayer().getTabList().addEntry(createEntry(tabPlayer, p.getPlayer().getTabList(), c));
+            } else {
+                p.getPlayer().getTabList().getEntry(uuid).ifPresent(entry -> entry.setDisplayName(c));
             }
         }));
 

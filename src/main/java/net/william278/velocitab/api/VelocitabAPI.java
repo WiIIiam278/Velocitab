@@ -163,6 +163,18 @@ import java.util.Optional;
         plugin.getVanishManager().unVanishPlayer(player);
     }
 
+    /**
+     * Retrieves the server group that the given player is connected to.
+     *
+     * @param player the player for whom to retrieve the server group
+     * @return the name of the server group that the player is connected to,
+     *         or an empty string if the player is not in a group server
+     */
+    @NotNull
+    public String getServerGroup(@NotNull Player player) {
+        return getUser(player).map(t -> t.getServerGroup(plugin)).orElse("");
+    }
+
 
     static final class NotRegisteredException extends IllegalStateException {
 

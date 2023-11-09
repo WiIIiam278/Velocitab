@@ -1,4 +1,4 @@
-If you'd like to display a custom logo or image in your TAB menu, like the example listed on the project listing,<sup><a href="#ref-1">[1]</a></sup> you will need to make use of a resource pack to retexture Minecraft's default Unicode characters.
+If you'd like to display a custom logo or image in your TAB menu, like the example listed on the project listing,&dagger; you will need to make use of a resource pack to retexture Minecraft's default Unicode characters.
 
 <details>
 <summary>Example: <i>Mine in Abyss</i> server TAB menu.</summary>
@@ -7,7 +7,7 @@ If you'd like to display a custom logo or image in your TAB menu, like the examp
 </details>
 
 ## Creating a resource pack
-To do this, you'll need to make a resource pack, and set it to be used on your servers as the Server Resource Pack<sup><a href="#ref-2">[2]</a></sup>. To do this:
+To do this, you'll need to make a resource pack, and set it to be used on your servers as the Server Resource Pack &ddagger;. To do this:
 1. Create a blank resource pack. Consult the [Minecraft Wiki](https://minecraft.fandom.com/wiki/Resource_pack) for making a super basic resource pack layout; this involves creating a `pack.mcmeta` for the correct Minecraft version and placing this inside the root of a directory.
 2. Create the directory to store your logo texture: `/assets/server_name/textures/font`. Replace `server_name` with your server name (lower case, no spaces)
 3. Place your logo in that directory. The logo can have a maximum size of 256x256 (though you can technically use multiple characters if you want a larger logo; feel free to experiment)
@@ -41,11 +41,7 @@ To do this, you'll need to make a resource pack, and set it to be used on your s
 ## The entire _Bee Movie_ as an animated TAB header
 You totally could render the entire _Bee Movie_ in the TAB menu by retexturing a ton of impossible Unicode characters with this method, yes (at a low resolution, granted). Bare in mind there are limits on maximum server resource pack sizes, so you'd need to do some optimizations. Your Velocitab config file would also be very long. Have fun.
 
-----
-<a id="ref-1" />
-
-[1] &mdash; Courtesy of <a href="https://mineinabyss.com">Mine In Abyss</a>. <i>Made in Abyss</i> © Akihito Tsukushi, Takeshobo / Made in Abyss Production Committee.
-
-<a id="ref-2" />
-
-[2] &mdash; Taken from [this helpful Reddit comment](https://www.reddit.com/r/admincraft/comments/llrgty/comment/gnswdcz/) on [/r/admincraft](https://www.reddit.com/r/admincraft/) by [/u/MrPowerGamerBR](https://www.reddit.com/user/MrPowerGamerBR/).
+## References
+&dagger; &mdash; Courtesy of [https://mineinabyss.com Mine in Abyss].
+<br/>
+&ddagger; &mdash; Taken from [this helpful Reddit comment](https://www.reddit.com/r/admincraft/comments/llrgty/comment/gnswdcz/) on [/r/admincraft](https://www.reddit.com/r/admincraft/) by [/u/MrPowerGamerBR](https://www.reddit.com/user/MrPowerGamerBR/).

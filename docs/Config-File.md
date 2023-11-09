@@ -21,6 +21,8 @@ footers:
   - '[There are currently %players_online%/%max_players_online% players online](gray)'
 formats:
   default: '&7[%server%] &f%prefix%%username%'
+# Whether to remove nametag from players' heads if the nametag associated with their server group is empty.
+remove_nametags: false
 # Which text formatter to use (MINEDOWN, MINIMESSAGE, or LEGACY)
 formatting_type: MINEDOWN
 # The servers in each group of servers

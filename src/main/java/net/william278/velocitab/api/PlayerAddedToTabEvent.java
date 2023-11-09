@@ -54,19 +54,19 @@ public class PlayerAddedToTabEvent {
 
     @NotNull
     @Deprecated(forRemoval = true)
-    private TabPlayer player() {
+    public TabPlayer player() {
         return this.player;
     }
 
     @NotNull
     @Deprecated(forRemoval = true)
-    private String group() {
+    public String group() {
         return this.group;
     }
 
     @NotNull
     @Deprecated(forRemoval = true)
-    private List<String> groupServers() {
+    public List<String> groupServers() {
         return this.groupServers;
     }
 }

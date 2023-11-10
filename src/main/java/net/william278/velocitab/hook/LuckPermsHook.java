@@ -89,9 +89,15 @@ public class LuckPermsHook extends Hook {
         plugin.getServer().getPlayer(event.getUser().getUniqueId())
                 .ifPresent(player -> plugin.getServer().getScheduler()
                         .buildTask(plugin, () -> {
-                            final TabPlayer tabPlayer = tabList.getTabPlayer(player).orElseThrow();
+                            final Optional<TabPlayer> tabPlayerOptional = tabList.getTabPlayer(player);
+                            if (tabPlayerOptional.isEmpty()) {
+                                return;
+                            }
+
+                            final TabPlayer tabPlayer = tabPlayerOptional.get();
                             tabPlayer.setRole(getRoleFromMetadata(event.getData().getMetaData()));
                             tabList.updatePlayerDisplayName(tabPlayer);
+                            tabList.recalculateVanishForPlayer(tabPlayer);
                         })
                         .delay(500, TimeUnit.MILLISECONDS)
                         .schedule());

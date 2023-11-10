@@ -164,7 +164,7 @@ public class PlayerTabList {
                             player.getPlayer().getTabList().removeEntry(joined.getUniqueId());
                         }
                         // check if joined player can see current player
-                        if ((plugin.getVanishManager().isVanished(player.getPlayer().getUsername()) ||
+                        if ((plugin.getVanishManager().isVanished(player.getPlayer().getUsername()) &&
                                 !plugin.getVanishManager().canSee(joined.getUsername(), player.getPlayer().getUsername())) && player.getPlayer() != joined) {
                             tabList.removeEntry(player.getPlayer().getUniqueId());
                         } else {
@@ -449,5 +449,54 @@ public class PlayerTabList {
             }
         }));
 
+    }
+
+    /**
+     * Recalculates the visibility of players in the tab list for the given player.
+     * If tabPlayer can see the player, the player will be added to the tab list.
+     *
+     * @param tabPlayer The TabPlayer object representing the player for whom to recalculate the tab list visibility.
+     */
+    public void recalculateVanishForPlayer(@NotNull TabPlayer tabPlayer) {
+        final Player player = tabPlayer.getPlayer();
+        final Optional<List<String>> serversInGroupOptional = getGroupNames(player.getCurrentServer()
+                .map(ServerConnection::getServerInfo)
+                .map(ServerInfo::getName)
+                .orElse("?"));
+        final List<String> serversInGroup = serversInGroupOptional.orElseGet(ArrayList::new);
+
+        plugin.getServer().getAllPlayers().forEach(p -> {
+            if (p.equals(player)) {
+                return;
+            }
+
+            final Optional<TabPlayer> targetOptional = getTabPlayer(p);
+            if (targetOptional.isEmpty()) {
+                return;
+            }
+
+            final TabPlayer target = targetOptional.get();
+            final String serverName = target.getServerName();
+
+            if (plugin.getSettings().isOnlyListPlayersInSameGroup()
+                    && !serversInGroup.contains(serverName)) {
+                return;
+            }
+
+            final boolean canSee = !plugin.getVanishManager().isVanished(p.getUsername()) ||
+                    plugin.getVanishManager().canSee(player.getUsername(), p.getUsername());
+
+            if (!canSee) {
+                player.getTabList().removeEntry(p.getUniqueId());
+                plugin.getScoreboardManager().ifPresent(s -> s.recalculateVanishForPlayer(tabPlayer, target, false));
+            } else {
+                if (!player.getTabList().containsEntry(p.getUniqueId())) {
+                    createEntry(target, player.getTabList()).thenAccept(e -> {
+                        player.getTabList().addEntry(e);
+                        plugin.getScoreboardManager().ifPresent(s -> s.recalculateVanishForPlayer(tabPlayer, target, true));
+                    });
+                }
+            }
+        });
     }
 }

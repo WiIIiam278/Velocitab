@@ -95,9 +95,11 @@ public class LuckPermsHook extends Hook {
                             }
 
                             final TabPlayer tabPlayer = tabPlayerOptional.get();
+                            final Role oldRole = tabPlayer.getRole();
                             tabPlayer.setRole(getRoleFromMetadata(event.getData().getMetaData()));
                             tabList.updatePlayerDisplayName(tabPlayer);
                             tabList.recalculateVanishForPlayer(tabPlayer);
+                            checkRoleUpdate(tabPlayer, oldRole);
                         })
                         .delay(500, TimeUnit.MILLISECONDS)
                         .schedule());
@@ -118,6 +120,13 @@ public class LuckPermsHook extends Hook {
 
     private User getUser(@NotNull UUID uuid) {
         return api.getUserManager().getUser(uuid);
+    }
+
+    private void checkRoleUpdate(@NotNull TabPlayer player, @NotNull Role oldRole) {
+        if (oldRole.equals(player.getRole())) {
+            return;
+        }
+        plugin.getTabList().updatePlayer(player);
     }
 
 

@@ -26,6 +26,7 @@ import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.tab.PlayerTabList;
+import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,6 +46,9 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private String teamName;
     @Nullable
     private String customName;
+    @Nullable
+    @Setter
+    private String lastServer;
 
     public TabPlayer(@NotNull Player player, @NotNull Role role) {
         this.player = player;
@@ -76,7 +80,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     public String getServerName() {
         return player.getCurrentServer()
                 .map(serverConnection -> serverConnection.getServerInfo().getName())
-                .orElse("unknown");
+                .orElse(ObjectUtils.firstNonNull(lastServer, "unknown"));
     }
 
     /**
@@ -123,9 +127,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     @NotNull
     public CompletableFuture<String> getNametag(@NotNull Velocitab plugin) {
         final String serverGroup = plugin.getSettings().getServerGroup(getServerName());
-        return Placeholder.replace(plugin.getSettings().getNametag(serverGroup), plugin, this)
-                .thenApply(formatted -> plugin.getFormatter().formatLegacySymbols(formatted, this, plugin));
-
+        return Placeholder.replace(plugin.getSettings().getNametag(serverGroup), plugin, this);
     }
 
     @NotNull

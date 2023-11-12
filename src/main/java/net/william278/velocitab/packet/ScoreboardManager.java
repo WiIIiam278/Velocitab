@@ -33,6 +33,7 @@ import org.slf4j.event.Level;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import static com.velocitypowered.api.network.ProtocolVersion.*;
 
@@ -54,9 +55,9 @@ public class ScoreboardManager {
     }
 
     private void registerVersions() {
-        versions.add(new Protocol403Adapter());
-        versions.add(new Protocol340Adapter());
-        versions.add(new Protocol48Adapter());
+        versions.add(new Protocol403Adapter(plugin));
+        versions.add(new Protocol340Adapter(plugin));
+        versions.add(new Protocol48Adapter(plugin));
     }
 
     @NotNull
@@ -137,7 +138,7 @@ public class ScoreboardManager {
         final String suffix = split.length > 1 ? split[1] : "";
         final UpdateTeamsPacket packet = UpdateTeamsPacket.create(plugin, createdTeams.get(player.getUniqueId()), "", prefix, suffix, player.getUsername());
 
-        siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> dispatchPacket(packet, connected)));
+        siblings.forEach(server -> server.getPlayersConnected().stream().filter(p -> p != player).forEach(connected -> dispatchPacket(packet, connected)));
     }
 
     public void updateRole(@NotNull Player player, @NotNull String role) {
@@ -150,7 +151,7 @@ public class ScoreboardManager {
         final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player).orElseThrow();
 
         tabPlayer.getNametag(plugin).thenAccept(nametag -> {
-            final String[] split = nametag.split(player.getUsername(), 2);
+            final String[] split = nametag.split(Pattern.quote(player.getUsername()), 2);
             final String prefix = split[0];
             final String suffix = split.length > 1 ? split[1] : "";
 
@@ -249,7 +250,7 @@ public class ScoreboardManager {
         final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
         siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
             try {
-                final boolean canSee = plugin.getVanishManager().canSee(player.getUsername(), player.getUsername());
+                final boolean canSee = plugin.getVanishManager().canSee(connected.getUsername(), player.getUsername());
                 if (!canSee) {
                     return;
                 }

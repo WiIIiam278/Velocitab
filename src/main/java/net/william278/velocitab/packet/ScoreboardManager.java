@@ -33,6 +33,7 @@ import org.slf4j.event.Level;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import static com.velocitypowered.api.network.ProtocolVersion.*;
 
@@ -43,20 +44,20 @@ public class ScoreboardManager {
     private final Velocitab plugin;
     private final Set<TeamsPacketAdapter> versions;
     private final Map<UUID, String> createdTeams;
-    private final Map<String, String> nametags;
+    private final Map<String, String> nameTags;
 
     public ScoreboardManager(@NotNull Velocitab velocitab) {
         this.plugin = velocitab;
         this.createdTeams = new ConcurrentHashMap<>();
-        this.nametags = new ConcurrentHashMap<>();
+        this.nameTags = new ConcurrentHashMap<>();
         this.versions = new HashSet<>();
         this.registerVersions();
     }
 
     private void registerVersions() {
-        versions.add(new Protocol403Adapter());
-        versions.add(new Protocol340Adapter());
-        versions.add(new Protocol48Adapter());
+        versions.add(new Protocol403Adapter(plugin));
+        versions.add(new Protocol340Adapter(plugin));
+        versions.add(new Protocol48Adapter(plugin));
     }
 
     @NotNull
@@ -99,10 +100,9 @@ public class ScoreboardManager {
         final UpdateTeamsPacket packet = UpdateTeamsPacket.removeTeam(plugin, teamName);
 
         siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
-            final boolean canSee = !plugin.getVanishManager().isVanished(connected.getUsername())
-                    || plugin.getVanishManager().canSee(player.getUsername(), player.getUsername());
+            final boolean canSee = plugin.getVanishManager().canSee(connected.getUsername(), player.getUsername());
 
-            if (!canSee) {
+            if (canSee) {
                 return;
             }
 
@@ -128,7 +128,7 @@ public class ScoreboardManager {
             return;
         }
 
-        final String nametag = nametags.getOrDefault(teamName, "");
+        final String nametag = nameTags.getOrDefault(teamName, "");
         if (nametag.isEmpty()) {
             return;
         }
@@ -138,7 +138,7 @@ public class ScoreboardManager {
         final String suffix = split.length > 1 ? split[1] : "";
         final UpdateTeamsPacket packet = UpdateTeamsPacket.create(plugin, createdTeams.get(player.getUniqueId()), "", prefix, suffix, player.getUsername());
 
-        siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> dispatchPacket(packet, connected)));
+        siblings.forEach(server -> server.getPlayersConnected().stream().filter(p -> p != player).forEach(connected -> dispatchPacket(packet, connected)));
     }
 
     public void updateRole(@NotNull Player player, @NotNull String role) {
@@ -151,7 +151,7 @@ public class ScoreboardManager {
         final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player).orElseThrow();
 
         tabPlayer.getNametag(plugin).thenAccept(nametag -> {
-            final String[] split = nametag.split(player.getUsername(), 2);
+            final String[] split = nametag.split(Pattern.quote(player.getUsername()), 2);
             final String prefix = split[0];
             final String suffix = split.length > 1 ? split[1] : "";
 
@@ -161,10 +161,10 @@ public class ScoreboardManager {
                 }
 
                 createdTeams.put(player.getUniqueId(), role);
-                this.nametags.put(role, prefix + NAMETAG_DELIMITER + suffix);
+                this.nameTags.put(role, prefix + NAMETAG_DELIMITER + suffix);
                 dispatchGroupPacket(UpdateTeamsPacket.create(plugin, role, "", prefix, suffix, name), player);
-            } else if (!this.nametags.getOrDefault(role, "").equals(prefix + NAMETAG_DELIMITER + suffix)) {
-                this.nametags.put(role, prefix + NAMETAG_DELIMITER + suffix);
+            } else if (!this.nameTags.getOrDefault(role, "").equals(prefix + NAMETAG_DELIMITER + suffix)) {
+                this.nameTags.put(role, prefix + NAMETAG_DELIMITER + suffix);
                 dispatchGroupPacket(UpdateTeamsPacket.changeNameTag(plugin, role, prefix, suffix), player);
             }
         }).exceptionally(e -> {
@@ -198,8 +198,7 @@ public class ScoreboardManager {
                 return;
             }
 
-            if (plugin.getVanishManager().isVanished(p.getUsername()) ||
-                    !plugin.getVanishManager().canSee(player.getUsername(), p.getUsername())) {
+            if (!plugin.getVanishManager().canSee(player.getUsername(), p.getUsername())) {
                 return;
             }
 
@@ -215,7 +214,7 @@ public class ScoreboardManager {
 
             roles.add(role);
 
-            final String nametag = nametags.getOrDefault(role, "");
+            final String nametag = nameTags.getOrDefault(role, "");
             if (nametag.isEmpty()) {
                 return;
             }
@@ -251,8 +250,7 @@ public class ScoreboardManager {
         final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
         siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
             try {
-                final boolean canSee = !plugin.getVanishManager().isVanished(connected.getUsername())
-                        || plugin.getVanishManager().canSee(player.getUsername(), player.getUsername());
+                final boolean canSee = plugin.getVanishManager().canSee(connected.getUsername(), player.getUsername());
                 if (!canSee) {
                     return;
                 }
@@ -295,6 +293,40 @@ public class ScoreboardManager {
             packetRegistration.unregister();
         } catch (Throwable e) {
             plugin.log(Level.ERROR, "Failed to unregister UpdateTeamsPacket", e);
+        }
+    }
+
+    /**
+     * Recalculates the vanish status for a specific player.
+     * This method updates the player's scoreboard to reflect the vanish status of another player.
+     *
+     * @param tabPlayer The TabPlayer object representing the player whose scoreboard will be updated.
+     * @param target The TabPlayer object representing the player whose vanish status will be reflected.
+     * @param canSee A boolean indicating whether the player can see the target player.
+     */
+    public void recalculateVanishForPlayer(TabPlayer tabPlayer, TabPlayer target, boolean canSee) {
+        final Player player = tabPlayer.getPlayer();
+
+        final String team = createdTeams.get(target.getPlayer().getUniqueId());
+
+        if (team == null) {
+            return;
+        }
+
+        final UpdateTeamsPacket removeTeam = UpdateTeamsPacket.removeTeam(plugin, team);
+        dispatchPacket(removeTeam, player);
+
+        if (canSee) {
+            final String nametag = nameTags.getOrDefault(team, "");
+            if (nametag.isEmpty()) {
+                return;
+            }
+
+            final String[] split = nametag.split(NAMETAG_DELIMITER, 2);
+            final String prefix = split[0];
+            final String suffix = split.length > 1 ? split[1] : "";
+            final UpdateTeamsPacket addTeam = UpdateTeamsPacket.create(plugin, team, "", prefix, suffix, target.getPlayer().getUsername());
+            dispatchPacket(addTeam, player);
         }
     }
 

@@ -23,6 +23,7 @@ package net.william278.velocitab.packet;
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import io.netty.buffer.ByteBuf;
+import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -35,8 +36,8 @@ import java.util.Set;
 @SuppressWarnings("DuplicatedCode")
 public class Protocol48Adapter extends TeamsPacketAdapter {
 
-    public Protocol48Adapter() {
-        super(Set.of(ProtocolVersion.MINECRAFT_1_8));
+    public Protocol48Adapter(@NotNull Velocitab plugin) {
+        super(plugin, Set.of(ProtocolVersion.MINECRAFT_1_8));
     }
 
     @Override

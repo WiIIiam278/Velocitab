@@ -26,6 +26,8 @@ import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import io.netty.buffer.ByteBuf;
 import lombok.*;
 import lombok.experimental.Accessors;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -127,7 +129,15 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         if (text == null) {
             return 15;
         }
-        int lastFormatIndex = text.lastIndexOf("§");
+
+        //add 1 random char at the end to make sure the last color is always found
+        text = text + "z";
+
+        //serialize & deserialize to downsample rgb to legacy
+        Component legacyComponent = LegacyComponentSerializer.legacyAmpersand().deserialize(text);
+        text = LegacyComponentSerializer.legacyAmpersand().serialize(legacyComponent);
+
+        int lastFormatIndex = text.lastIndexOf("&");
         if (lastFormatIndex == -1 || lastFormatIndex == text.length() - 1) {
             return 15;
         }
@@ -136,6 +146,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         return TeamColor.getColorId(last.charAt(1));
     }
 
+    //Style-codes are handled as white
     public enum TeamColor {
         BLACK('0', 0),
         DARK_BLUE('1', 1),
@@ -154,10 +165,10 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         YELLOW('e', 14),
         WHITE('f', 15),
         OBFUSCATED('k', 16),
-        BOLD('l', 17),
-        STRIKETHROUGH('m', 18),
-        UNDERLINED('n', 19),
-        ITALIC('o', 20),
+        BOLD('f', 17),
+        STRIKETHROUGH('f', 18),
+        UNDERLINED('f', 19),
+        ITALIC('f', 20),
         RESET('r', 21);
 
         private final char colorChar;

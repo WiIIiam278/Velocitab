@@ -68,8 +68,9 @@ public class SortingManager {
             return "";
         }
 
-        if (value.matches("[0-9]+")) {
+        if (value.matches("^-?[0-9]\\d*(\\.\\d+)?$")) {
             double parsed = Double.parseDouble(value);
+            parsed = Math.max(0, parsed);
             return compressNumber(Integer.MAX_VALUE / 4d - parsed);
         }
 

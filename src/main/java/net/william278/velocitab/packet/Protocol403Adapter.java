@@ -23,6 +23,11 @@ package net.william278.velocitab.packet;
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import io.netty.buffer.ByteBuf;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.config.Formatter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -35,8 +40,8 @@ import java.util.Set;
 @SuppressWarnings("DuplicatedCode")
 public class Protocol403Adapter extends TeamsPacketAdapter {
 
-    public Protocol403Adapter() {
-        super(Set.of(ProtocolVersion.MINECRAFT_1_13_2,
+    public Protocol403Adapter(@NotNull Velocitab plugin) {
+        super(plugin, Set.of(ProtocolVersion.MINECRAFT_1_13_2,
                 ProtocolVersion.MINECRAFT_1_14,
                 ProtocolVersion.MINECRAFT_1_14_1,
                 ProtocolVersion.MINECRAFT_1_14_2,
@@ -79,8 +84,8 @@ public class Protocol403Adapter extends TeamsPacketAdapter {
             ProtocolUtils.writeString(byteBuf, packet.nameTagVisibility().id());
             ProtocolUtils.writeString(byteBuf, packet.collisionRule().id());
             byteBuf.writeByte(packet.color());
-            ProtocolUtils.writeString(byteBuf, getChatString(packet.prefix()));
-            ProtocolUtils.writeString(byteBuf, getChatString(packet.suffix()));
+            ProtocolUtils.writeString(byteBuf, getRGBChat(packet.prefix()));
+            ProtocolUtils.writeString(byteBuf, getRGBChat(packet.suffix()));
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.ADD_PLAYERS || mode == UpdateTeamsPacket.UpdateMode.REMOVE_PLAYERS) {
             List<String> entities = packet.entities();
@@ -89,5 +94,16 @@ public class Protocol403Adapter extends TeamsPacketAdapter {
                 ProtocolUtils.writeString(byteBuf, entity);
             }
         }
+    }
+
+    @NotNull
+    private String getRGBChat(@NotNull String input) {
+        if (!getPlugin().getFormatter().equals(Formatter.LEGACY)) {
+            return getChatString(input);
+        }
+
+        final Component component = LegacyComponentSerializer.builder().hexColors().character('&').build().deserialize(input);
+
+        return GsonComponentSerializer.gson().serialize(component);
     }
 }

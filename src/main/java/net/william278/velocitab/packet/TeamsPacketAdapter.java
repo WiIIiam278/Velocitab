@@ -24,6 +24,7 @@ import com.velocitypowered.api.network.ProtocolVersion;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.william278.velocitab.Velocitab;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,6 +34,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public abstract class TeamsPacketAdapter {
 
+    private final Velocitab plugin;
     private final Set<ProtocolVersion> protocolVersions;
 
     public abstract void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet);

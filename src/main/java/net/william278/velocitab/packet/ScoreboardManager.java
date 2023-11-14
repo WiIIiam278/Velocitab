@@ -39,12 +39,11 @@ import static com.velocitypowered.api.network.ProtocolVersion.*;
 
 public class ScoreboardManager {
 
-    private static final String NAMETAG_DELIMITER = ":::";
     private PacketRegistration<UpdateTeamsPacket> packetRegistration;
     private final Velocitab plugin;
     private final Set<TeamsPacketAdapter> versions;
     private final Map<UUID, String> createdTeams;
-    private final Map<String, String> nameTags;
+    private final Map<String, TabPlayer.Nametag> nameTags;
 
     public ScoreboardManager(@NotNull Velocitab velocitab) {
         this.plugin = velocitab;
@@ -98,7 +97,6 @@ public class ScoreboardManager {
         }
 
         final UpdateTeamsPacket packet = UpdateTeamsPacket.removeTeam(plugin, teamName);
-
         siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
             final boolean canSee = plugin.getVanishManager().canSee(connected.getUsername(), player.getUsername());
 
@@ -122,23 +120,20 @@ public class ScoreboardManager {
 
         final RegisteredServer serverInfo = optionalServerConnection.get().getServer();
         final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
-
         final String teamName = createdTeams.get(player.getUniqueId());
         if (teamName == null) {
             return;
         }
 
-        final String nametag = nameTags.getOrDefault(teamName, "");
-        if (nametag.isEmpty()) {
-            return;
-        }
-
-        final String[] split = nametag.split(NAMETAG_DELIMITER, 2);
-        final String prefix = split[0];
-        final String suffix = split.length > 1 ? split[1] : "";
-        final UpdateTeamsPacket packet = UpdateTeamsPacket.create(plugin, createdTeams.get(player.getUniqueId()), "", prefix, suffix, player.getUsername());
-
-        siblings.forEach(server -> server.getPlayersConnected().stream().filter(p -> p != player).forEach(connected -> dispatchPacket(packet, connected)));
+        final Optional<TabPlayer.Nametag> cachedTag = Optional.ofNullable(nameTags.getOrDefault(teamName, null));
+        cachedTag.ifPresent(nametag -> {
+            final UpdateTeamsPacket packet = UpdateTeamsPacket.create(
+                    plugin, createdTeams.get(player.getUniqueId()),
+                    "", nametag, player.getUsername()
+            );
+            siblings.forEach(server -> server.getPlayersConnected().stream().filter(p -> p != player)
+                    .forEach(connected -> dispatchPacket(packet, connected)));
+        });
     }
 
     public void updateRole(@NotNull Player player, @NotNull String role) {
@@ -146,26 +141,35 @@ public class ScoreboardManager {
             plugin.getTabList().removeOfflinePlayer(player);
             return;
         }
-
         final String name = player.getUsername();
         final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player).orElseThrow();
 
-        tabPlayer.getNametag(plugin).thenAccept(nametag -> {
-            final String[] split = nametag.split(Pattern.quote(player.getUsername()), 2);
+        tabPlayer.getNametag(plugin).thenAccept(tag -> {
+            final String[] split = tag.split(Pattern.quote(player.getUsername()), 2);
             final String prefix = split[0];
             final String suffix = split.length > 1 ? split[1] : "";
 
+            final TabPlayer.Nametag newTag = new TabPlayer.Nametag(prefix, suffix);
             if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
                 if (createdTeams.containsKey(player.getUniqueId())) {
-                    dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, createdTeams.get(player.getUniqueId())), player);
+                    dispatchGroupPacket(
+                            UpdateTeamsPacket.removeTeam(plugin, createdTeams.get(player.getUniqueId())),
+                            player
+                    );
                 }
 
                 createdTeams.put(player.getUniqueId(), role);
-                this.nameTags.put(role, prefix + NAMETAG_DELIMITER + suffix);
-                dispatchGroupPacket(UpdateTeamsPacket.create(plugin, role, "", prefix, suffix, name), player);
-            } else if (!this.nameTags.getOrDefault(role, "").equals(prefix + NAMETAG_DELIMITER + suffix)) {
-                this.nameTags.put(role, prefix + NAMETAG_DELIMITER + suffix);
-                dispatchGroupPacket(UpdateTeamsPacket.changeNameTag(plugin, role, prefix, suffix), player);
+                this.nameTags.put(role, newTag);
+                dispatchGroupPacket(
+                        UpdateTeamsPacket.create(plugin, role, "", newTag, name),
+                        player
+                );
+            } else if (!this.nameTags.containsKey(role) && this.nameTags.get(role).equals(newTag)) {
+                this.nameTags.put(role, newTag);
+                dispatchGroupPacket(
+                        UpdateTeamsPacket.changeNameTag(plugin, role, newTag),
+                        player
+                );
             }
         }).exceptionally(e -> {
             plugin.log(Level.ERROR, "Failed to update role for " + player.getUsername(), e);
@@ -192,7 +196,6 @@ public class ScoreboardManager {
                 .toList();
 
         final List<String> roles = new ArrayList<>();
-
         players.forEach(p -> {
             if (p == player || !p.isActive()) {
                 return;
@@ -211,18 +214,16 @@ public class ScoreboardManager {
             if (roles.contains(role)) {
                 return;
             }
-
             roles.add(role);
 
-            final String nametag = nameTags.getOrDefault(role, "");
-            if (nametag.isEmpty()) {
-                return;
+            // Send packet
+            if (nameTags.containsKey(role)) {
+                final TabPlayer.Nametag nametag = nameTags.get(role);
+                final UpdateTeamsPacket packet = UpdateTeamsPacket.create(
+                        plugin, role, "", nametag, p.getUsername()
+                );
+                dispatchPacket(packet, player);
             }
-
-            final String[] split = nametag.split(NAMETAG_DELIMITER, 2);
-            final String prefix = split[0];
-            final String suffix = split.length > 1 ? split[1] : "";
-            dispatchPacket(UpdateTeamsPacket.create(plugin, role, "", prefix, suffix, p.getUsername()), player);
         });
     }
 
@@ -301,14 +302,12 @@ public class ScoreboardManager {
      * This method updates the player's scoreboard to reflect the vanish status of another player.
      *
      * @param tabPlayer The TabPlayer object representing the player whose scoreboard will be updated.
-     * @param target The TabPlayer object representing the player whose vanish status will be reflected.
-     * @param canSee A boolean indicating whether the player can see the target player.
+     * @param target    The TabPlayer object representing the player whose vanish status will be reflected.
+     * @param canSee    A boolean indicating whether the player can see the target player.
      */
     public void recalculateVanishForPlayer(TabPlayer tabPlayer, TabPlayer target, boolean canSee) {
         final Player player = tabPlayer.getPlayer();
-
         final String team = createdTeams.get(target.getPlayer().getUniqueId());
-
         if (team == null) {
             return;
         }
@@ -317,18 +316,14 @@ public class ScoreboardManager {
         dispatchPacket(removeTeam, player);
 
         if (canSee) {
-            final String nametag = nameTags.getOrDefault(team, "");
-            if (nametag.isEmpty()) {
-                return;
+            if (nameTags.containsKey(team)) {
+                final TabPlayer.Nametag nametag = nameTags.get(team);
+                final UpdateTeamsPacket addTeam = UpdateTeamsPacket.create(
+                        plugin, team, "", nametag, target.getPlayer().getUsername()
+                );
+                dispatchPacket(addTeam, player);
             }
-
-            final String[] split = nametag.split(NAMETAG_DELIMITER, 2);
-            final String prefix = split[0];
-            final String suffix = split.length > 1 ? split[1] : "";
-            final UpdateTeamsPacket addTeam = UpdateTeamsPacket.create(plugin, team, "", prefix, suffix, target.getPlayer().getUsername());
-            dispatchPacket(addTeam, player);
         }
     }
-
 
 }

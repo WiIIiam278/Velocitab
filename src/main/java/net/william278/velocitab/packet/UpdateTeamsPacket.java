@@ -29,6 +29,7 @@ import lombok.experimental.Accessors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,40 +65,43 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @NotNull
     protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName,
-                                              @NotNull String displayName, @Nullable String prefix,
-                                              @Nullable String suffix, @NotNull String... teamMembers) {
+                                              @NotNull String displayName, @NotNull TabPlayer.Nametag nametag,
+                                              @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.CREATE_TEAM)
                 .displayName(displayName)
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
-                .nameTagVisibility(isNametagPresent(prefix, suffix, plugin) ? NameTagVisibility.ALWAYS : NameTagVisibility.NEVER)
+                .nameTagVisibility(isNametagPresent(nametag, plugin) ? NameTagVisibility.ALWAYS : NameTagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
-                .color(getLastColor(prefix))
-                .prefix(prefix == null ? "" : prefix)
-                .suffix(suffix == null ? "" : suffix)
+                .color(getLastColor(nametag.prefix()))
+                .prefix(nametag.prefix() == null ? "" : nametag.prefix())
+                .suffix(nametag.suffix() == null ? "" : nametag.suffix())
                 .entities(Arrays.asList(teamMembers));
     }
 
-    private static boolean isNametagPresent(@Nullable String prefix, @Nullable String suffix, @NotNull Velocitab plugin) {
-        if (!plugin.getSettings().isRemoveNametags()) return true;
+    private static boolean isNametagPresent(@NotNull TabPlayer.Nametag nametag, @NotNull Velocitab plugin) {
+        if (!plugin.getSettings().isRemoveNametags()) {
+            return true;
+        }
 
-        return prefix != null && !prefix.isEmpty() || suffix != null && !suffix.isEmpty();
+        return nametag.prefix() != null && !nametag.prefix().isEmpty()
+                || nametag.suffix() != null && !nametag.suffix().isEmpty();
     }
 
     @NotNull
     protected static UpdateTeamsPacket changeNameTag(@NotNull Velocitab plugin, @NotNull String teamName,
-                                                     @Nullable String prefix, @Nullable String suffix) {
+                                                     @NotNull TabPlayer.Nametag nametag) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.UPDATE_INFO)
                 .displayName(teamName)
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
-                .nameTagVisibility(isNametagPresent(prefix, suffix, plugin) ? NameTagVisibility.ALWAYS : NameTagVisibility.NEVER)
+                .nameTagVisibility(isNametagPresent(nametag, plugin) ? NameTagVisibility.ALWAYS : NameTagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
-                .color(getLastColor(prefix))
-                .prefix(prefix == null ? "" : prefix)
-                .suffix(suffix == null ? "" : suffix);
+                .color(getLastColor(nametag.prefix()))
+                .prefix(nametag.prefix() == null ? "" : nametag.prefix())
+                .suffix(nametag.suffix() == null ? "" : nametag.suffix());
     }
 
     @NotNull

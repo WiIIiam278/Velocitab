@@ -106,7 +106,7 @@ public class Velocitab {
         server.getScheduler().tasksByPlugin(this).forEach(ScheduledTask::cancel);
         disableScoreboardManager();
         disableTabList();
-        getLuckPermsHook().ifPresent(LuckPermsHook::close);
+        getLuckPermsHook().ifPresent(LuckPermsHook::closeEvent);
         VelocitabAPI.unregister();
         logger.info("Successfully disabled Velocitab");
     }

@@ -84,6 +84,7 @@ public enum Formatter {
         return LegacyComponentSerializer.legacySection()
                 .serialize(format(text, player, plugin));
     }
+
     @NotNull
     public String escape(@NotNull String text) {
         return escaper.apply(text);

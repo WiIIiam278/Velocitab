@@ -49,12 +49,13 @@ public class LuckPermsHook extends Hook {
     public LuckPermsHook(@NotNull Velocitab plugin) throws IllegalStateException {
         super(plugin);
         this.api = LuckPermsProvider.get();
-        lastUpdate = new HashMap<>();
-        event = api.getEventBus().subscribe(plugin, UserDataRecalculateEvent.class, this::onLuckPermsGroupUpdate);
-
+        this.lastUpdate = new HashMap<>();
+        this.event = api.getEventBus().subscribe(
+                plugin, UserDataRecalculateEvent.class, this::onLuckPermsGroupUpdate
+        );
     }
 
-    public void close() {
+    public void closeEvent() {
         event.close();
     }
 
@@ -68,6 +69,7 @@ public class LuckPermsHook extends Hook {
         if (metaData.getPrimaryGroup() == null) {
             return Role.DEFAULT_ROLE;
         }
+
         final Optional<Group> group = getGroup(metaData.getPrimaryGroup());
         return new Role(
                 group.map(this::getGroupWeight).orElse(Role.DEFAULT_WEIGHT),
@@ -128,6 +130,5 @@ public class LuckPermsHook extends Hook {
         }
         plugin.getTabList().updatePlayer(player);
     }
-
 
 }

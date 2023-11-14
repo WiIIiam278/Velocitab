@@ -192,4 +192,23 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         return obj instanceof TabPlayer other && player.getUniqueId().equals(other.player.getUniqueId());
     }
 
+    /**
+     * Represents a nametag to be displayed above a player, with prefix & suffix
+     *
+     * @param prefix The prefix
+     * @param suffix The suffix
+     */
+    @SuppressWarnings("SpellCheckingInspection")
+    public record Nametag(@Nullable String prefix, @Nullable String suffix) {
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Nametag other)) {
+                return false;
+            }
+            return (prefix != null && prefix.equals(other.prefix)) &&
+                    (suffix != null && suffix.equals(other.suffix));
+        }
+
+    }
 }

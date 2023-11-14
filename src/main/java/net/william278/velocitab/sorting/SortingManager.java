@@ -97,7 +97,6 @@ public class SortingManager {
         if (charList.isEmpty()) {
             charList.add((char) 0);
         }
-
         return charList.stream().map(String::valueOf).collect(Collectors.joining()) + decimalChar;
     }
 }

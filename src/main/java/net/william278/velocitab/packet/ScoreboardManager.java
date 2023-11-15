@@ -143,8 +143,7 @@ public class ScoreboardManager {
 
         final String name = player.getUsername();
         final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player).orElseThrow();
-        tabPlayer.getNametag(plugin).thenAccept(tag -> {
-            final TabPlayer.Nametag newTag = new TabPlayer.Nametag(tag, player);
+        tabPlayer.getNametag(plugin).thenAccept(newTag -> {
             if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
                 if (createdTeams.containsKey(player.getUniqueId())) {
                     dispatchGroupPacket(

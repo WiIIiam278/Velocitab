@@ -127,9 +127,10 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     @NotNull
-    public CompletableFuture<String> getNametag(@NotNull Velocitab plugin) {
+    public CompletableFuture<Nametag> getNametag(@NotNull Velocitab plugin) {
         final String serverGroup = plugin.getSettings().getServerGroup(getServerName());
-        return Placeholder.replace(plugin.getSettings().getNametag(serverGroup), plugin, this);
+        return Placeholder.replace(plugin.getSettings().getNametag(serverGroup), plugin, this)
+                .thenApply(n -> new Nametag(n, player));
     }
 
     @NotNull
@@ -203,7 +204,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         private final String prefix;
         private final String suffix;
 
-        public Nametag(@NotNull String tag, @NotNull Player player) {
+        private Nametag(@NotNull String tag, @NotNull Player player) {
             final String[] split = tag.split(Pattern.quote(player.getUsername()), 2);
             this.prefix = split[0];
             this.suffix = split.length > 1 ? split[1] : "";

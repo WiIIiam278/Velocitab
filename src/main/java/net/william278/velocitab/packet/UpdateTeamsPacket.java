@@ -74,9 +74,9 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nameTagVisibility(isNametagPresent(nametag, plugin) ? NameTagVisibility.ALWAYS : NameTagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
-                .color(getLastColor(nametag.prefix()))
-                .prefix(nametag.prefix() == null ? "" : nametag.prefix())
-                .suffix(nametag.suffix() == null ? "" : nametag.suffix())
+                .color(getLastColor(nametag.getPrefix()))
+                .prefix(nametag.getPrefix() == null ? "" : nametag.getPrefix())
+                .suffix(nametag.getSuffix() == null ? "" : nametag.getSuffix())
                 .entities(Arrays.asList(teamMembers));
     }
 
@@ -85,8 +85,8 @@ public class UpdateTeamsPacket implements MinecraftPacket {
             return true;
         }
 
-        return nametag.prefix() != null && !nametag.prefix().isEmpty()
-                || nametag.suffix() != null && !nametag.suffix().isEmpty();
+        return nametag.getPrefix() != null && !nametag.getPrefix().isEmpty()
+                || nametag.getSuffix() != null && !nametag.getSuffix().isEmpty();
     }
 
     @NotNull
@@ -99,9 +99,9 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nameTagVisibility(isNametagPresent(nametag, plugin) ? NameTagVisibility.ALWAYS : NameTagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
-                .color(getLastColor(nametag.prefix()))
-                .prefix(nametag.prefix() == null ? "" : nametag.prefix())
-                .suffix(nametag.suffix() == null ? "" : nametag.suffix());
+                .color(getLastColor(nametag.getPrefix()))
+                .prefix(nametag.getPrefix() == null ? "" : nametag.getPrefix())
+                .suffix(nametag.getSuffix() == null ? "" : nametag.getSuffix());
     }
 
     @NotNull

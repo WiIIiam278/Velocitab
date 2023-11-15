@@ -33,7 +33,6 @@ import org.slf4j.event.Level;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 import static com.velocitypowered.api.network.ProtocolVersion.*;
 
@@ -141,15 +140,11 @@ public class ScoreboardManager {
             plugin.getTabList().removeOfflinePlayer(player);
             return;
         }
+
         final String name = player.getUsername();
         final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player).orElseThrow();
-
         tabPlayer.getNametag(plugin).thenAccept(tag -> {
-            final String[] split = tag.split(Pattern.quote(player.getUsername()), 2);
-            final String prefix = split[0];
-            final String suffix = split.length > 1 ? split[1] : "";
-
-            final TabPlayer.Nametag newTag = new TabPlayer.Nametag(prefix, suffix);
+            final TabPlayer.Nametag newTag = new TabPlayer.Nametag(tag, player);
             if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
                 if (createdTeams.containsKey(player.getUniqueId())) {
                     dispatchGroupPacket(

@@ -20,6 +20,7 @@
 package net.william278.velocitab.player;
 
 import com.velocitypowered.api.proxy.Player;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
@@ -32,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 
 public final class TabPlayer implements Comparable<TabPlayer> {
     private final Player player;
@@ -194,12 +196,18 @@ public final class TabPlayer implements Comparable<TabPlayer> {
 
     /**
      * Represents a nametag to be displayed above a player, with prefix & suffix
-     *
-     * @param prefix The prefix
-     * @param suffix The suffix
      */
-    @SuppressWarnings("SpellCheckingInspection")
-    public record Nametag(@Nullable String prefix, @Nullable String suffix) {
+    @Getter
+    @AllArgsConstructor
+    public static class Nametag {
+        private final String prefix;
+        private final String suffix;
+
+        public Nametag(@NotNull String tag, @NotNull Player player) {
+            final String[] split = tag.split(Pattern.quote(player.getUsername()), 2);
+            this.prefix = split[0];
+            this.suffix = split.length > 1 ? split[1] : "";
+        }
 
         @Override
         public boolean equals(Object obj) {

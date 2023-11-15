@@ -212,7 +212,8 @@ public class ScoreboardManager {
             roles.add(role);
 
             // Send packet
-            if (nameTags.containsKey(role)) {
+            final TabPlayer.Nametag tag = nameTags.get(role);
+            if (tag != null) {
                 final TabPlayer.Nametag nametag = nameTags.get(role);
                 final UpdateTeamsPacket packet = UpdateTeamsPacket.create(
                         plugin, role, "", nametag, p.getUsername()
@@ -311,10 +312,10 @@ public class ScoreboardManager {
         dispatchPacket(removeTeam, player);
 
         if (canSee) {
-            if (nameTags.containsKey(team)) {
-                final TabPlayer.Nametag nametag = nameTags.get(team);
+            final TabPlayer.Nametag tag = nameTags.get(team);
+            if (tag != null) {
                 final UpdateTeamsPacket addTeam = UpdateTeamsPacket.create(
-                        plugin, team, "", nametag, target.getPlayer().getUsername()
+                        plugin, team, "", tag, target.getPlayer().getUsername()
                 );
                 dispatchPacket(addTeam, player);
             }

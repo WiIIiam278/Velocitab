@@ -162,7 +162,7 @@ public class ScoreboardManager {
             } else if (this.nametags.containsKey(role) && this.nametags.get(role).equals(newTag)) {
                 this.nametags.put(role, newTag);
                 dispatchGroupPacket(
-                        UpdateTeamsPacket.changeNameTag(plugin, role, newTag),
+                        UpdateTeamsPacket.changeNametag(plugin, role, newTag),
                         player
                 );
             }

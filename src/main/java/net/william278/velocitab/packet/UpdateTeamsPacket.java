@@ -52,7 +52,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     private UpdateMode mode;
     private String displayName;
     private List<FriendlyFlag> friendlyFlags;
-    private NameTagVisibility nameTagVisibility;
+    private NametagVisibility nametagVisibility;
     private CollisionRule collisionRule;
     private int color;
     private String prefix;
@@ -72,7 +72,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .mode(UpdateMode.CREATE_TEAM)
                 .displayName(displayName)
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
-                .nameTagVisibility(isNametagPresent(nametag, plugin) ? NameTagVisibility.ALWAYS : NameTagVisibility.NEVER)
+                .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
                 .color(getLastColor(nametag.getPrefix()))
                 .prefix(nametag.getPrefix() == null ? "" : nametag.getPrefix())
@@ -90,14 +90,14 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     }
 
     @NotNull
-    protected static UpdateTeamsPacket changeNameTag(@NotNull Velocitab plugin, @NotNull String teamName,
+    protected static UpdateTeamsPacket changeNametag(@NotNull Velocitab plugin, @NotNull String teamName,
                                                      @NotNull TabPlayer.Nametag nametag) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.UPDATE_INFO)
                 .displayName(teamName)
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
-                .nameTagVisibility(isNametagPresent(nametag, plugin) ? NameTagVisibility.ALWAYS : NameTagVisibility.NEVER)
+                .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
                 .color(getLastColor(nametag.getPrefix()))
                 .prefix(nametag.getPrefix() == null ? "" : nametag.getPrefix())
@@ -263,7 +263,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         }
     }
 
-    public enum NameTagVisibility {
+    public enum NametagVisibility {
         ALWAYS("always"),
         NEVER("never"),
         HIDE_FOR_OTHER_TEAMS("hideForOtherTeams"),
@@ -271,7 +271,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
         private final String id;
 
-        NameTagVisibility(@NotNull String id) {
+        NametagVisibility(@NotNull String id) {
             this.id = id;
         }
 
@@ -281,7 +281,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         }
 
         @NotNull
-        public static NameTagVisibility byId(@Nullable String id) {
+        public static NametagVisibility byId(@Nullable String id) {
             return id == null ? ALWAYS : Arrays.stream(values())
                     .filter(visibility -> visibility.id.equals(id))
                     .findFirst()

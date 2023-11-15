@@ -53,7 +53,7 @@ public class Protocol48Adapter extends TeamsPacketAdapter {
             ProtocolUtils.writeString(byteBuf, packet.prefix());
             ProtocolUtils.writeString(byteBuf, packet.suffix());
             byteBuf.writeByte(UpdateTeamsPacket.FriendlyFlag.toBitMask(packet.friendlyFlags()));
-            ProtocolUtils.writeString(byteBuf, packet.nameTagVisibility().id());
+            ProtocolUtils.writeString(byteBuf, packet.nametagVisibility().id());
             byteBuf.writeByte(packet.color());
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.ADD_PLAYERS || mode == UpdateTeamsPacket.UpdateMode.REMOVE_PLAYERS) {

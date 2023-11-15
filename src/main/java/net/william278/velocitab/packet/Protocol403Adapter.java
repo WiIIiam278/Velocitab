@@ -81,7 +81,7 @@ public class Protocol403Adapter extends TeamsPacketAdapter {
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.UPDATE_INFO) {
             ProtocolUtils.writeString(byteBuf, getChatString(packet.displayName()));
             byteBuf.writeByte(UpdateTeamsPacket.FriendlyFlag.toBitMask(packet.friendlyFlags()));
-            ProtocolUtils.writeString(byteBuf, packet.nameTagVisibility().id());
+            ProtocolUtils.writeString(byteBuf, packet.nametagVisibility().id());
             ProtocolUtils.writeString(byteBuf, packet.collisionRule().id());
             byteBuf.writeByte(packet.color());
             ProtocolUtils.writeString(byteBuf, getRGBChat(packet.prefix()));

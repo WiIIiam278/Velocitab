@@ -95,6 +95,8 @@ shadowJar {
 
     destinationDirectory.set(file("$rootDir/target"))
     archiveClassifier.set('')
+
+    minimize()
 }
 jar.dependsOn shadowJar
 clean.delete "$rootDir/target"

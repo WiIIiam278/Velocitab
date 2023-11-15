@@ -128,7 +128,7 @@ public class LuckPermsHook extends Hook {
         if (oldRole.equals(player.getRole())) {
             return;
         }
-        plugin.getTabList().updatePlayer(player);
+        plugin.getTabList().updatePlayer(player, false);
     }
 
 }

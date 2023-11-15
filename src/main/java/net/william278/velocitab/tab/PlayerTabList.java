@@ -203,7 +203,7 @@ public class PlayerTabList {
 
                     plugin.getScoreboardManager().ifPresent(s -> {
                         s.resendAllTeams(joined);
-                        tabPlayer.getTeamName(plugin).thenAccept(t -> s.updateRole(joined, t));
+                        tabPlayer.getTeamName(plugin).thenAccept(t -> s.updateRole(joined, t, false));
                     });
 
                     // Fire event without listening for result
@@ -286,8 +286,8 @@ public class PlayerTabList {
         );
     }
 
-    // Update a player's name in the tab list
-    public void updatePlayer(@NotNull TabPlayer tabPlayer) {
+    // Update a player's name in the tab list and scoreboard team
+    public void updatePlayer(@NotNull TabPlayer tabPlayer, boolean force) {
         if (!tabPlayer.getPlayer().isActive()) {
             removeOfflinePlayer(tabPlayer.getPlayer());
             return;
@@ -298,7 +298,7 @@ public class PlayerTabList {
                 return;
             }
             plugin.getScoreboardManager().ifPresent(manager -> manager.updateRole(
-                    tabPlayer.getPlayer(), teamName
+                    tabPlayer.getPlayer(), teamName, force
             ));
         });
     }
@@ -355,7 +355,7 @@ public class PlayerTabList {
                         return;
                     }
                     players.values().forEach(player -> {
-                        this.updatePlayer(player);
+                        this.updatePlayer(player, false);
                         player.sendHeaderAndFooter(this);
                     });
                     updateDisplayNames();
@@ -380,7 +380,7 @@ public class PlayerTabList {
             this.updatePeriodically(plugin.getSettings().getUpdateRate());
         } else {
             players.values().forEach(player -> {
-                this.updatePlayer(player);
+                this.updatePlayer(player, true);
                 player.sendHeaderAndFooter(this);
             });
             updateDisplayNames();

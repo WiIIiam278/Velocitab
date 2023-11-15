@@ -42,12 +42,12 @@ public class ScoreboardManager {
     private final Velocitab plugin;
     private final Set<TeamsPacketAdapter> versions;
     private final Map<UUID, String> createdTeams;
-    private final Map<String, TabPlayer.Nametag> nameTags;
+    private final Map<String, TabPlayer.Nametag> nametags;
 
     public ScoreboardManager(@NotNull Velocitab velocitab) {
         this.plugin = velocitab;
         this.createdTeams = new ConcurrentHashMap<>();
-        this.nameTags = new ConcurrentHashMap<>();
+        this.nametags = new ConcurrentHashMap<>();
         this.versions = new HashSet<>();
         this.registerVersions();
     }
@@ -124,7 +124,7 @@ public class ScoreboardManager {
             return;
         }
 
-        final Optional<TabPlayer.Nametag> cachedTag = Optional.ofNullable(nameTags.getOrDefault(teamName, null));
+        final Optional<TabPlayer.Nametag> cachedTag = Optional.ofNullable(nametags.getOrDefault(teamName, null));
         cachedTag.ifPresent(nametag -> {
             final UpdateTeamsPacket packet = UpdateTeamsPacket.create(
                     plugin, createdTeams.get(player.getUniqueId()),
@@ -154,13 +154,13 @@ public class ScoreboardManager {
                 }
 
                 createdTeams.put(player.getUniqueId(), role);
-                this.nameTags.put(role, newTag);
+                this.nametags.put(role, newTag);
                 dispatchGroupPacket(
                         UpdateTeamsPacket.create(plugin, role, "", newTag, name),
                         player
                 );
-            } else if (!this.nameTags.containsKey(role) && this.nameTags.get(role).equals(newTag)) {
-                this.nameTags.put(role, newTag);
+            } else if (this.nametags.containsKey(role) && this.nametags.get(role).equals(newTag)) {
+                this.nametags.put(role, newTag);
                 dispatchGroupPacket(
                         UpdateTeamsPacket.changeNameTag(plugin, role, newTag),
                         player
@@ -212,9 +212,9 @@ public class ScoreboardManager {
             roles.add(role);
 
             // Send packet
-            final TabPlayer.Nametag tag = nameTags.get(role);
+            final TabPlayer.Nametag tag = nametags.get(role);
             if (tag != null) {
-                final TabPlayer.Nametag nametag = nameTags.get(role);
+                final TabPlayer.Nametag nametag = nametags.get(role);
                 final UpdateTeamsPacket packet = UpdateTeamsPacket.create(
                         plugin, role, "", nametag, p.getUsername()
                 );
@@ -312,7 +312,7 @@ public class ScoreboardManager {
         dispatchPacket(removeTeam, player);
 
         if (canSee) {
-            final TabPlayer.Nametag tag = nameTags.get(team);
+            final TabPlayer.Nametag tag = nametags.get(team);
             if (tag != null) {
                 final UpdateTeamsPacket addTeam = UpdateTeamsPacket.create(
                         plugin, team, "", tag, target.getPlayer().getUsername()

@@ -20,6 +20,7 @@
 package net.william278.velocitab.player;
 
 import com.velocitypowered.api.proxy.Player;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
@@ -32,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 
 public final class TabPlayer implements Comparable<TabPlayer> {
     private final Player player;
@@ -125,9 +127,10 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     @NotNull
-    public CompletableFuture<String> getNametag(@NotNull Velocitab plugin) {
+    public CompletableFuture<Nametag> getNametag(@NotNull Velocitab plugin) {
         final String serverGroup = plugin.getSettings().getServerGroup(getServerName());
-        return Placeholder.replace(plugin.getSettings().getNametag(serverGroup), plugin, this);
+        return Placeholder.replace(plugin.getSettings().getNametag(serverGroup), plugin, this)
+                .thenApply(n -> new Nametag(n, player));
     }
 
     @NotNull
@@ -192,4 +195,29 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         return obj instanceof TabPlayer other && player.getUniqueId().equals(other.player.getUniqueId());
     }
 
+    /**
+     * Represents a nametag to be displayed above a player, with prefix & suffix
+     */
+    @Getter
+    @AllArgsConstructor
+    public static class Nametag {
+        private final String prefix;
+        private final String suffix;
+
+        private Nametag(@NotNull String tag, @NotNull Player player) {
+            final String[] split = tag.split(Pattern.quote(player.getUsername()), 2);
+            this.prefix = split[0];
+            this.suffix = split.length > 1 ? split[1] : "";
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Nametag other)) {
+                return false;
+            }
+            return (prefix != null && prefix.equals(other.prefix)) &&
+                    (suffix != null && suffix.equals(other.suffix));
+        }
+
+    }
 }

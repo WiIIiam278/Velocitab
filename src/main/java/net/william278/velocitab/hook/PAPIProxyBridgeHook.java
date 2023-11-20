@@ -40,5 +40,4 @@ public class PAPIProxyBridgeHook extends Hook {
         return api.formatPlaceholders(input, player.getUniqueId());
     }
 
-
 }

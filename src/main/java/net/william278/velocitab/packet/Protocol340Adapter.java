@@ -53,7 +53,7 @@ public class Protocol340Adapter extends TeamsPacketAdapter {
             ProtocolUtils.writeString(byteBuf, packet.prefix());
             ProtocolUtils.writeString(byteBuf, packet.suffix());
             byteBuf.writeByte(UpdateTeamsPacket.FriendlyFlag.toBitMask(packet.friendlyFlags()));
-            ProtocolUtils.writeString(byteBuf, packet.nameTagVisibility().id());
+            ProtocolUtils.writeString(byteBuf, packet.nametagVisibility().id());
             ProtocolUtils.writeString(byteBuf, packet.collisionRule().id());
             byteBuf.writeByte(packet.color());
         }

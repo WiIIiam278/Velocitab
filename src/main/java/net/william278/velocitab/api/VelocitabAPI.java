@@ -31,12 +31,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-@SuppressWarnings("unused")
-
 /**
  * The Velocitab API class.
+ * <p>
  * Retrieve an instance of the API class via {@link #getInstance()}.
- */ public class VelocitabAPI {
+ */
+@SuppressWarnings("unused")
+public class VelocitabAPI {
 
     // Instance of the plugin
     private final Velocitab plugin;
@@ -168,7 +169,7 @@ import java.util.Optional;
      *
      * @param player the player for whom to retrieve the server group
      * @return the name of the server group that the player is connected to,
-     *         or an empty string if the player is not in a group server
+     * or an empty string if the player is not in a group server
      */
     @NotNull
     public String getServerGroup(@NotNull Player player) {

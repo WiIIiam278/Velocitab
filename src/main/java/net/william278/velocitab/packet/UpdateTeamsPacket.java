@@ -29,6 +29,7 @@ import lombok.experimental.Accessors;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,7 +52,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     private UpdateMode mode;
     private String displayName;
     private List<FriendlyFlag> friendlyFlags;
-    private NameTagVisibility nameTagVisibility;
+    private NametagVisibility nametagVisibility;
     private CollisionRule collisionRule;
     private int color;
     private String prefix;
@@ -64,40 +65,43 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @NotNull
     protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName,
-                                              @NotNull String displayName, @Nullable String prefix,
-                                              @Nullable String suffix, @NotNull String... teamMembers) {
+                                              @NotNull String displayName, @NotNull TabPlayer.Nametag nametag,
+                                              @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.CREATE_TEAM)
                 .displayName(displayName)
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
-                .nameTagVisibility(isNametagPresent(prefix, suffix, plugin) ? NameTagVisibility.ALWAYS : NameTagVisibility.NEVER)
+                .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
-                .color(getLastColor(prefix))
-                .prefix(prefix == null ? "" : prefix)
-                .suffix(suffix == null ? "" : suffix)
+                .color(getLastColor(nametag.getPrefix()))
+                .prefix(nametag.getPrefix() == null ? "" : nametag.getPrefix())
+                .suffix(nametag.getSuffix() == null ? "" : nametag.getSuffix())
                 .entities(Arrays.asList(teamMembers));
     }
 
-    private static boolean isNametagPresent(@Nullable String prefix, @Nullable String suffix, @NotNull Velocitab plugin) {
-        if (!plugin.getSettings().isRemoveNametags()) return true;
+    private static boolean isNametagPresent(@NotNull TabPlayer.Nametag nametag, @NotNull Velocitab plugin) {
+        if (!plugin.getSettings().isRemoveNametags()) {
+            return true;
+        }
 
-        return prefix != null && !prefix.isEmpty() || suffix != null && !suffix.isEmpty();
+        return nametag.getPrefix() != null && !nametag.getPrefix().isEmpty()
+                || nametag.getSuffix() != null && !nametag.getSuffix().isEmpty();
     }
 
     @NotNull
-    protected static UpdateTeamsPacket changeNameTag(@NotNull Velocitab plugin, @NotNull String teamName,
-                                                     @Nullable String prefix, @Nullable String suffix) {
+    protected static UpdateTeamsPacket changeNametag(@NotNull Velocitab plugin, @NotNull String teamName,
+                                                     @NotNull TabPlayer.Nametag nametag) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.UPDATE_INFO)
                 .displayName(teamName)
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
-                .nameTagVisibility(isNametagPresent(prefix, suffix, plugin) ? NameTagVisibility.ALWAYS : NameTagVisibility.NEVER)
+                .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
-                .color(getLastColor(prefix))
-                .prefix(prefix == null ? "" : prefix)
-                .suffix(suffix == null ? "" : suffix);
+                .color(getLastColor(nametag.getPrefix()))
+                .prefix(nametag.getPrefix() == null ? "" : nametag.getPrefix())
+                .suffix(nametag.getSuffix() == null ? "" : nametag.getSuffix());
     }
 
     @NotNull
@@ -259,7 +263,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         }
     }
 
-    public enum NameTagVisibility {
+    public enum NametagVisibility {
         ALWAYS("always"),
         NEVER("never"),
         HIDE_FOR_OTHER_TEAMS("hideForOtherTeams"),
@@ -267,7 +271,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
         private final String id;
 
-        NameTagVisibility(@NotNull String id) {
+        NametagVisibility(@NotNull String id) {
             this.id = id;
         }
 
@@ -277,7 +281,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         }
 
         @NotNull
-        public static NameTagVisibility byId(@Nullable String id) {
+        public static NametagVisibility byId(@Nullable String id) {
             return id == null ? ALWAYS : Arrays.stream(values())
                     .filter(visibility -> visibility.id.equals(id))
                     .findFirst()

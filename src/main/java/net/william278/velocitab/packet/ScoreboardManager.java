@@ -53,7 +53,8 @@ public class ScoreboardManager {
     }
 
     private void registerVersions() {
-        versions.add(new Protocol403Adapter(plugin));
+        versions.add(new Protocol735Adapter(plugin));
+        versions.add(new Protocol404Adapter(plugin));
         versions.add(new Protocol340Adapter(plugin));
         versions.add(new Protocol48Adapter(plugin));
     }
@@ -128,14 +129,21 @@ public class ScoreboardManager {
         cachedTag.ifPresent(nametag -> {
             final UpdateTeamsPacket packet = UpdateTeamsPacket.create(
                     plugin, createdTeams.get(player.getUniqueId()),
-                    "", nametag, player.getUsername()
+                    nametag, player.getUsername()
             );
             siblings.forEach(server -> server.getPlayersConnected().stream().filter(p -> p != player)
                     .forEach(connected -> dispatchPacket(packet, connected)));
         });
     }
 
-    public void updateRole(@NotNull Player player, @NotNull String role) {
+    /**
+     * Updates the role of the player in the scoreboard.
+     *
+     * @param player The player whose role will be updated. Must not be null.
+     * @param role   The new role of the player. Must not be null.
+     * @param force  Whether to force the update even if the player's nametag is the same.
+     */
+    public void updateRole(@NotNull Player player, @NotNull String role, boolean force) {
         if (!player.isActive()) {
             plugin.getTabList().removeOfflinePlayer(player);
             return;
@@ -155,10 +163,10 @@ public class ScoreboardManager {
                 createdTeams.put(player.getUniqueId(), role);
                 this.nametags.put(role, newTag);
                 dispatchGroupPacket(
-                        UpdateTeamsPacket.create(plugin, role, "", newTag, name),
+                        UpdateTeamsPacket.create(plugin, role, newTag, name),
                         player
                 );
-            } else if (this.nametags.containsKey(role) && this.nametags.get(role).equals(newTag)) {
+            } else if (force || (this.nametags.containsKey(role) && !this.nametags.get(role).equals(newTag))) {
                 this.nametags.put(role, newTag);
                 dispatchGroupPacket(
                         UpdateTeamsPacket.changeNametag(plugin, role, newTag),
@@ -215,7 +223,7 @@ public class ScoreboardManager {
             if (tag != null) {
                 final TabPlayer.Nametag nametag = nametags.get(role);
                 final UpdateTeamsPacket packet = UpdateTeamsPacket.create(
-                        plugin, role, "", nametag, p.getUsername()
+                        plugin, role, nametag, p.getUsername()
                 );
                 dispatchPacket(packet, player);
             }
@@ -314,7 +322,7 @@ public class ScoreboardManager {
             final TabPlayer.Nametag tag = nametags.get(team);
             if (tag != null) {
                 final UpdateTeamsPacket addTeam = UpdateTeamsPacket.create(
-                        plugin, team, "", tag, target.getPlayer().getUsername()
+                        plugin, team, tag, target.getPlayer().getUsername()
                 );
                 dispatchPacket(addTeam, player);
             }

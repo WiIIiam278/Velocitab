@@ -24,8 +24,8 @@ import com.velocitypowered.api.network.ProtocolVersion;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
-import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
@@ -40,9 +40,6 @@ public abstract class TeamsPacketAdapter {
     public abstract void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet);
 
     @NotNull
-    protected String getChatString(@NotNull String string) {
-        return String.format("{\"text\":\"%s\"}", StringEscapeUtils.escapeJson(string));
-    }
-
+    protected abstract String getChatString(@NotNull Component component);
 
 }

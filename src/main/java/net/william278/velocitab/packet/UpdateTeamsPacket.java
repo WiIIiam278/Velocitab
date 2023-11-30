@@ -44,19 +44,19 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @Accessors(fluent = true)
+@SuppressWarnings("unused")
 public class UpdateTeamsPacket implements MinecraftPacket {
 
     private final Velocitab plugin;
-
     private String teamName;
     private UpdateMode mode;
-    private String displayName;
+    private Component displayName;
     private List<FriendlyFlag> friendlyFlags;
     private NametagVisibility nametagVisibility;
     private CollisionRule collisionRule;
     private int color;
-    private String prefix;
-    private String suffix;
+    private Component prefix;
+    private Component suffix;
     private List<String> entities;
 
     public UpdateTeamsPacket(@NotNull Velocitab plugin) {
@@ -65,18 +65,18 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @NotNull
     protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName,
-                                              @NotNull String displayName, @NotNull TabPlayer.Nametag nametag,
+                                              @NotNull TabPlayer.Nametag nametag,
                                               @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.CREATE_TEAM)
-                .displayName(displayName)
+                .displayName(Component.empty())
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
                 .color(getLastColor(nametag.getPrefix()))
-                .prefix(nametag.getPrefix() == null ? "" : nametag.getPrefix())
-                .suffix(nametag.getSuffix() == null ? "" : nametag.getSuffix())
+                .prefix(nametag.getPrefixComponent(plugin))
+                .suffix(nametag.getSuffixComponent(plugin))
                 .entities(Arrays.asList(teamMembers));
     }
 
@@ -85,8 +85,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
             return true;
         }
 
-        return nametag.getPrefix() != null && !nametag.getPrefix().isEmpty()
-                || nametag.getSuffix() != null && !nametag.getSuffix().isEmpty();
+        return !nametag.getPrefix().isEmpty() || !nametag.getSuffix().isEmpty();
     }
 
     @NotNull
@@ -95,13 +94,13 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.UPDATE_INFO)
-                .displayName(teamName)
+                .displayName(Component.empty())
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
                 .color(getLastColor(nametag.getPrefix()))
-                .prefix(nametag.getPrefix() == null ? "" : nametag.getPrefix())
-                .suffix(nametag.getSuffix() == null ? "" : nametag.getSuffix());
+                .prefix(nametag.getPrefixComponent(plugin))
+                .suffix(nametag.getSuffixComponent(plugin));
     }
 
     @NotNull

@@ -23,6 +23,8 @@ package net.william278.velocitab.packet;
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import io.netty.buffer.ByteBuf;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,22 +38,29 @@ import java.util.Set;
 @SuppressWarnings("DuplicatedCode")
 public class Protocol48Adapter extends TeamsPacketAdapter {
 
+    private final LegacyComponentSerializer serializer;
+
     public Protocol48Adapter(@NotNull Velocitab plugin) {
         super(plugin, Set.of(ProtocolVersion.MINECRAFT_1_8));
+        serializer = LegacyComponentSerializer.legacySection();
     }
 
     @Override
     public void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet) {
-        ProtocolUtils.writeString(byteBuf, packet.teamName().substring(0, Math.min(packet.teamName().length(), 16)));
+        ProtocolUtils.writeString(byteBuf, shrinkString(packet.teamName()));
         UpdateTeamsPacket.UpdateMode mode = packet.mode();
         byteBuf.writeByte(mode.id());
         if (mode == UpdateTeamsPacket.UpdateMode.REMOVE_TEAM) {
             return;
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.UPDATE_INFO) {
-            ProtocolUtils.writeString(byteBuf, packet.displayName());
-            ProtocolUtils.writeString(byteBuf, packet.prefix());
-            ProtocolUtils.writeString(byteBuf, packet.suffix());
+            final String displayName = getChatString(packet.displayName());
+            final String prefix = getChatString(packet.prefix());
+            final String suffix = getChatString(packet.suffix());
+
+            ProtocolUtils.writeString(byteBuf, shrinkString(displayName));
+            ProtocolUtils.writeString(byteBuf, shrinkString(prefix));
+            ProtocolUtils.writeString(byteBuf, shrinkString(suffix));
             byteBuf.writeByte(UpdateTeamsPacket.FriendlyFlag.toBitMask(packet.friendlyFlags()));
             ProtocolUtils.writeString(byteBuf, packet.nametagVisibility().id());
             byteBuf.writeByte(packet.color());
@@ -63,5 +72,22 @@ public class Protocol48Adapter extends TeamsPacketAdapter {
                 ProtocolUtils.writeString(byteBuf, entity);
             }
         }
+    }
+
+    /**
+     * Returns a shortened version of the given string, with a maximum length of 16 characters.
+     * This is used to ensure that the team name, display name, prefix and suffix are not too long for the client.
+     * @param string the string to be shortened
+     * @return the shortened string
+     */
+    @NotNull
+    private String shrinkString(@NotNull String string) {
+        return string.substring(0, Math.min(string.length(), 16));
+    }
+
+    @NotNull
+    @Override
+    protected String getChatString(@NotNull Component component) {
+        return serializer.serialize(component);
     }
 }

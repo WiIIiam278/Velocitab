@@ -24,7 +24,7 @@ import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import io.netty.buffer.ByteBuf;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,38 +33,50 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Adapter for handling the UpdateTeamsPacket for Minecraft 1.12.2
+ * Adapter for handling the UpdateTeamsPacket for Minecraft 1.16 - 1.20.2
  */
 @SuppressWarnings("DuplicatedCode")
-public class Protocol340Adapter extends TeamsPacketAdapter {
+public class Protocol735Adapter extends TeamsPacketAdapter {
 
-    private final LegacyComponentSerializer serializer;
+    private final GsonComponentSerializer serializer;
 
-    public Protocol340Adapter(@NotNull Velocitab plugin) {
-        super(plugin, Set.of(ProtocolVersion.MINECRAFT_1_12_2));
-        serializer = LegacyComponentSerializer.legacySection();
+    public Protocol735Adapter(@NotNull Velocitab plugin) {
+        super(plugin, Set.of(
+                ProtocolVersion.MINECRAFT_1_16,
+                ProtocolVersion.MINECRAFT_1_16_1,
+                ProtocolVersion.MINECRAFT_1_16_2,
+                ProtocolVersion.MINECRAFT_1_16_3,
+                ProtocolVersion.MINECRAFT_1_16_4,
+                ProtocolVersion.MINECRAFT_1_17,
+                ProtocolVersion.MINECRAFT_1_17_1,
+                ProtocolVersion.MINECRAFT_1_18,
+                ProtocolVersion.MINECRAFT_1_18_2,
+                ProtocolVersion.MINECRAFT_1_19,
+                ProtocolVersion.MINECRAFT_1_19_1,
+                ProtocolVersion.MINECRAFT_1_19_3,
+                ProtocolVersion.MINECRAFT_1_19_4,
+                ProtocolVersion.MINECRAFT_1_20,
+                ProtocolVersion.MINECRAFT_1_20_2
+        ));
+        serializer = GsonComponentSerializer.gson();
     }
 
     @Override
     public void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet) {
-        ProtocolUtils.writeString(byteBuf, packet.teamName().substring(0, Math.min(packet.teamName().length(), 16)));
+        ProtocolUtils.writeString(byteBuf, packet.teamName());
         UpdateTeamsPacket.UpdateMode mode = packet.mode();
         byteBuf.writeByte(mode.id());
         if (mode == UpdateTeamsPacket.UpdateMode.REMOVE_TEAM) {
             return;
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.UPDATE_INFO) {
-            final String displayName = getChatString(packet.displayName());
-            final String prefix = getChatString(packet.prefix());
-            final String suffix = getChatString(packet.suffix());
-
-            ProtocolUtils.writeString(byteBuf, shrinkString(displayName));
-            ProtocolUtils.writeString(byteBuf, shrinkString(prefix));
-            ProtocolUtils.writeString(byteBuf, shrinkString(suffix));
+            ProtocolUtils.writeString(byteBuf, getChatString(packet.displayName()));
             byteBuf.writeByte(UpdateTeamsPacket.FriendlyFlag.toBitMask(packet.friendlyFlags()));
             ProtocolUtils.writeString(byteBuf, packet.nametagVisibility().id());
             ProtocolUtils.writeString(byteBuf, packet.collisionRule().id());
             byteBuf.writeByte(packet.color());
+            ProtocolUtils.writeString(byteBuf, getChatString(packet.prefix()));
+            ProtocolUtils.writeString(byteBuf, getChatString(packet.suffix()));
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.ADD_PLAYERS || mode == UpdateTeamsPacket.UpdateMode.REMOVE_PLAYERS) {
             List<String> entities = packet.entities();
@@ -75,20 +87,10 @@ public class Protocol340Adapter extends TeamsPacketAdapter {
         }
     }
 
-    /**
-     * Returns a shortened version of the given string, with a maximum length of 16 characters.
-     * This is used to ensure that the team name, display name, prefix and suffix are not too long for the client.
-     * @param string the string to be shortened
-     * @return the shortened string
-     */
-    @NotNull
-    private String shrinkString(@NotNull String string) {
-        return string.substring(0, Math.min(string.length(), 16));
-    }
-
     @NotNull
     @Override
     protected String getChatString(@NotNull Component component) {
         return serializer.serialize(component);
     }
+
 }

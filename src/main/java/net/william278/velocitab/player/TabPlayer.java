@@ -200,8 +200,10 @@ public final class TabPlayer implements Comparable<TabPlayer> {
      */
     @Getter
     @AllArgsConstructor
-    public static class Nametag {
+    public class Nametag {
+        @NotNull
         private final String prefix;
+        @NotNull
         private final String suffix;
 
         private Nametag(@NotNull String tag, @NotNull Player player) {
@@ -210,13 +212,22 @@ public final class TabPlayer implements Comparable<TabPlayer> {
             this.suffix = split.length > 1 ? split[1] : "";
         }
 
+        @NotNull
+        public Component getPrefixComponent(@NotNull Velocitab plugin) {
+            return plugin.getFormatter().format(prefix, TabPlayer.this, plugin);
+        }
+
+        @NotNull
+        public Component getSuffixComponent(@NotNull Velocitab plugin) {
+            return plugin.getFormatter().format(suffix, TabPlayer.this, plugin);
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof Nametag other)) {
                 return false;
             }
-            return (prefix != null && prefix.equals(other.prefix)) &&
-                    (suffix != null && suffix.equals(other.suffix));
+            return (prefix.equals(other.prefix)) && (suffix.equals(other.suffix));
         }
 
     }

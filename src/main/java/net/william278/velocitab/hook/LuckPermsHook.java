@@ -80,6 +80,11 @@ public class LuckPermsHook extends Hook {
         );
     }
 
+    @Nullable
+    public String getMeta(@NotNull Player player, @NotNull String key) {
+        return getUser(player.getUniqueId()).getCachedData().getMetaData().getMetaValue(key);
+    }
+
     public void onLuckPermsGroupUpdate(@NotNull UserDataRecalculateEvent event) {
         // Prevent duplicate events
         if (lastUpdate.getOrDefault(event.getUser().getUniqueId(), 0L) > System.currentTimeMillis() - 100) {

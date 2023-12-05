@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Adapter for handling the UpdateTeamsPacket for Minecraft 1.13.2 - 1.15.2
+ * Adapter for handling the UpdateTeamsPacket for Minecraft 1.13.2-1.15.2
  */
 @SuppressWarnings("DuplicatedCode")
 public class Protocol404Adapter extends TeamsPacketAdapter {

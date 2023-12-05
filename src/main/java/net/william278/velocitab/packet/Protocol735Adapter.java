@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Adapter for handling the UpdateTeamsPacket for Minecraft 1.16-1.20.2
+ * Adapter for handling the UpdateTeamsPacket for Minecraft 1.16-1.20.3
  */
 @SuppressWarnings("DuplicatedCode")
 public class Protocol735Adapter extends TeamsPacketAdapter {
@@ -56,7 +56,8 @@ public class Protocol735Adapter extends TeamsPacketAdapter {
                 ProtocolVersion.MINECRAFT_1_19_3,
                 ProtocolVersion.MINECRAFT_1_19_4,
                 ProtocolVersion.MINECRAFT_1_20,
-                ProtocolVersion.MINECRAFT_1_20_2
+                ProtocolVersion.MINECRAFT_1_20_2,
+                ProtocolVersion.MINECRAFT_1_20_3
         ));
         serializer = GsonComponentSerializer.gson();
     }

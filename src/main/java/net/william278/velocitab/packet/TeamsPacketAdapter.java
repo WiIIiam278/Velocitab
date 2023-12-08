@@ -37,9 +37,8 @@ public abstract class TeamsPacketAdapter {
     private final Velocitab plugin;
     private final Set<ProtocolVersion> protocolVersions;
 
-    public abstract void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet);
+    public abstract void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet, @NotNull ProtocolVersion protocolVersion);
 
-    @NotNull
-    protected abstract String getChatString(@NotNull Component component);
+    protected abstract void writeComponent(ByteBuf buf, Component component);
 
 }

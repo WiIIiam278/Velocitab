@@ -22,46 +22,30 @@ package net.william278.velocitab.packet;
 
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
+import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import io.netty.buffer.ByteBuf;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
- * Adapter for handling the UpdateTeamsPacket for Minecraft 1.16-1.20.2
+ * Adapter for handling the UpdateTeamsPacket for Minecraft 1.20.3-1.20.4
  */
-@SuppressWarnings("DuplicatedCode")
-public class Protocol735Adapter extends Protocol404Adapter {
+public class Protocol765Adapter extends Protocol404Adapter {
 
-    private final GsonComponentSerializer serializer;
-
-    public Protocol735Adapter(@NotNull Velocitab plugin) {
+    public Protocol765Adapter(@NotNull Velocitab plugin) {
         super(plugin, Set.of(
-                ProtocolVersion.MINECRAFT_1_16,
-                ProtocolVersion.MINECRAFT_1_16_1,
-                ProtocolVersion.MINECRAFT_1_16_2,
-                ProtocolVersion.MINECRAFT_1_16_3,
-                ProtocolVersion.MINECRAFT_1_16_4,
-                ProtocolVersion.MINECRAFT_1_17,
-                ProtocolVersion.MINECRAFT_1_17_1,
-                ProtocolVersion.MINECRAFT_1_18,
-                ProtocolVersion.MINECRAFT_1_18_2,
-                ProtocolVersion.MINECRAFT_1_19,
-                ProtocolVersion.MINECRAFT_1_19_1,
-                ProtocolVersion.MINECRAFT_1_19_3,
-                ProtocolVersion.MINECRAFT_1_19_4,
-                ProtocolVersion.MINECRAFT_1_20,
-                ProtocolVersion.MINECRAFT_1_20_2
+                ProtocolVersion.MINECRAFT_1_20_3
         ));
-        serializer = GsonComponentSerializer.gson();
     }
 
-    @Override
     protected void writeComponent(ByteBuf buf, Component component) {
-        ProtocolUtils.writeString(buf, serializer.serialize(component));
+        new ComponentHolder(ProtocolVersion.MINECRAFT_1_20_3, component).write(buf);
     }
 
 }

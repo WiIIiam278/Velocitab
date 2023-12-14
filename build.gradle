@@ -26,13 +26,12 @@ repositories {
     maven { url = 'https://repo.minebench.de/' }
     maven { url = 'https://maven.elytrium.net/repo/' }
     maven { url = 'https://mvn.exceptionflug.de/repository/exceptionflug-public/' }
+    maven { url = 'https://repo.william278.net/velocity/' }
 }
 
 dependencies {
-    compileOnly files("libs/velocity-api-3.2.0-SNAPSHOT.jar")
-    compileOnly 'com.velocitypowered:velocity-api:3.2.0-SNAPSHOT'
-    compileOnly files("libs/velocity-proxy-3.2.0-SNAPSHOT-all.jar")
-    compileOnly 'com.velocitypowered:velocity-proxy:3.2.0-SNAPSHOT'
+    compileOnly 'com.velocitypowered:velocity-proxy:3.3.0-SNAPSHOT'
+    compileOnly 'com.velocitypowered:velocity-api:3.3.0-SNAPSHOT'
     compileOnly 'io.netty:netty-codec-http:4.1.101.Final'
     compileOnly 'org.projectlombok:lombok:1.18.30'
     compileOnly 'net.luckperms:api:5.4'
@@ -40,7 +39,7 @@ dependencies {
     compileOnly 'net.william278:PAPIProxyBridge:1.4.2'
     compileOnly 'it.unimi.dsi:fastutil:8.5.12'
 
-
+//    compileOnly 'net.kyori:adventure-nbt:4.8.1'
     implementation 'org.apache.commons:commons-text:1.11.0'
     implementation 'net.william278:annotaml:2.0.7'
     implementation 'net.william278:DesertWell:2.0.4'
@@ -74,6 +73,9 @@ javadoc.options.encoding = 'UTF-8'
 javadoc.options.addStringOption('Xdoclint:none', '-quiet')
 
 java {
+    def javaVersion = JavaVersion.toVersion(javaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
     withSourcesJar()
     withJavadocJar()
 }

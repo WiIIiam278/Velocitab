@@ -40,7 +40,6 @@ public class Protocol404Adapter extends TeamsPacketAdapter {
 
     private final GsonComponentSerializer serializer;
 
-
     public Protocol404Adapter(@NotNull Velocitab plugin) {
         super(plugin, Set.of(ProtocolVersion.MINECRAFT_1_13_2,
                 ProtocolVersion.MINECRAFT_1_14,

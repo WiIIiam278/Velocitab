@@ -34,7 +34,7 @@ dependencies {
         exclude group: 'net.kyori'
     }
     compileOnly 'com.velocitypowered:velocity-proxy:3.3.0-SNAPSHOT'
-    compileOnly 'io.netty:netty-codec-http:4.1.101.Final'
+    compileOnly 'io.netty:netty-codec-http:4.1.103.Final'
     compileOnly 'org.projectlombok:lombok:1.18.30'
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.0.0'

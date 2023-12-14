@@ -1,7 +1,7 @@
 This page will walk you through installing Velocitab on a Velocity proxy server.
 
 ## Requirements
-* A Velocity proxy server (running Velocity 3.2.0 or newer)
+* A Velocity proxy server (running Velocity 3.3.0 or newer)
 * Backend Minecraft servers. The following Minecraft server versions are fully supported:
   - Minecraft 1.8&mdash;1.8.9
   - Minecraft 1.12.2&mdash;latest

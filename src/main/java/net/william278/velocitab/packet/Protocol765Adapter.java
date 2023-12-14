@@ -20,24 +20,27 @@
 package net.william278.velocitab.packet;
 
 import com.velocitypowered.api.network.ProtocolVersion;
+import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import io.netty.buffer.ByteBuf;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
-@Getter
-@RequiredArgsConstructor
-public abstract class TeamsPacketAdapter {
+/**
+ * Adapter for handling the UpdateTeamsPacket for Minecraft 1.20.3-1.20.4
+ */
+public class Protocol765Adapter extends Protocol404Adapter {
 
-    private final Velocitab plugin;
-    private final Set<ProtocolVersion> protocolVersions;
+    public Protocol765Adapter(@NotNull Velocitab plugin) {
+        super(plugin, Set.of(
+                ProtocolVersion.MINECRAFT_1_20_3
+        ));
+    }
 
-    public abstract void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet, @NotNull ProtocolVersion protocolVersion);
-
-    protected abstract void writeComponent(ByteBuf buf, Component component);
+    protected void writeComponent(ByteBuf buf, Component component) {
+        new ComponentHolder(ProtocolVersion.MINECRAFT_1_20_3, component).write(buf);
+    }
 
 }

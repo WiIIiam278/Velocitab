@@ -17,7 +17,6 @@
  *  limitations under the License.
  */
 
-
 package net.william278.velocitab.packet;
 
 import com.velocitypowered.api.network.ProtocolVersion;
@@ -33,13 +32,12 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Adapter for handling the UpdateTeamsPacket for Minecraft 1.13.2 - 1.15.2
+ * Adapter for handling the UpdateTeamsPacket for Minecraft 1.13.2-1.15.2
  */
 @SuppressWarnings("DuplicatedCode")
 public class Protocol404Adapter extends TeamsPacketAdapter {
 
     private final GsonComponentSerializer serializer;
-
 
     public Protocol404Adapter(@NotNull Velocitab plugin) {
         super(plugin, Set.of(ProtocolVersion.MINECRAFT_1_13_2,
@@ -55,8 +53,13 @@ public class Protocol404Adapter extends TeamsPacketAdapter {
         serializer = GsonComponentSerializer.colorDownsamplingGson();
     }
 
+    public Protocol404Adapter(@NotNull Velocitab plugin, Set<ProtocolVersion> protocolVersions) {
+        super(plugin, protocolVersions);
+        serializer = null;
+    }
+
     @Override
-    public void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet) {
+    public void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet, @NotNull ProtocolVersion protocolVersion) {
         ProtocolUtils.writeString(byteBuf, packet.teamName());
         UpdateTeamsPacket.UpdateMode mode = packet.mode();
         byteBuf.writeByte(mode.id());
@@ -64,13 +67,13 @@ public class Protocol404Adapter extends TeamsPacketAdapter {
             return;
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.UPDATE_INFO) {
-            ProtocolUtils.writeString(byteBuf, getChatString(packet.displayName()));
+            writeComponent(byteBuf, packet.displayName());
             byteBuf.writeByte(UpdateTeamsPacket.FriendlyFlag.toBitMask(packet.friendlyFlags()));
             ProtocolUtils.writeString(byteBuf, packet.nametagVisibility().id());
             ProtocolUtils.writeString(byteBuf, packet.collisionRule().id());
             byteBuf.writeByte(packet.color());
-            ProtocolUtils.writeString(byteBuf, getChatString(packet.prefix()));
-            ProtocolUtils.writeString(byteBuf, getChatString(packet.suffix()));
+            writeComponent(byteBuf, packet.prefix());
+            writeComponent(byteBuf, packet.suffix());
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.ADD_PLAYERS || mode == UpdateTeamsPacket.UpdateMode.REMOVE_PLAYERS) {
             List<String> entities = packet.entities();
@@ -81,10 +84,8 @@ public class Protocol404Adapter extends TeamsPacketAdapter {
         }
     }
 
-    @NotNull
-    @Override
-    protected String getChatString(@NotNull Component component) {
-        return serializer.serialize(component);
+    protected void writeComponent(ByteBuf buf, Component component) {
+        ProtocolUtils.writeString(buf, serializer.serialize(component));
     }
 
 }

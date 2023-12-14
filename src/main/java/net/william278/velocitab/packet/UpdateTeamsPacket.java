@@ -202,7 +202,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         if (optionalManager.isEmpty()) {
             return;
         }
-        optionalManager.get().getPacketAdapter(protocolVersion).encode(byteBuf, this);
+        optionalManager.get().getPacketAdapter(protocolVersion).encode(byteBuf, this, protocolVersion);
     }
 
     @Override

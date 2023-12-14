@@ -1,8 +1,8 @@
 <!--suppress ALL -->
 <p align="center">
     <img src="images/banner.png" alt="Velocitab" />
-    <a href="https://github.com/WiIIiam278/Velocitab/actions/workflows/java_ci.yml">
-        <img src="https://img.shields.io/github/actions/workflow/status/WiIIiam278/Velocitab/java_ci.yml?branch=master&logo=github"/>
+    <a href="https://github.com/WiIIiam278/Velocitab/actions/workflows/ci.yml">
+        <img src="https://img.shields.io/github/actions/workflow/status/WiIIiam278/Velocitab/ci.yml?branch=master&logo=github"/>
     </a> 
     <a href="https://repo.william278.net/#/releases/net/william278/velocitab/">
         <img src="https://repo.william278.net/api/badge/latest/releases/net/william278/velocitab?color=00fb9a&name=Maven&prefix=v" />

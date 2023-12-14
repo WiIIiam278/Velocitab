@@ -18,6 +18,7 @@ Placeholders can be included in the header, footer and player name format of the
 | `%role%`                 | The player's primary LuckPerms group name            | `admin`            |
 | `%role_display_name%`    | The player's primary LuckPerms group display name    | `Admin`            |
 | `%role_weight%`          | Comparable-formatted primary LuckPerms group weight. | `100`              |
+| `%luckperms_meta_(key)%` | Formats a meta key from the user's LuckPerms group   | (varies)           |
 | `%server_group%`         | The name of the server group the player is on        | `default`          |
 | `%server_group_index%`   | Indexed order of the server group in the list        | `0`                |
 | `%debug_team_name%`      | (Debug) Player's team name, used for [[Sorting]]     | `1alphaWilliam278` |

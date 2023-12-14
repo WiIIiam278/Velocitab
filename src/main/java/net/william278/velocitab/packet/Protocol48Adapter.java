@@ -17,7 +17,6 @@
  *  limitations under the License.
  */
 
-
 package net.william278.velocitab.packet;
 
 import com.velocitypowered.api.network.ProtocolVersion;
@@ -41,12 +40,12 @@ public class Protocol48Adapter extends TeamsPacketAdapter {
     private final LegacyComponentSerializer serializer;
 
     public Protocol48Adapter(@NotNull Velocitab plugin) {
-        super(plugin, Set.of(ProtocolVersion.MINECRAFT_1_8));
+        super(plugin, Set.of(ProtocolVersion.MINECRAFT_1_8, ProtocolVersion.MINECRAFT_1_12_2));
         serializer = LegacyComponentSerializer.legacySection();
     }
 
     @Override
-    public void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet) {
+    public void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet, @NotNull ProtocolVersion protocolVersion) {
         ProtocolUtils.writeString(byteBuf, shrinkString(packet.teamName()));
         UpdateTeamsPacket.UpdateMode mode = packet.mode();
         byteBuf.writeByte(mode.id());
@@ -54,15 +53,14 @@ public class Protocol48Adapter extends TeamsPacketAdapter {
             return;
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.UPDATE_INFO) {
-            final String displayName = getChatString(packet.displayName());
-            final String prefix = getChatString(packet.prefix());
-            final String suffix = getChatString(packet.suffix());
-
-            ProtocolUtils.writeString(byteBuf, shrinkString(displayName));
-            ProtocolUtils.writeString(byteBuf, shrinkString(prefix));
-            ProtocolUtils.writeString(byteBuf, shrinkString(suffix));
+            writeComponent(byteBuf, packet.displayName());
+            writeComponent(byteBuf, packet.prefix());
+            writeComponent(byteBuf, packet.suffix());
             byteBuf.writeByte(UpdateTeamsPacket.FriendlyFlag.toBitMask(packet.friendlyFlags()));
             ProtocolUtils.writeString(byteBuf, packet.nametagVisibility().id());
+            if (protocolVersion.compareTo(ProtocolVersion.MINECRAFT_1_12_2) >= 0) {
+                ProtocolUtils.writeString(byteBuf, packet.collisionRule().id());
+            }
             byteBuf.writeByte(packet.color());
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.ADD_PLAYERS || mode == UpdateTeamsPacket.UpdateMode.REMOVE_PLAYERS) {
@@ -85,9 +83,7 @@ public class Protocol48Adapter extends TeamsPacketAdapter {
         return string.substring(0, Math.min(string.length(), 16));
     }
 
-    @NotNull
-    @Override
-    protected String getChatString(@NotNull Component component) {
-        return serializer.serialize(component);
+    protected void writeComponent(ByteBuf buf, Component component) {
+        ProtocolUtils.writeString(buf, shrinkString(serializer.serialize(component)));
     }
 }

@@ -53,10 +53,14 @@ public class ScoreboardManager {
     }
 
     private void registerVersions() {
-        versions.add(new Protocol735Adapter(plugin));
-        versions.add(new Protocol404Adapter(plugin));
-        versions.add(new Protocol340Adapter(plugin));
-        versions.add(new Protocol48Adapter(plugin));
+        try {
+            versions.add(new Protocol765Adapter(plugin));
+            versions.add(new Protocol735Adapter(plugin));
+            versions.add(new Protocol404Adapter(plugin));
+            versions.add(new Protocol48Adapter(plugin));
+        } catch (NoSuchFieldError e) {
+            throw new IllegalStateException("Failed to register scoreboard packet adapters. Try to update velocity to latest build", e);
+        }
     }
 
     @NotNull
@@ -282,7 +286,8 @@ public class ScoreboardManager {
                     .mapping(0x58, MINECRAFT_1_19_1, true)
                     .mapping(0x56, MINECRAFT_1_19_3, true)
                     .mapping(0x5A, MINECRAFT_1_19_4, true)
-                    .mapping(0x5C, MINECRAFT_1_20_2, true);
+                    .mapping(0x5C, MINECRAFT_1_20_2, true)
+                    .mapping(0x5E, MINECRAFT_1_20_3, true);
             packetRegistration.register();
         } catch (Throwable e) {
             plugin.log(Level.ERROR, "Failed to register UpdateTeamsPacket", e);

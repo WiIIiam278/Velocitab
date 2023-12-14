@@ -196,7 +196,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     /**
-     * Represents a nametag to be displayed above a player, with prefix & suffix
+     * Represents a nametag to be displayed above a player, with prefix and suffix
      */
     @Getter
     @AllArgsConstructor

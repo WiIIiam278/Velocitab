@@ -27,15 +27,10 @@ jobs:
       - name: 'Build with Gradle 🏗️'
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: build test publish
+          arguments: build publish
         env:
           SNAPSHOTS_MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           SNAPSHOTS_MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-      - name: 'Publish Test Report 📊'
-        uses: mikepenz/action-junit-report@v4
-        if: success() || failure() # Continue on failure
-        with:
-          report_paths: '**/build/test-results/test/TEST-*.xml'
       - name: 'Fetch Version Name 📝'
         run: |
           echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew properties --no-daemon --console=plain -q | grep "^version:" | awk '{printf $2}')"

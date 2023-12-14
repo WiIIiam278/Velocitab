@@ -23,15 +23,10 @@ jobs:
       - name: 'Build with Gradle 🏗️'
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: build test publish
+          arguments: build publish
         env:
           RELEASES_MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           RELEASES_MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-      - name: 'Publish Test Report 📊'
-        uses: mikepenz/action-junit-report@v4
-        if: success() || failure() # always run even if the previous step fails
-        with:
-          report_paths: '**/build/test-results/test/TEST-*.xml'
       - name: 'Publish to Modrinth & Hangar 🚰'
         uses: WiIIiam278/mc-publish@hangar
         with:

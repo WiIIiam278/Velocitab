@@ -57,9 +57,9 @@ public enum Placeholder {
     SERVER_GROUP((plugin, player) -> player.getServerGroup(plugin)),
     SERVER_GROUP_INDEX((plugin, player) -> Integer.toString(player.getServerGroupPosition(plugin))),
     DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getLastTeamName().orElse(""))),
-    LUCK_PERMS_META_((param, plugin, player) -> plugin.getLuckPermsHook().map(hook -> hook.getMeta(player.getPlayer(), param))
-            .orElse("")),
-    ;
+    LUCKPERMS_META_((param, plugin, player) -> plugin.getLuckPermsHook()
+            .map(hook -> hook.getMeta(player.getPlayer(), param))
+            .orElse(""));
 
     /**
      * Function to replace placeholders with a real value

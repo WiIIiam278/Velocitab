@@ -17,7 +17,6 @@
  *  limitations under the License.
  */
 
-
 package net.william278.velocitab.packet;
 
 import com.velocitypowered.api.network.ProtocolVersion;

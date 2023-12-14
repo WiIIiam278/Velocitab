@@ -17,7 +17,6 @@
  *  limitations under the License.
  */
 
-
 package net.william278.velocitab.api;
 
 import com.velocitypowered.api.proxy.Player;

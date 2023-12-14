@@ -28,15 +28,12 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 /**
- * Adapter for handling the UpdateTeamsPacket for Minecraft 1.16-1.20.3
+ * Adapter for handling the UpdateTeamsPacket for Minecraft 1.16-1.20.2
  */
-@SuppressWarnings("DuplicatedCode")
-public class Protocol735Adapter extends TeamsPacketAdapter {
+public class Protocol735Adapter extends Protocol404Adapter {
 
     private final GsonComponentSerializer serializer;
 
@@ -56,42 +53,14 @@ public class Protocol735Adapter extends TeamsPacketAdapter {
                 ProtocolVersion.MINECRAFT_1_19_3,
                 ProtocolVersion.MINECRAFT_1_19_4,
                 ProtocolVersion.MINECRAFT_1_20,
-                ProtocolVersion.MINECRAFT_1_20_2,
-                ProtocolVersion.MINECRAFT_1_20_3
+                ProtocolVersion.MINECRAFT_1_20_2
         ));
         serializer = GsonComponentSerializer.gson();
     }
 
     @Override
-    public void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet) {
-        ProtocolUtils.writeString(byteBuf, packet.teamName());
-        UpdateTeamsPacket.UpdateMode mode = packet.mode();
-        byteBuf.writeByte(mode.id());
-        if (mode == UpdateTeamsPacket.UpdateMode.REMOVE_TEAM) {
-            return;
-        }
-        if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.UPDATE_INFO) {
-            ProtocolUtils.writeString(byteBuf, getChatString(packet.displayName()));
-            byteBuf.writeByte(UpdateTeamsPacket.FriendlyFlag.toBitMask(packet.friendlyFlags()));
-            ProtocolUtils.writeString(byteBuf, packet.nametagVisibility().id());
-            ProtocolUtils.writeString(byteBuf, packet.collisionRule().id());
-            byteBuf.writeByte(packet.color());
-            ProtocolUtils.writeString(byteBuf, getChatString(packet.prefix()));
-            ProtocolUtils.writeString(byteBuf, getChatString(packet.suffix()));
-        }
-        if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.ADD_PLAYERS || mode == UpdateTeamsPacket.UpdateMode.REMOVE_PLAYERS) {
-            List<String> entities = packet.entities();
-            ProtocolUtils.writeVarInt(byteBuf, entities != null ? entities.size() : 0);
-            for (String entity : entities != null ? entities : new ArrayList<String>()) {
-                ProtocolUtils.writeString(byteBuf, entity);
-            }
-        }
-    }
-
-    @NotNull
-    @Override
-    protected String getChatString(@NotNull Component component) {
-        return serializer.serialize(component);
+    protected void writeComponent(ByteBuf buf, Component component) {
+        ProtocolUtils.writeString(buf, serializer.serialize(component));
     }
 
 }

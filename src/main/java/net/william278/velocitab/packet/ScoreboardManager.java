@@ -53,10 +53,14 @@ public class ScoreboardManager {
     }
 
     private void registerVersions() {
-        versions.add(new Protocol735Adapter(plugin));
-        versions.add(new Protocol404Adapter(plugin));
-        versions.add(new Protocol340Adapter(plugin));
-        versions.add(new Protocol48Adapter(plugin));
+        try {
+            versions.add(new Protocol765Adapter(plugin));
+            versions.add(new Protocol735Adapter(plugin));
+            versions.add(new Protocol404Adapter(plugin));
+            versions.add(new Protocol48Adapter(plugin));
+        } catch (NoSuchFieldError e) {
+            throw new IllegalStateException("Failed to register scoreboard packet adapters. Try to update velocity to latest build", e);
+        }
     }
 
     @NotNull

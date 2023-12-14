@@ -23,6 +23,8 @@ import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
@@ -30,6 +32,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public enum Placeholder {
@@ -53,26 +56,50 @@ public enum Placeholder {
     ROLE_WEIGHT((plugin, player) -> player.getRoleWeightString()),
     SERVER_GROUP((plugin, player) -> player.getServerGroup(plugin)),
     SERVER_GROUP_INDEX((plugin, player) -> Integer.toString(player.getServerGroupPosition(plugin))),
-    DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getLastTeamName().orElse("")));
+    DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getLastTeamName().orElse(""))),
+    LUCK_PERMS_META_((param, plugin, player) -> plugin.getLuckPermsHook().map(hook -> hook.getMeta(player.getPlayer(), param))
+            .orElse("")),
+    ;
 
     /**
      * Function to replace placeholders with a real value
      */
-    private final BiFunction<Velocitab, TabPlayer, String> replacer;
-    private final static Pattern pattern = Pattern.compile("%.*?%");
+    private final TriFunction<String, Velocitab, TabPlayer, String> replacer;
+    private final boolean parameterised;
+    private final Pattern pattern;
+    private final static Pattern checkPlaceholders = Pattern.compile("%.*?%");
 
     Placeholder(@NotNull BiFunction<Velocitab, TabPlayer, String> replacer) {
-        this.replacer = replacer;
+        this.parameterised = false;
+        this.replacer = (text, player, plugin) -> replacer.apply(player, plugin);
+        this.pattern = Pattern.compile("%" + this.name().toLowerCase() + "%");
+    }
+
+    Placeholder(@NotNull TriFunction<String, Velocitab, TabPlayer, String> parameterisedReplacer) {
+        this.parameterised = true;
+        this.replacer = parameterisedReplacer;
+        this.pattern = Pattern.compile("%" + this.name().toLowerCase() + "[^%]+%", Pattern.CASE_INSENSITIVE);
     }
 
     public static CompletableFuture<String> replace(@NotNull String format, @NotNull Velocitab plugin,
                                                     @NotNull TabPlayer player) {
+
         for (Placeholder placeholder : values()) {
-            format = format.replace("%" + placeholder.name().toLowerCase() + "%", placeholder.replacer.apply(plugin, player));
+            Matcher matcher = placeholder.pattern.matcher(format);
+            if (placeholder.parameterised) {
+                // Replace the placeholder with the result of the replacer function with the parameter
+                format = matcher.replaceAll(matchResult ->
+                        placeholder.replacer.apply(StringUtils.chop(matchResult.group().replace("%" + placeholder.name().toLowerCase(), ""))
+                                , plugin, player));
+            } else {
+                // Replace the placeholder with the result of the replacer function
+                format = matcher.replaceAll(matchResult -> placeholder.replacer.apply(null, plugin, player));
+            }
+
         }
         final String replaced = format;
 
-        if (!pattern.matcher(replaced).find()) {
+        if (!checkPlaceholders.matcher(replaced).find()) {
             return CompletableFuture.completedFuture(replaced);
         }
 

@@ -106,7 +106,7 @@ jobs:
             1.20.4
           java: 17
       - name: 'Upload GitHub Artifact 📦'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: Velocitab

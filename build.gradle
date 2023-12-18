@@ -44,7 +44,7 @@ dependencies {
     compileOnly 'net.kyori:adventure-api:4.14.0'
     compileOnly 'net.kyori:adventure-text-minimessage:4.14.0'
     compileOnly 'net.kyori:adventure-text-serializer-legacy:4.14.0'
-    compileOnly 'net.kyori:adventure-text-serializer-gson:4.14.0'
+    compileOnly 'net.kyori:adventure-text-serializer-gson:4.15.0'
 
 
     implementation 'org.apache.commons:commons-text:1.11.0'

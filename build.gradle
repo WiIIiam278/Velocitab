@@ -41,7 +41,7 @@ dependencies {
     compileOnly 'net.william278:PAPIProxyBridge:1.4.2'
     compileOnly 'it.unimi.dsi:fastutil:8.5.12'
     compileOnly 'net.kyori:adventure-nbt:4.14.0'
-    compileOnly 'net.kyori:adventure-api:4.14.0'
+    compileOnly 'net.kyori:adventure-api:4.15.0'
     compileOnly 'net.kyori:adventure-text-minimessage:4.14.0'
     compileOnly 'net.kyori:adventure-text-serializer-legacy:4.14.0'
     compileOnly 'net.kyori:adventure-text-serializer-gson:4.14.0'

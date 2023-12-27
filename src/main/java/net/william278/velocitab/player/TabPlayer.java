@@ -25,6 +25,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.apache.commons.lang3.ObjectUtils;
@@ -51,10 +52,15 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     @Nullable
     @Setter
     private String lastServer;
+    @NotNull
+    @Setter
+    @Getter
+    private Group group;
 
-    public TabPlayer(@NotNull Player player, @NotNull Role role) {
+    public TabPlayer(@NotNull Player player, @NotNull Role role, @NotNull Group group) {
         this.player = player;
         this.role = role;
+        this.group = group;
     }
 
     @NotNull

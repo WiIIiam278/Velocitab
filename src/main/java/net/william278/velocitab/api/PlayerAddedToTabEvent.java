@@ -19,54 +19,10 @@
 
 package net.william278.velocitab.api;
 
+import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 @SuppressWarnings("unused")
-public class PlayerAddedToTabEvent {
+public record PlayerAddedToTabEvent(TabPlayer player, Group group) {
 
-    private final TabPlayer player;
-    private final String group;
-    private final List<String> groupServers;
-
-    public PlayerAddedToTabEvent(@NotNull TabPlayer player, @NotNull String group, @NotNull List<String> groupServers) {
-        this.player = player;
-        this.group = group;
-        this.groupServers = groupServers;
-    }
-
-    @NotNull
-    public TabPlayer getTabPlayer() {
-        return this.player;
-    }
-
-    @NotNull
-    public String getGroup() {
-        return this.group;
-    }
-
-    @NotNull
-    public List<String> getGroupServers() {
-        return this.groupServers;
-    }
-
-    @NotNull
-    @Deprecated(forRemoval = true)
-    public TabPlayer player() {
-        return this.player;
-    }
-
-    @NotNull
-    @Deprecated(forRemoval = true)
-    public String group() {
-        return this.group;
-    }
-
-    @NotNull
-    @Deprecated(forRemoval = true)
-    public List<String> groupServers() {
-        return this.groupServers;
-    }
 }

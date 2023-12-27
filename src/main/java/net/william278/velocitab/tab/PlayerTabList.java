@@ -35,6 +35,7 @@ import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.api.PlayerAddedToTabEvent;
+import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
@@ -94,7 +95,7 @@ public class PlayerTabList {
 
             serversInGroup.remove(server.get().getServer());
 
-            joinPlayer(p, serversInGroup.stream().map(s -> s.getServerInfo().getName()).toList());
+            joinPlayer(p, getGroup(server.get().getServerInfo().getName()));
         });
     }
 
@@ -130,6 +131,10 @@ public class PlayerTabList {
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined));
 
         final RegisteredServer previousServer = event.getPreviousServer();
+        final Group group = getGroup(joined.getCurrentServer()
+                .map(ServerConnection::getServerInfo)
+                .map(ServerInfo::getName)
+                .orElse("default"));
 
         // Get the servers in the group from the joined server name
         // If the server is not in a group, use fallback
@@ -147,12 +152,13 @@ public class PlayerTabList {
             return;
         }
 
-        joinPlayer(joined, serversInGroup.orElseGet(ArrayList::new));
+        joinPlayer(joined, group);
     }
 
-    private void joinPlayer(@NotNull Player joined, @NotNull List<String> serversInGroup) {
+    private void joinPlayer(@NotNull Player joined, @NotNull Group group) {
         // Add the player to the tracking list if they are not already listed
-        final TabPlayer tabPlayer = getTabPlayer(joined).orElseGet(() -> createTabPlayer(joined));
+        final TabPlayer tabPlayer = getTabPlayer(joined).orElseGet(() -> createTabPlayer(joined, group));
+        tabPlayer.setGroup(group);
         players.putIfAbsent(joined.getUniqueId(), tabPlayer);
 
         int delay = 500;
@@ -173,7 +179,7 @@ public class PlayerTabList {
                     for (final TabPlayer player : players.values()) {
                         // Skip players on other servers if the setting is enabled
                         if (plugin.getSettings().isOnlyListPlayersInSameGroup()
-                                && !serversInGroup.contains(player.getServerName())) {
+                                && !group.servers().contains(player.getServerName())) {
                             continue;
                         }
                         // check if current player can see the joined player
@@ -207,7 +213,7 @@ public class PlayerTabList {
                     });
 
                     // Fire event without listening for result
-                    plugin.getServer().getEventManager().fireAndForget(new PlayerAddedToTabEvent(tabPlayer, tabPlayer.getServerGroup(plugin), serversInGroup));
+                    plugin.getServer().getEventManager().fireAndForget(new PlayerAddedToTabEvent(tabPlayer, group));
                 })
                 .delay(delay, TimeUnit.MILLISECONDS)
                 .schedule();
@@ -280,9 +286,10 @@ public class PlayerTabList {
     }
 
     @NotNull
-    public TabPlayer createTabPlayer(@NotNull Player player) {
+    public TabPlayer createTabPlayer(@NotNull Player player, @NotNull Group group) {
         return new TabPlayer(player,
-                plugin.getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE)
+                plugin.getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE),
+                group
         );
     }
 
@@ -414,6 +421,11 @@ public class PlayerTabList {
                 });
     }
 
+    @NotNull
+    public Group getGroup(@NotNull String serverName) {
+        return plugin.getTabList().getGroup(serverName);
+    }
+
     /**
      * Get the servers in the same group as the given server, as an optional list of {@link ServerInfo}
      * <p>
@@ -434,7 +446,7 @@ public class PlayerTabList {
 
     @Subscribe
     public void proxyReload(@NotNull ProxyReloadEvent event) {
-        plugin.loadSettings();
+        plugin.loadConfigs();
         reloadUpdate();
         plugin.log("Velocitab has been reloaded!");
     }

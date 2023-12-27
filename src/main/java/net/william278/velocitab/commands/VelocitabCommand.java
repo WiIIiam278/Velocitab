@@ -101,7 +101,7 @@ public final class VelocitabCommand {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("reload")
                         .requires(src -> src.hasPermission("velocitab.command.reload"))
                         .executes(ctx -> {
-                            plugin.loadSettings();
+                            plugin.loadConfigs();
                             plugin.getTabList().reloadUpdate();
                             ctx.getSource().sendMessage(Component.text(
                                     "Velocitab has been reloaded!",

@@ -19,11 +19,11 @@
 
 package net.william278.velocitab.config;
 
+import de.exlll.configlib.Comment;
+import de.exlll.configlib.Configuration;
+import lombok.AccessLevel;
 import lombok.Getter;
-import net.william278.annotaml.YamlComment;
-import net.william278.annotaml.YamlFile;
-import net.william278.annotaml.YamlKey;
-import net.william278.velocitab.Velocitab;
+import lombok.NoArgsConstructor;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,112 +31,100 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-@YamlFile(header = """
-        ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-        ┃       Velocitab Config       ┃
-        ┃    Developed by William278   ┃
-        ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-        ┣╸ Information: https://william278.net/project/velocitab
-        ┗╸ Documentation: https://william278.net/docs/velocitab""")
-public class Settings {
+
+@SuppressWarnings("FieldMayBeFinal")
+@Getter
+@Configuration
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class Settings implements ConfigValidator{
+
+    public static final String CONFIG_HEADER = """
+            ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+            ┃       Velocitab Config       ┃
+            ┃    Developed by William278   ┃
+            ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+            ┣╸ Information: https://william278.net/project/velocitab
+            ┗╸ Documentation: https://william278.net/docs/velocitab""";
 
     @Getter
-    @YamlKey("check_for_updates")
-    @YamlComment("Check for updates on startup")
+    @Comment("Check for updates on startup")
     private boolean checkForUpdates = true;
 
-    @YamlKey("headers")
-    @YamlComment("Header(s) to display above the TAB list for each server group."
+    @Comment("Header(s) to display above the TAB list for each server group."
             + "\nList multiple headers and set update_rate to the number of ticks between frames for basic animations")
     private Map<String, List<String>> headers = Map.of(
             "default",
             List.of("&rainbow&Running Velocitab by William278")
     );
 
-    @YamlKey("footers")
-    @YamlComment("Footer(s) to display below the TAB list for each server group, same as headers.")
+    @Comment("Footer(s) to display below the TAB list for each server group, same as headers.")
     private Map<String, List<String>> footers = Map.of(
             "default",
             List.of("[There are currently %players_online%/%max_players_online% players online](gray)")
     );
 
-    @YamlKey("formats")
     private Map<String, String> formats = Map.of("default", "&7[%server%] &f%prefix%%username%");
 
     @Getter
-    @YamlKey("nametags")
-    @YamlComment("Nametag(s) to display above players' heads for each server group. Set to empty to disable."
+    @Comment("Nametag(s) to display above players' heads for each server group. Set to empty to disable."
             + "\nNametag formats must contain a %username%. Docs: https://william278.net/docs/velocitab/nametags")
     private Map<String, String> nametags = Map.of("default", "&f%prefix%%username%&f%suffix%");
 
     @Getter
-    @YamlKey("remove_nametags")
-    @YamlComment("Whether to remove nametag from players' heads if the nametag associated with their server group is empty.")
+    @Comment("Whether to remove nametag from players' heads if the nametag associated with their server group is empty.")
     private boolean removeNametags = false;
 
     @Getter
-    @YamlComment("Which text formatter to use (MINEDOWN, MINIMESSAGE, or LEGACY)")
-    @YamlKey("formatting_type")
+    @Comment("Which text formatter to use (MINEDOWN, MINIMESSAGE, or LEGACY)")
     private Formatter formatter = Formatter.MINEDOWN;
 
     @Getter
-    @YamlKey("server_groups")
-    @YamlComment("The servers in each group of servers. The order of groups is important when sorting by SERVER_GROUP.")
+    @Comment("The servers in each group of servers. The order of groups is important when sorting by SERVER_GROUP.")
     private LinkedHashMap<String, List<String>> serverGroups = new LinkedHashMap<>(Map.of(
             "default",
             List.of("lobby1", "lobby2", "lobby3"))
     );
 
     @Getter
-    @YamlKey("fallback_enabled")
-    @YamlComment("All servers which are not in other groups will be put in the fallback group."
+    @Comment("All servers which are not in other groups will be put in the fallback group."
             + "\n\"false\" will exclude them from Velocitab.")
     private boolean fallbackEnabled = true;
 
     @Getter
-    @YamlKey("fallback_group")
-    @YamlComment("The formats to use for the fallback group.")
+    @Comment("The formats to use for the fallback group.")
     private String fallbackGroup = "default";
 
     @Getter
-    @YamlKey("only_list_players_in_same_group")
-    @YamlComment("Only show other players on a server that is part of the same server group as the player.")
+    @Comment("Only show other players on a server that is part of the same server group as the player.")
     private boolean onlyListPlayersInSameGroup = true;
 
     @Getter
-    @YamlKey("server_display_names")
-    @YamlComment("Define custom names to be shown in the TAB list for specific server names."
+    @Comment("Define custom names to be shown in the TAB list for specific server names."
             + "\nIf no custom display name is provided for a server, its original name will be used.")
     private Map<String, String> serverDisplayNames = Map.of("very-long-server-name", "VLSN");
 
     @Getter
-    @YamlKey("enable_papi_hook")
-    @YamlComment("Whether to enable the PAPIProxyBridge hook for PAPI support")
+    @Comment("Whether to enable the PAPIProxyBridge hook for PAPI support")
     private boolean enablePapiHook = true;
 
     @Getter
-    @YamlKey("papi_cache_time")
-    @YamlComment("How long in seconds to cache PAPI placeholders for, in milliseconds. (0 to disable)")
+    @Comment("How long in seconds to cache PAPI placeholders for, in milliseconds. (0 to disable)")
     private long papiCacheTime = 30000;
 
     @Getter
-    @YamlKey("enable_miniplaceholders_hook")
-    @YamlComment("If you are using MINIMESSAGE formatting, enable this to support MiniPlaceholders in formatting.")
+    @Comment("If you are using MINIMESSAGE formatting, enable this to support MiniPlaceholders in formatting.")
     private boolean enableMiniPlaceholdersHook = true;
 
     @Getter
-    @YamlKey("send_scoreboard_packets")
-    @YamlComment("Whether to send scoreboard teams packets. Required for player list sorting and nametag formatting."
+    @Comment("Whether to send scoreboard teams packets. Required for player list sorting and nametag formatting."
             + "\nTurn this off if you're using scoreboard teams on backend servers.")
     private boolean sendScoreboardPackets = true;
 
     @Getter
-    @YamlKey("sort_players")
-    @YamlComment("Whether to sort players in the TAB list.")
+    @Comment("Whether to sort players in the TAB list.")
     private boolean sortPlayers = true;
 
-    @YamlKey("sorting_placeholders")
-    @YamlComment("Ordered list of elements by which players should be sorted. " +
+    @Comment("Ordered list of elements by which players should be sorted. " +
             "(Correct values are both internal placeholders and, if enabled, PAPI placeholders)")
     private List<String> sortingPlaceholders = List.of(
             "%role_weight%",
@@ -144,22 +132,11 @@ public class Settings {
     );
 
     @Getter
-    @YamlKey("update_rate")
-    @YamlComment("""
+    @Comment("""
             How often in milliseconds to periodically update the TAB list, including header and footer, for all users.
             If set to 0, TAB will be updated on player join/leave instead. (1s = 1000ms)
             The minimal update rate is 200ms, anything lower will automatically be set to 200ms.""")
     private int updateRate = 0;
-
-    public Settings(@NotNull Velocitab plugin) {
-        this.serverGroups = new LinkedHashMap<>(Map.of("default",
-                plugin.getServer().getAllServers().stream().map(server -> server.getServerInfo().getName()).toList()
-        ));
-    }
-
-    @SuppressWarnings("unused")
-    public Settings() {
-    }
 
     @NotNull
     public String getHeader(@NotNull String serverGroup, int index) {
@@ -193,10 +170,6 @@ public class Settings {
     public String getNametag(@NotNull String serverGroup) {
         return StringEscapeUtils.unescapeJava(
                 nametags.getOrDefault(serverGroup, ""));
-    }
-
-    public boolean doNametags() {
-        return !nametags.isEmpty();
     }
 
     /**
@@ -239,4 +212,8 @@ public class Settings {
         return sortingPlaceholders;
     }
 
+    @Override
+    public void validateConfig() {
+
+    }
 }

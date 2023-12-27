@@ -31,13 +31,15 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import lombok.Getter;
-import net.william278.annotaml.Annotaml;
+import lombok.Setter;
 import net.william278.desertwell.util.UpdateChecker;
 import net.william278.desertwell.util.Version;
 import net.william278.velocitab.api.VelocitabAPI;
 import net.william278.velocitab.commands.VelocitabCommand;
+import net.william278.velocitab.config.ConfigProvider;
 import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.config.Settings;
+import net.william278.velocitab.config.TabGroups;
 import net.william278.velocitab.hook.Hook;
 import net.william278.velocitab.hook.LuckPermsHook;
 import net.william278.velocitab.hook.MiniPlaceholdersHook;
@@ -52,9 +54,6 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.event.Level;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,9 +61,15 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Plugin(id = "velocitab")
-public class Velocitab {
+public class Velocitab implements ConfigProvider {
     private static final int METRICS_ID = 18247;
+    @Setter
+    @Getter
     private Settings settings;
+    @Getter
+    @Setter
+    private TabGroups tabGroups;
+    @Getter
     private final ProxyServer server;
     private final Logger logger;
     private final Path dataDirectory;
@@ -88,7 +93,7 @@ public class Velocitab {
 
     @Subscribe
     public void onProxyInitialization(@NotNull ProxyInitializeEvent event) {
-        loadSettings();
+        loadConfigs();
         loadHooks();
         prepareVanishManager();
         prepareScoreboardManager();
@@ -112,35 +117,19 @@ public class Velocitab {
     }
 
     @NotNull
-    public ProxyServer getServer() {
-        return server;
-    }
-
-    @NotNull
-    public Settings getSettings() {
-        return settings;
-    }
-
-    @NotNull
     public Formatter getFormatter() {
         return getSettings().getFormatter();
     }
 
-    public void loadSettings() {
-        try {
-            settings = Annotaml.create(
-                    new File(dataDirectory.toFile(), "config.yml"),
-                    new Settings(this)
-            ).get();
+    public void loadConfigs() {
+        loadSettings();
+        loadTabGroups();
+    }
 
-            settings.getNametags().values().stream()
-                    .filter(nametag -> !nametag.contains("%username%")).forEach(nametag -> {
-                        logger.warn("Nametag '" + nametag + "' does not contain %username% - removing");
-                        settings.getNametags().remove(nametag);
-                    });
-        } catch (IOException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-            logger.error("Failed to load config file: " + e.getMessage(), e);
-        }
+    @NotNull
+    @Override
+    public Path getConfigDirectory() {
+        return dataDirectory;
     }
 
     private <H extends Hook> Optional<H> getHook(@NotNull Class<H> hookType) {

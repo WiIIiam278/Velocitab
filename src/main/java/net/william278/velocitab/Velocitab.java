@@ -42,11 +42,11 @@ import net.william278.velocitab.config.Settings;
 import net.william278.velocitab.config.TabGroups;
 import net.william278.velocitab.hook.Hook;
 import net.william278.velocitab.hook.LuckPermsHook;
-import net.william278.velocitab.hook.MiniPlaceholdersHook;
-import net.william278.velocitab.hook.PAPIProxyBridgeHook;
 import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
+import net.william278.velocitab.util.HookProvider;
+import net.william278.velocitab.util.LoggerProvider;
 import net.william278.velocitab.util.ScoreboardProvider;
 import net.william278.velocitab.vanish.VanishManager;
 import org.bstats.charts.SimplePie;
@@ -56,20 +56,17 @@ import org.slf4j.Logger;
 import org.slf4j.event.Level;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Plugin(id = "velocitab")
-public class Velocitab implements ConfigProvider, ScoreboardProvider {
+@Getter
+public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProvider, HookProvider {
     private static final int METRICS_ID = 18247;
     @Setter
-    @Getter
     private Settings settings;
-    @Getter
     @Setter
     private TabGroups tabGroups;
-    @Getter
     private final ProxyServer server;
     private final Logger logger;
     private final Path dataDirectory;
@@ -79,12 +76,12 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider {
     private Metrics.Factory metricsFactory;
     @Setter
     private PlayerTabList tabList;
+    @Setter
     private List<Hook> hooks;
     @Setter
     private ScoreboardManager scoreboardManager;
     @Setter
     private SortingManager sortingManager;
-    @Getter
     private VanishManager vanishManager;
 
     @Inject
@@ -100,7 +97,6 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider {
         loadHooks();
         prepareVanishManager();
         prepareScoreboard();
-        prepareSortingManager();
         registerCommands();
         registerMetrics();
         checkForUpdates();
@@ -133,41 +129,8 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider {
         return dataDirectory;
     }
 
-    private <H extends Hook> Optional<H> getHook(@NotNull Class<H> hookType) {
-        return hooks.stream()
-                .filter(hook -> hook.getClass().equals(hookType))
-                .map(hookType::cast)
-                .findFirst();
-    }
-
-    public Optional<LuckPermsHook> getLuckPermsHook() {
-        return getHook(LuckPermsHook.class);
-    }
-
-    public Optional<PAPIProxyBridgeHook> getPAPIProxyBridgeHook() {
-        return getHook(PAPIProxyBridgeHook.class);
-    }
-
-    public Optional<MiniPlaceholdersHook> getMiniPlaceholdersHook() {
-        return getHook(MiniPlaceholdersHook.class);
-    }
-
-    private void loadHooks() {
-        this.hooks = new ArrayList<>();
-        Hook.AVAILABLE.forEach(availableHook -> availableHook.apply(this).ifPresent(hooks::add));
-    }
-
     private void prepareVanishManager() {
         this.vanishManager = new VanishManager(this);
-    }
-
-    private void prepareSortingManager() {
-        this.sortingManager = new SortingManager(this);
-    }
-
-    @NotNull
-    public SortingManager getSortingManager() {
-        return sortingManager;
     }
 
     @Override
@@ -178,11 +141,6 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider {
     @NotNull
     public Optional<ScoreboardManager> getScoreboardManager() {
         return Optional.ofNullable(scoreboardManager);
-    }
-
-    @NotNull
-    public PlayerTabList getTabList() {
-        return tabList;
     }
 
     private void prepareAPI() {
@@ -236,28 +194,6 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider {
                 .build();
     }
 
-    public void log(@NotNull Level level, @NotNull String message, @NotNull Throwable... exceptions) {
-        switch (level) {
-            case ERROR -> {
-                if (exceptions.length > 0) {
-                    logger.error(message, exceptions[0]);
-                } else {
-                    logger.error(message);
-                }
-            }
-            case WARN -> {
-                if (exceptions.length > 0) {
-                    logger.warn(message, exceptions[0]);
-                } else {
-                    logger.warn(message);
-                }
-            }
-            case INFO -> logger.info(message);
-        }
-    }
 
-    public void log(@NotNull String message) {
-        this.log(Level.INFO, message);
-    }
 
 }

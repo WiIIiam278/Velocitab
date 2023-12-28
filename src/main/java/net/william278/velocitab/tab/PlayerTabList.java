@@ -345,7 +345,6 @@ public class PlayerTabList {
     // Get the component for the TAB list header
     public CompletableFuture<Component> getHeader(@NotNull TabPlayer player) {
         final String header = player.getGroup().getHeader(player.getHeaderIndex());
-        player.incrementHeaderIndex();
 
         return Placeholder.replace(header, plugin, player)
                 .thenApply(replaced -> plugin.getFormatter().format(replaced, player, plugin));
@@ -354,7 +353,6 @@ public class PlayerTabList {
     // Get the component for the TAB list footer
     public CompletableFuture<Component> getFooter(@NotNull TabPlayer player) {
         final String footer = player.getGroup().getFooter(player.getFooterIndex());
-        player.incrementFooterIndex();
 
         return Placeholder.replace(footer, plugin, player)
                 .thenApply(replaced -> plugin.getFormatter().format(replaced, player, plugin));
@@ -363,16 +361,6 @@ public class PlayerTabList {
     // Update the tab list periodically
     private void updatePeriodically(Group group) {
         cancelTasks(group);
-
-
-        if (group.placeholderUpdateRate() > 0) {
-            //adding 1ms to prevent desync
-            final ScheduledTask updateTask = plugin.getServer().getScheduler()
-                    .buildTask(plugin, () -> updateGroupPlayers(group, true))
-                    .repeat(Math.max(200, group.placeholderUpdateRate())  + 1, TimeUnit.MILLISECONDS)
-                    .schedule();
-            placeholderTasks.put(group, updateTask);
-        }
 
         if (group.headerFooterUpdateRate() > 0) {
             final ScheduledTask headerFooterTask = plugin.getServer().getScheduler()
@@ -385,6 +373,13 @@ public class PlayerTabList {
             headerFooterTasks.put(group, headerFooterTask);
         }
 
+        if (group.placeholderUpdateRate() > 0) {
+            final ScheduledTask updateTask = plugin.getServer().getScheduler()
+                    .buildTask(plugin, () -> updateGroupPlayers(group, true))
+                    .repeat(Math.max(200, group.placeholderUpdateRate()), TimeUnit.MILLISECONDS)
+                    .schedule();
+            placeholderTasks.put(group, updateTask);
+        }
     }
 
     /**
@@ -410,14 +405,24 @@ public class PlayerTabList {
     }
 
     private void cancelTasks(Group group) {
-        ScheduledTask task = placeholderTasks.get(group);
+        ScheduledTask task = placeholderTasks.entrySet().stream()
+                .filter(entry -> entry.getKey().equals(group))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(null);
         if (task != null) {
             task.cancel();
+            placeholderTasks.remove(group);
         }
 
-        task = headerFooterTasks.get(group);
+        task = headerFooterTasks.entrySet().stream()
+                .filter(entry -> entry.getKey().equals(group))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(null);
         if (task != null) {
             task.cancel();
+            headerFooterTasks.remove(group);
         }
     }
 
@@ -425,6 +430,7 @@ public class PlayerTabList {
      * Update the TAB list for all players when a plugin or proxy reload is performed
      */
     public void reloadUpdate() {
+        plugin.getTabGroups().getGroups().forEach(this::cancelTasks);
         plugin.getTabGroups().getGroups().forEach(this::updatePeriodically);
 
         if (players.isEmpty()) {

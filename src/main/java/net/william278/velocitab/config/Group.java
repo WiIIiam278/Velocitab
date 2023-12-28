@@ -93,4 +93,12 @@ public record Group(
         }
         return players;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Group group)) {
+            return false;
+        }
+        return name.equals(group.name);
+    }
 }

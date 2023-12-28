@@ -54,14 +54,12 @@ import java.util.concurrent.*;
 public class PlayerTabList {
     private final Velocitab plugin;
     private final ConcurrentHashMap<UUID, TabPlayer> players;
-    private final ConcurrentLinkedQueue<String> fallbackServers;
     private final List<UUID> justKicked;
     private ScheduledTask updateTask;
 
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
         this.players = new ConcurrentHashMap<>();
-        this.fallbackServers = new ConcurrentLinkedQueue<>();
         this.justKicked = new CopyOnWriteArrayList<>();
 
         // If the update time is set to 0 do not schedule the updater
@@ -90,12 +88,15 @@ public class PlayerTabList {
             final Optional<ServerConnection> server = p.getCurrentServer();
             if (server.isEmpty()) return;
 
-            final List<RegisteredServer> serversInGroup = new ArrayList<>(getGroupServers(server.get().getServerInfo().getName()));
-            if (serversInGroup.isEmpty()) return;
+            final String serverName = server.get().getServerInfo().getName();
+            final Group group = getGroup(serverName);
+            final boolean isDefault = !group.servers().contains(serverName);
 
-            serversInGroup.remove(server.get().getServer());
+            if(isDefault && !plugin.getSettings().isFallbackEnabled()) {
+                return;
+            }
 
-            joinPlayer(p, getGroup(server.get().getServerInfo().getName()));
+            joinPlayer(p, group);
         });
     }
 
@@ -108,7 +109,10 @@ public class PlayerTabList {
             final Optional<ServerConnection> server = p.getCurrentServer();
             if (server.isEmpty()) return;
 
-            final List<RegisteredServer> serversInGroup = new ArrayList<>(getGroupServers(server.get().getServerInfo().getName()));
+            TabPlayer tabPlayer = players.get(p.getUniqueId());
+            if (tabPlayer == null) return;
+
+            final List<RegisteredServer> serversInGroup = new ArrayList<>(tabPlayer.getGroup().registeredServers(plugin));
             if (serversInGroup.isEmpty()) return;
 
             serversInGroup.remove(server.get().getServer());
@@ -130,23 +134,16 @@ public class PlayerTabList {
         final Player joined = event.getPlayer();
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined));
 
-        final RegisteredServer previousServer = event.getPreviousServer();
-        final Group group = getGroup(joined.getCurrentServer()
+        final String serverName = joined.getCurrentServer()
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
-                .orElse("default"));
-
-        // Get the servers in the group from the joined server name
-        // If the server is not in a group, use fallback
-        final Optional<List<String>> serversInGroup = getGroupNames(joined.getCurrentServer()
-                .map(ServerConnection::getServerInfo)
-                .map(ServerInfo::getName)
-                .orElse("?"));
+                .orElse("default");
+        final Group group = getGroup(serverName);
+        final boolean isDefault = !group.servers().contains(serverName);
 
         // If the server is not in a group, use fallback.
         // If fallback is disabled, permit the player to switch excluded servers without a header or footer override
-        if (serversInGroup.isEmpty() &&
-                (previousServer != null && !this.fallbackServers.contains(previousServer.getServerInfo().getName()))) {
+        if (isDefault && !plugin.getSettings().isFallbackEnabled()) {
             event.getPlayer().sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
             players.remove(event.getPlayer().getUniqueId());
             return;
@@ -168,7 +165,7 @@ public class PlayerTabList {
             justKicked.remove(joined.getUniqueId());
         }
 
-        //store last server so it's possible to have the last server on disconnect
+        //store last server, so it's possible to have the last server on disconnect
         tabPlayer.setLastServer(joined.getCurrentServer().map(ServerConnection::getServerInfo).map(ServerInfo::getName).orElse(""));
 
         final boolean isVanished = plugin.getVanishManager().isVanished(joined.getUsername());
@@ -208,8 +205,8 @@ public class PlayerTabList {
                     }
 
                     plugin.getScoreboardManager().ifPresent(s -> {
-                        s.resendAllTeams(joined);
-                        tabPlayer.getTeamName(plugin).thenAccept(t -> s.updateRole(joined, t, false));
+                        s.resendAllTeams(tabPlayer);
+                        tabPlayer.getTeamName(plugin).thenAccept(t -> s.updateRole(tabPlayer, t, false));
                     });
 
                     // Fire event without listening for result
@@ -305,7 +302,7 @@ public class PlayerTabList {
                 return;
             }
             plugin.getScoreboardManager().ifPresent(manager -> manager.updateRole(
-                    tabPlayer.getPlayer(), teamName, force
+                    tabPlayer, teamName, force
             ));
         });
     }
@@ -338,8 +335,8 @@ public class PlayerTabList {
 
     // Get the component for the TAB list header
     public CompletableFuture<Component> getHeader(@NotNull TabPlayer player) {
-        final String header = plugin.getSettings().getHeader(player.getServerGroup(plugin), player.getHeaderIndex());
-        player.incrementHeaderIndex(plugin);
+        final String header = player.getGroup().getHeader(player.getHeaderIndex());
+        player.incrementHeaderIndex();
 
         return Placeholder.replace(header, plugin, player)
                 .thenApply(replaced -> plugin.getFormatter().format(replaced, player, plugin));
@@ -347,8 +344,8 @@ public class PlayerTabList {
 
     // Get the component for the TAB list footer
     public CompletableFuture<Component> getFooter(@NotNull TabPlayer player) {
-        final String footer = plugin.getSettings().getFooter(player.getServerGroup(plugin), player.getFooterIndex());
-        player.incrementFooterIndex(plugin);
+        final String footer = player.getGroup().getFooter(player.getFooterIndex());
+        player.incrementFooterIndex();
 
         return Placeholder.replace(footer, plugin, player)
                 .thenApply(replaced -> plugin.getFormatter().format(replaced, player, plugin));
@@ -395,53 +392,9 @@ public class PlayerTabList {
 
     }
 
-    /**
-     * Get the servers in the same group as the given server, as an optional
-     * <p>
-     * If the server is not in a group, use the fallback group
-     * If the fallback is disabled, return an empty optional
-     *
-     * @param serverName The server name
-     * @return The servers in the same group as the given server, empty if the server is not in a group and fallback is disabled
-     */
-    @NotNull
-    public Optional<List<String>> getGroupNames(@NotNull String serverName) {
-        return plugin.getSettings().getServerGroups().values().stream()
-                .filter(servers -> servers.contains(serverName))
-                .findFirst()
-                .or(() -> {
-                    if (!plugin.getSettings().isFallbackEnabled()) {
-                        return Optional.empty();
-                    }
-
-                    if (!this.fallbackServers.contains(serverName)) {
-                        this.fallbackServers.add(serverName);
-                    }
-                    return Optional.of(this.fallbackServers.stream().toList());
-                });
-    }
-
     @NotNull
     public Group getGroup(@NotNull String serverName) {
-        return plugin.getTabList().getGroup(serverName);
-    }
-
-    /**
-     * Get the servers in the same group as the given server, as an optional list of {@link ServerInfo}
-     * <p>
-     * If the server is not in a group, use the fallback group
-     * If the fallback is disabled, return an empty optional
-     *
-     * @param serverName The server name
-     * @return The servers in the same group as the given server, empty if the server is not in a group and fallback is disabled
-     */
-    @NotNull
-    public List<RegisteredServer> getGroupServers(@NotNull String serverName) {
-        return plugin.getServer().getAllServers().stream()
-                .filter(server -> plugin.getSettings().getServerGroups().values().stream()
-                        .filter(servers -> servers.contains(serverName))
-                        .anyMatch(servers -> servers.contains(server.getServerInfo().getName())))
-                .toList();
+        return plugin.getTabGroups().getGroupFromServer(serverName);
     }
 
     @Subscribe
@@ -497,11 +450,7 @@ public class PlayerTabList {
      */
     public void recalculateVanishForPlayer(@NotNull TabPlayer tabPlayer) {
         final Player player = tabPlayer.getPlayer();
-        final Optional<List<String>> serversInGroupOptional = getGroupNames(player.getCurrentServer()
-                .map(ServerConnection::getServerInfo)
-                .map(ServerInfo::getName)
-                .orElse("?"));
-        final List<String> serversInGroup = serversInGroupOptional.orElseGet(ArrayList::new);
+        final List<String> serversInGroup = tabPlayer.getGroup().servers();
 
         plugin.getServer().getAllPlayers().forEach(p -> {
             if (p.equals(player)) {

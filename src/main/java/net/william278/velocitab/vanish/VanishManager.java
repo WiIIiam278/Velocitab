@@ -61,7 +61,7 @@ public class VanishManager {
         }
 
         plugin.getTabList().vanishPlayer(tabPlayer.get());
-        plugin.getScoreboardManager().ifPresent(scoreboardManager -> scoreboardManager.vanishPlayer(player));
+        plugin.getScoreboardManager().ifPresent(scoreboardManager -> scoreboardManager.vanishPlayer(tabPlayer.get()));
     }
 
     public void unVanishPlayer(@NotNull Player player) {
@@ -72,6 +72,6 @@ public class VanishManager {
         }
 
         plugin.getTabList().unVanishPlayer(tabPlayer.get());
-        plugin.getScoreboardManager().ifPresent(scoreboardManager -> scoreboardManager.unVanishPlayer(player));
+        plugin.getScoreboardManager().ifPresent(scoreboardManager -> scoreboardManager.unVanishPlayer(tabPlayer.get()));
     }
 }

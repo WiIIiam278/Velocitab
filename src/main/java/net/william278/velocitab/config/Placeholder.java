@@ -23,6 +23,7 @@ import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.tab.Nametag;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.NotNull;
@@ -54,7 +55,7 @@ public enum Placeholder {
     ROLE((plugin, player) -> player.getRole().getName().orElse("")),
     ROLE_DISPLAY_NAME((plugin, player) -> player.getRole().getDisplayName().orElse("")),
     ROLE_WEIGHT((plugin, player) -> player.getRoleWeightString()),
-    SERVER_GROUP((plugin, player) -> player.getServerGroup(plugin)),
+    SERVER_GROUP((plugin, player) -> player.getGroup().name()),
     SERVER_GROUP_INDEX((plugin, player) -> Integer.toString(player.getServerGroupPosition(plugin))),
     DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getLastTeamName().orElse(""))),
     LUCKPERMS_META_((param, plugin, player) -> plugin.getLuckPermsHook()
@@ -68,6 +69,7 @@ public enum Placeholder {
     private final boolean parameterised;
     private final Pattern pattern;
     private final static Pattern checkPlaceholders = Pattern.compile("%.*?%");
+    private final static String DELIMITER = ":::";
 
     Placeholder(@NotNull BiFunction<Velocitab, TabPlayer, String> replacer) {
         this.parameterised = false;
@@ -79,6 +81,13 @@ public enum Placeholder {
         this.parameterised = true;
         this.replacer = parameterisedReplacer;
         this.pattern = Pattern.compile("%" + this.name().toLowerCase() + "[^%]+%", Pattern.CASE_INSENSITIVE);
+    }
+
+    public static CompletableFuture<Nametag> replace(@NotNull Nametag nametag, @NotNull Velocitab plugin,
+                                                     @NotNull TabPlayer player) {
+        return replace(nametag.getPrefix() + DELIMITER + nametag.getSuffix(), plugin, player)
+                .thenApply(s -> s.split(DELIMITER))
+                .thenApply(v -> new Nametag(v[0], v[1]));
     }
 
     public static CompletableFuture<String> replace(@NotNull String format, @NotNull Velocitab plugin,

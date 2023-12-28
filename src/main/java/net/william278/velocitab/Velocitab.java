@@ -47,6 +47,7 @@ import net.william278.velocitab.hook.PAPIProxyBridgeHook;
 import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
+import net.william278.velocitab.util.ScoreboardProvider;
 import net.william278.velocitab.vanish.VanishManager;
 import org.bstats.charts.SimplePie;
 import org.bstats.velocity.Metrics;
@@ -58,10 +59,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 @Plugin(id = "velocitab")
-public class Velocitab implements ConfigProvider {
+public class Velocitab implements ConfigProvider, ScoreboardProvider {
     private static final int METRICS_ID = 18247;
     @Setter
     @Getter
@@ -77,9 +77,12 @@ public class Velocitab implements ConfigProvider {
     private PluginContainer pluginContainer;
     @Inject
     private Metrics.Factory metricsFactory;
+    @Setter
     private PlayerTabList tabList;
     private List<Hook> hooks;
+    @Setter
     private ScoreboardManager scoreboardManager;
+    @Setter
     private SortingManager sortingManager;
     @Getter
     private VanishManager vanishManager;
@@ -96,8 +99,7 @@ public class Velocitab implements ConfigProvider {
         loadConfigs();
         loadHooks();
         prepareVanishManager();
-        prepareScoreboardManager();
-        prepareTabList();
+        prepareScoreboard();
         prepareSortingManager();
         registerCommands();
         registerMetrics();
@@ -110,7 +112,6 @@ public class Velocitab implements ConfigProvider {
     public void onProxyShutdown(@NotNull ProxyShutdownEvent event) {
         server.getScheduler().tasksByPlugin(this).forEach(ScheduledTask::cancel);
         disableScoreboardManager();
-        disableTabList();
         getLuckPermsHook().ifPresent(LuckPermsHook::closeEvent);
         VelocitabAPI.unregister();
         logger.info("Successfully disabled Velocitab");
@@ -156,26 +157,6 @@ public class Velocitab implements ConfigProvider {
         Hook.AVAILABLE.forEach(availableHook -> availableHook.apply(this).ifPresent(hooks::add));
     }
 
-    private void prepareScoreboardManager() {
-        if (settings.isSendScoreboardPackets()) {
-            this.scoreboardManager = new ScoreboardManager(this);
-            scoreboardManager.registerPacket();
-        }
-    }
-
-    private void disableScoreboardManager() {
-        if (scoreboardManager != null && settings.isSendScoreboardPackets()) {
-            scoreboardManager.close();
-            scoreboardManager.unregisterPacket();
-        }
-    }
-
-    private void disableTabList() {
-        if (tabList != null) {
-            tabList.close();
-        }
-    }
-
     private void prepareVanishManager() {
         this.vanishManager = new VanishManager(this);
     }
@@ -189,6 +170,11 @@ public class Velocitab implements ConfigProvider {
         return sortingManager;
     }
 
+    @Override
+    public Velocitab getPlugin() {
+        return this;
+    }
+
     @NotNull
     public Optional<ScoreboardManager> getScoreboardManager() {
         return Optional.ofNullable(scoreboardManager);
@@ -197,13 +183,6 @@ public class Velocitab implements ConfigProvider {
     @NotNull
     public PlayerTabList getTabList() {
         return tabList;
-    }
-
-    private void prepareTabList() {
-        this.tabList = new PlayerTabList(this);
-        server.getEventManager().register(this, tabList);
-
-        server.getScheduler().buildTask(this, tabList::load).delay(1, TimeUnit.SECONDS).schedule();
     }
 
     private void prepareAPI() {
@@ -235,7 +214,6 @@ public class Velocitab implements ConfigProvider {
         metrics.addCustomChart(new SimplePie("using_luckperms", () -> getLuckPermsHook().isPresent() ? "Yes" : "No"));
         metrics.addCustomChart(new SimplePie("using_papiproxybridge", () -> getPAPIProxyBridgeHook().isPresent() ? "Yes" : "No"));
         metrics.addCustomChart(new SimplePie("using_miniplaceholders", () -> getMiniPlaceholdersHook().isPresent() ? "Yes" : "No"));
-
     }
 
     private void checkForUpdates() {

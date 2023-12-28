@@ -44,7 +44,7 @@ public class SortingManager {
             return CompletableFuture.completedFuture("");
         }
 
-        return Placeholder.replace(String.join(DELIMITER, plugin.getSettings().getSortingElements()), plugin, player)
+        return Placeholder.replace(String.join(DELIMITER, player.getGroup().sortingPlaceholders()), plugin, player)
                 .thenApply(s -> Arrays.asList(s.split(DELIMITER)))
                 .thenApply(v -> v.stream().map(this::adaptValue).collect(Collectors.toList()))
                 .thenApply(v -> handleList(player, v));

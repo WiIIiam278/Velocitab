@@ -21,6 +21,7 @@ package net.william278.velocitab.api;
 
 import com.velocitypowered.api.proxy.Player;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.tab.PlayerTabList;
 import net.william278.velocitab.vanish.VanishIntegration;
@@ -168,11 +169,11 @@ public class VelocitabAPI {
      *
      * @param player the player for whom to retrieve the server group
      * @return the name of the server group that the player is connected to,
-     * or an empty string if the player is not in a group server
+     * or a null value if the player is not connected to a server group
      */
-    @NotNull
-    public String getServerGroup(@NotNull Player player) {
-        return getUser(player).map(t -> t.getServerGroup(plugin)).orElse("");
+    @Nullable
+    public Group getServerGroup(@NotNull Player player) {
+        return getUser(player).map(TabPlayer::getGroup).orElse(null);
     }
 
 

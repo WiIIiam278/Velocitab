@@ -30,6 +30,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.tab.Nametag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,8 +65,9 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     }
 
     @NotNull
-    protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName,
-                                              @NotNull TabPlayer.Nametag nametag,
+    protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer,
+                                              @NotNull String teamName,
+                                              @NotNull Nametag nametag,
                                               @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
@@ -75,12 +77,12 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
                 .color(getLastColor(nametag.getPrefix()))
-                .prefix(nametag.getPrefixComponent(plugin))
-                .suffix(nametag.getSuffixComponent(plugin))
+                .prefix(nametag.getPrefixComponent(plugin, tabPlayer))
+                .suffix(nametag.getSuffixComponent(plugin, tabPlayer))
                 .entities(Arrays.asList(teamMembers));
     }
 
-    private static boolean isNametagPresent(@NotNull TabPlayer.Nametag nametag, @NotNull Velocitab plugin) {
+    private static boolean isNametagPresent(@NotNull Nametag nametag, @NotNull Velocitab plugin) {
         if (!plugin.getSettings().isRemoveNametags()) {
             return true;
         }
@@ -89,8 +91,9 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     }
 
     @NotNull
-    protected static UpdateTeamsPacket changeNametag(@NotNull Velocitab plugin, @NotNull String teamName,
-                                                     @NotNull TabPlayer.Nametag nametag) {
+    protected static UpdateTeamsPacket changeNametag(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer,
+                                                     @NotNull String teamName,
+                                                     @NotNull Nametag nametag) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.UPDATE_INFO)
@@ -99,8 +102,8 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
                 .color(getLastColor(nametag.getPrefix()))
-                .prefix(nametag.getPrefixComponent(plugin))
-                .suffix(nametag.getSuffixComponent(plugin));
+                .prefix(nametag.getPrefixComponent(plugin, tabPlayer))
+                .suffix(nametag.getSuffixComponent(plugin, tabPlayer));
     }
 
     @NotNull

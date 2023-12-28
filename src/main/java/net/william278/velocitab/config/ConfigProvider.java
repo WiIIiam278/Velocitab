@@ -1,5 +1,5 @@
 /*
- * This file is part of HuskClaims, licensed under the Apache License 2.0.
+ * This file is part of Velocitab, licensed under the Apache License 2.0.
  *
  *  Copyright (c) William278 <will27528@gmail.com>
  *  Copyright (c) contributors

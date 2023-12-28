@@ -24,10 +24,8 @@ import de.exlll.configlib.Configuration;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,81 +44,42 @@ public class Settings implements ConfigValidator{
             ┣╸ Information: https://william278.net/project/velocitab
             ┗╸ Documentation: https://william278.net/docs/velocitab""";
 
-    @Getter
     @Comment("Check for updates on startup")
     private boolean checkForUpdates = true;
 
-    @Comment("Header(s) to display above the TAB list for each server group."
-            + "\nList multiple headers and set update_rate to the number of ticks between frames for basic animations")
-    private Map<String, List<String>> headers = Map.of(
-            "default",
-            List.of("&rainbow&Running Velocitab by William278")
-    );
-
-    @Comment("Footer(s) to display below the TAB list for each server group, same as headers.")
-    private Map<String, List<String>> footers = Map.of(
-            "default",
-            List.of("[There are currently %players_online%/%max_players_online% players online](gray)")
-    );
-
-    private Map<String, String> formats = Map.of("default", "&7[%server%] &f%prefix%%username%");
-
-    @Getter
-    @Comment("Nametag(s) to display above players' heads for each server group. Set to empty to disable."
-            + "\nNametag formats must contain a %username%. Docs: https://william278.net/docs/velocitab/nametags")
-    private Map<String, String> nametags = Map.of("default", "&f%prefix%%username%&f%suffix%");
-
-    @Getter
     @Comment("Whether to remove nametag from players' heads if the nametag associated with their server group is empty.")
     private boolean removeNametags = false;
 
-    @Getter
     @Comment("Which text formatter to use (MINEDOWN, MINIMESSAGE, or LEGACY)")
     private Formatter formatter = Formatter.MINEDOWN;
 
-    @Getter
-    @Comment("The servers in each group of servers. The order of groups is important when sorting by SERVER_GROUP.")
-    private LinkedHashMap<String, List<String>> serverGroups = new LinkedHashMap<>(Map.of(
-            "default",
-            List.of("lobby1", "lobby2", "lobby3"))
-    );
-
-    @Getter
     @Comment("All servers which are not in other groups will be put in the fallback group."
             + "\n\"false\" will exclude them from Velocitab.")
     private boolean fallbackEnabled = true;
 
-    @Getter
     @Comment("The formats to use for the fallback group.")
     private String fallbackGroup = "default";
 
-    @Getter
     @Comment("Only show other players on a server that is part of the same server group as the player.")
     private boolean onlyListPlayersInSameGroup = true;
 
-    @Getter
     @Comment("Define custom names to be shown in the TAB list for specific server names."
             + "\nIf no custom display name is provided for a server, its original name will be used.")
     private Map<String, String> serverDisplayNames = Map.of("very-long-server-name", "VLSN");
 
-    @Getter
     @Comment("Whether to enable the PAPIProxyBridge hook for PAPI support")
     private boolean enablePapiHook = true;
 
-    @Getter
     @Comment("How long in seconds to cache PAPI placeholders for, in milliseconds. (0 to disable)")
     private long papiCacheTime = 30000;
 
-    @Getter
     @Comment("If you are using MINIMESSAGE formatting, enable this to support MiniPlaceholders in formatting.")
     private boolean enableMiniPlaceholdersHook = true;
 
-    @Getter
     @Comment("Whether to send scoreboard teams packets. Required for player list sorting and nametag formatting."
             + "\nTurn this off if you're using scoreboard teams on backend servers.")
     private boolean sendScoreboardPackets = true;
 
-    @Getter
     @Comment("Whether to sort players in the TAB list.")
     private boolean sortPlayers = true;
 
@@ -131,46 +90,11 @@ public class Settings implements ConfigValidator{
             "%username%"
     );
 
-    @Getter
     @Comment("""
             How often in milliseconds to periodically update the TAB list, including header and footer, for all users.
             If set to 0, TAB will be updated on player join/leave instead. (1s = 1000ms)
             The minimal update rate is 200ms, anything lower will automatically be set to 200ms.""")
     private int updateRate = 0;
-
-    @NotNull
-    public String getHeader(@NotNull String serverGroup, int index) {
-        final List<String> groupHeaders = headers.getOrDefault(serverGroup, List.of(""));
-        return groupHeaders.isEmpty() ? "" : StringEscapeUtils.unescapeJava(groupHeaders
-                .get(Math.max(0, Math.min(index, getHeaderListSize(serverGroup) - 1))));
-    }
-
-    @NotNull
-    public String getFooter(@NotNull String serverGroup, int index) {
-        final List<String> groupFooters = footers.getOrDefault(serverGroup, List.of(""));
-        return groupFooters.isEmpty() ? "" : StringEscapeUtils.unescapeJava(groupFooters
-                .get(Math.max(0, Math.min(index, getFooterListSize(serverGroup) - 1))));
-    }
-
-    public int getHeaderListSize(@NotNull String serverGroup) {
-        return headers.getOrDefault(serverGroup, List.of("")).size();
-    }
-
-    public int getFooterListSize(@NotNull String serverGroup) {
-        return footers.getOrDefault(serverGroup, List.of("")).size();
-    }
-
-    @NotNull
-    public String getFormat(@NotNull String serverGroup) {
-        return StringEscapeUtils.unescapeJava(
-                formats.getOrDefault(serverGroup, "%username%"));
-    }
-
-    @NotNull
-    public String getNametag(@NotNull String serverGroup) {
-        return StringEscapeUtils.unescapeJava(
-                nametags.getOrDefault(serverGroup, ""));
-    }
 
     /**
      * Get display name for the server
@@ -181,35 +105,6 @@ public class Settings implements ConfigValidator{
     @NotNull
     public String getServerDisplayName(@NotNull String serverName) {
         return serverDisplayNames.getOrDefault(serverName, serverName);
-    }
-
-    /**
-     * Get the ordinal position of the server group
-     *
-     * @param serverGroupName The server group name
-     * @return The ordinal position of the server group
-     */
-    public int getServerGroupPosition(@NotNull String serverGroupName) {
-        return List.copyOf(serverGroups.keySet()).indexOf(serverGroupName);
-    }
-
-    /**
-     * Get the server group that a server is in
-     *
-     * @param serverName The name of the server
-     * @return The server group that the server is in, or "default" if the server is not in a group
-     */
-    @NotNull
-    public String getServerGroup(String serverName) {
-        return serverGroups.entrySet().stream()
-                .filter(entry -> entry.getValue().contains(serverName)).findFirst()
-                .map(Map.Entry::getKey)
-                .orElse(fallbackGroup);
-    }
-
-    @NotNull
-    public List<String> getSortingElements() {
-        return sortingPlaceholders;
     }
 
     @Override

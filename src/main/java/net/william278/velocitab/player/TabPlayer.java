@@ -27,6 +27,7 @@ import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
+import net.william278.velocitab.tab.Nametag;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.NotNull;
@@ -36,15 +37,13 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
+@Getter
 public final class TabPlayer implements Comparable<TabPlayer> {
     private final Player player;
     @Setter
     private Role role;
-    @Getter
     private int headerIndex = 0;
-    @Getter
     private int footerIndex = 0;
-    @Getter
     private Component lastDisplayname;
     private String teamName;
     @Nullable
@@ -54,23 +53,12 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private String lastServer;
     @NotNull
     @Setter
-    @Getter
     private Group group;
 
     public TabPlayer(@NotNull Player player, @NotNull Role role, @NotNull Group group) {
         this.player = player;
         this.role = role;
         this.group = group;
-    }
-
-    @NotNull
-    public Player getPlayer() {
-        return player;
-    }
-
-    @NotNull
-    public Role getRole() {
-        return role;
     }
 
     @NotNull
@@ -92,24 +80,13 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     /**
-     * Get the TAB server group this player is connected to
-     *
-     * @param plugin instance of the {@link Velocitab} plugin
-     * @return the name of the server group the player is on
-     */
-    @NotNull
-    public String getServerGroup(@NotNull Velocitab plugin) {
-        return plugin.getSettings().getServerGroup(this.getServerName());
-    }
-
-    /**
      * Get the ordinal position of the TAB server group this player is connected to
      *
      * @param plugin instance of the {@link Velocitab} plugin
      * @return The ordinal position of the server group
      */
     public int getServerGroupPosition(@NotNull Velocitab plugin) {
-        return plugin.getSettings().getServerGroupPosition(getServerGroup(plugin));
+        return plugin.getTabGroups().getPosition(group);
     }
 
     /**
@@ -126,17 +103,14 @@ public final class TabPlayer implements Comparable<TabPlayer> {
 
     @NotNull
     public CompletableFuture<Component> getDisplayName(@NotNull Velocitab plugin) {
-        final String serverGroup = plugin.getSettings().getServerGroup(getServerName());
-        return Placeholder.replace(plugin.getSettings().getFormat(serverGroup), plugin, this)
+        return Placeholder.replace(group.format(), plugin, this)
                 .thenApply(formatted -> plugin.getFormatter().format(formatted, this, plugin))
                 .thenApply(c -> this.lastDisplayname = c);
     }
 
     @NotNull
     public CompletableFuture<Nametag> getNametag(@NotNull Velocitab plugin) {
-        final String serverGroup = plugin.getSettings().getServerGroup(getServerName());
-        return Placeholder.replace(plugin.getSettings().getNametag(serverGroup), plugin, this)
-                .thenApply(n -> new Nametag(n, player));
+        return Placeholder.replace(group.nametag(), plugin, this);
     }
 
     @NotNull
@@ -155,16 +129,16 @@ public final class TabPlayer implements Comparable<TabPlayer> {
                 .thenAccept(footer -> player.sendPlayerListHeaderAndFooter(header, footer)));
     }
 
-    public void incrementHeaderIndex(@NotNull Velocitab plugin) {
+    public void incrementHeaderIndex() {
         headerIndex++;
-        if (headerIndex >= plugin.getSettings().getHeaderListSize(getServerGroup(plugin))) {
+        if (headerIndex >= group.headers().size()) {
             headerIndex = 0;
         }
     }
 
-    public void incrementFooterIndex(@NotNull Velocitab plugin) {
+    public void incrementFooterIndex() {
         footerIndex++;
-        if (footerIndex >= plugin.getSettings().getFooterListSize(getServerGroup(plugin))) {
+        if (footerIndex >= group.footers().size()) {
             footerIndex = 0;
         }
     }
@@ -201,40 +175,5 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         return obj instanceof TabPlayer other && player.getUniqueId().equals(other.player.getUniqueId());
     }
 
-    /**
-     * Represents a nametag to be displayed above a player, with prefix and suffix
-     */
-    @Getter
-    @AllArgsConstructor
-    public class Nametag {
-        @NotNull
-        private final String prefix;
-        @NotNull
-        private final String suffix;
 
-        private Nametag(@NotNull String tag, @NotNull Player player) {
-            final String[] split = tag.split(Pattern.quote(player.getUsername()), 2);
-            this.prefix = split[0];
-            this.suffix = split.length > 1 ? split[1] : "";
-        }
-
-        @NotNull
-        public Component getPrefixComponent(@NotNull Velocitab plugin) {
-            return plugin.getFormatter().format(prefix, TabPlayer.this, plugin);
-        }
-
-        @NotNull
-        public Component getSuffixComponent(@NotNull Velocitab plugin) {
-            return plugin.getFormatter().format(suffix, TabPlayer.this, plugin);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof Nametag other)) {
-                return false;
-            }
-            return (prefix.equals(other.prefix)) && (suffix.equals(other.suffix));
-        }
-
-    }
 }

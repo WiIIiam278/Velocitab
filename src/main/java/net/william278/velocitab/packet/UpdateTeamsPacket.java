@@ -76,7 +76,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
-                .color(getLastColor(nametag.getPrefix()))
+                .color(getLastColor(nametag.prefix()))
                 .prefix(nametag.getPrefixComponent(plugin, tabPlayer))
                 .suffix(nametag.getSuffixComponent(plugin, tabPlayer))
                 .entities(Arrays.asList(teamMembers));
@@ -87,7 +87,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
             return true;
         }
 
-        return !nametag.getPrefix().isEmpty() || !nametag.getSuffix().isEmpty();
+        return !nametag.prefix().isEmpty() || !nametag.suffix().isEmpty();
     }
 
     @NotNull
@@ -101,7 +101,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
-                .color(getLastColor(nametag.getPrefix()))
+                .color(getLastColor(nametag.prefix()))
                 .prefix(nametag.getPrefixComponent(plugin, tabPlayer))
                 .suffix(nametag.getSuffixComponent(plugin, tabPlayer));
     }

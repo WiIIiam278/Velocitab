@@ -129,6 +129,11 @@ public final class TabPlayer implements Comparable<TabPlayer> {
                 .thenAccept(footer -> player.sendPlayerListHeaderAndFooter(header, footer)));
     }
 
+    public void incrementIndexes() {
+        incrementHeaderIndex();
+        incrementFooterIndex();
+    }
+
     public void incrementHeaderIndex() {
         headerIndex++;
         if (headerIndex >= group.headers().size()) {

@@ -42,11 +42,11 @@ import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The main class for tracking the server TAB list
@@ -55,17 +55,16 @@ public class PlayerTabList {
     private final Velocitab plugin;
     private final ConcurrentHashMap<UUID, TabPlayer> players;
     private final List<UUID> justKicked;
-    private ScheduledTask updateTask;
+    private final Map<Group, ScheduledTask> placeholderTasks;
+    private final Map<Group, ScheduledTask> headerFooterTasks;
 
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
         this.players = new ConcurrentHashMap<>();
         this.justKicked = new CopyOnWriteArrayList<>();
-
-        // If the update time is set to 0 do not schedule the updater
-        if (plugin.getSettings().getUpdateRate() > 0) {
-            this.updatePeriodically(plugin.getSettings().getUpdateRate());
-        }
+        this.placeholderTasks = new ConcurrentHashMap<>();
+        this.headerFooterTasks = new ConcurrentHashMap<>();
+        this.reloadUpdate();
     }
 
     /**
@@ -92,7 +91,7 @@ public class PlayerTabList {
             final Group group = getGroup(serverName);
             final boolean isDefault = !group.servers().contains(serverName);
 
-            if(isDefault && !plugin.getSettings().isFallbackEnabled()) {
+            if (isDefault && !plugin.getSettings().isFallbackEnabled()) {
                 return;
             }
 
@@ -105,15 +104,20 @@ public class PlayerTabList {
      * Removes the player's entry from the tab list of all other players on the same group servers.
      */
     public void close() {
+        placeholderTasks.values().forEach(ScheduledTask::cancel);
         plugin.getServer().getAllPlayers().forEach(p -> {
             final Optional<ServerConnection> server = p.getCurrentServer();
             if (server.isEmpty()) return;
 
-            TabPlayer tabPlayer = players.get(p.getUniqueId());
-            if (tabPlayer == null) return;
+            final TabPlayer tabPlayer = players.get(p.getUniqueId());
+            if (tabPlayer == null) {
+                return;
+            }
 
             final List<RegisteredServer> serversInGroup = new ArrayList<>(tabPlayer.getGroup().registeredServers(plugin));
-            if (serversInGroup.isEmpty()) return;
+            if (serversInGroup.isEmpty()) {
+                return;
+            }
 
             serversInGroup.remove(server.get().getServer());
 
@@ -137,7 +141,7 @@ public class PlayerTabList {
         final String serverName = joined.getCurrentServer()
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
-                .orElse("default");
+                .orElse("");
         final Group group = getGroup(serverName);
         final boolean isDefault = !group.servers().contains(serverName);
 
@@ -169,6 +173,8 @@ public class PlayerTabList {
         tabPlayer.setLastServer(joined.getCurrentServer().map(ServerConnection::getServerInfo).map(ServerInfo::getName).orElse(""));
 
         final boolean isVanished = plugin.getVanishManager().isVanished(joined.getUsername());
+        final boolean isDefault = group.isDefault();
+        final boolean isFallback = isDefault && plugin.getSettings().isFallbackEnabled();
         // Update lists
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
@@ -176,7 +182,10 @@ public class PlayerTabList {
                     for (final TabPlayer player : players.values()) {
                         // Skip players on other servers if the setting is enabled
                         if (plugin.getSettings().isOnlyListPlayersInSameGroup()
-                                && !group.servers().contains(player.getServerName())) {
+                                && !isFallback &&
+                                !group.servers().contains(player.getServerName())
+                        ) {
+                            System.out.println("Skipping " + player.getPlayer().getUsername() + " as they are on a different server");
                             continue;
                         }
                         // check if current player can see the joined player
@@ -352,43 +361,81 @@ public class PlayerTabList {
     }
 
     // Update the tab list periodically
-    private void updatePeriodically(int updateRate) {
-        updateTask = plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> {
-                    if (players.isEmpty()) {
-                        return;
-                    }
-                    players.values().forEach(player -> {
-                        this.updatePlayer(player, false);
-                        player.sendHeaderAndFooter(this);
-                    });
-                    updateDisplayNames();
-                })
-                .repeat(Math.max(200, updateRate), TimeUnit.MILLISECONDS)
-                .schedule();
+    private void updatePeriodically(Group group) {
+        cancelTasks(group);
+
+
+        if (group.placeholderUpdateRate() > 0) {
+            //adding 1ms to prevent desync
+            final ScheduledTask updateTask = plugin.getServer().getScheduler()
+                    .buildTask(plugin, () -> updateGroupPlayers(group, true))
+                    .repeat(Math.max(200, group.placeholderUpdateRate())  + 1, TimeUnit.MILLISECONDS)
+                    .schedule();
+            placeholderTasks.put(group, updateTask);
+        }
+
+        if (group.headerFooterUpdateRate() > 0) {
+            final ScheduledTask headerFooterTask = plugin.getServer().getScheduler()
+                    .buildTask(plugin, () -> {
+                        group.getTabPlayers(plugin).forEach(TabPlayer::incrementIndexes);
+                        updateGroupPlayers(group, false);
+                    })
+                    .repeat(Math.max(200, group.headerFooterUpdateRate()), TimeUnit.MILLISECONDS)
+                    .schedule();
+            headerFooterTasks.put(group, headerFooterTask);
+        }
+
+    }
+
+    /**
+     * Updates the players in the given group.
+     *
+     * @param group The group whose players should be updated.
+     * @param all   Whether to update all player properties, or just the header and footer.
+     */
+    private void updateGroupPlayers(Group group, boolean all) {
+        List<TabPlayer> groupPlayers = group.getTabPlayers(plugin);
+        if (groupPlayers.isEmpty()) {
+            return;
+        }
+        groupPlayers.forEach(player -> {
+            if (all) {
+                this.updatePlayer(player, false);
+            }
+            player.sendHeaderAndFooter(this);
+        });
+        if (all) {
+            updateDisplayNames();
+        }
+    }
+
+    private void cancelTasks(Group group) {
+        ScheduledTask task = placeholderTasks.get(group);
+        if (task != null) {
+            task.cancel();
+        }
+
+        task = headerFooterTasks.get(group);
+        if (task != null) {
+            task.cancel();
+        }
     }
 
     /**
      * Update the TAB list for all players when a plugin or proxy reload is performed
      */
     public void reloadUpdate() {
+        plugin.getTabGroups().getGroups().forEach(this::updatePeriodically);
+
         if (players.isEmpty()) {
             return;
         }
-
-        if (updateTask != null) {
-            updateTask.cancel();
-        }
         // If the update time is set to 0 do not schedule the updater
-        if (plugin.getSettings().getUpdateRate() > 0) {
-            this.updatePeriodically(plugin.getSettings().getUpdateRate());
-        } else {
-            players.values().forEach(player -> {
-                this.updatePlayer(player, true);
-                player.sendHeaderAndFooter(this);
-            });
-            updateDisplayNames();
-        }
+        players.values().forEach(player -> {
+            this.updatePlayer(player, true);
+            player.sendHeaderAndFooter(this);
+        });
+        updateDisplayNames();
 
     }
 
@@ -411,6 +458,7 @@ public class PlayerTabList {
      */
     public void removeOfflinePlayer(@NotNull Player player) {
         players.remove(player.getUniqueId());
+        System.out.println("Removed " + player.getUsername() + " from tab list cache");
     }
 
     public void vanishPlayer(@NotNull TabPlayer tabPlayer) {

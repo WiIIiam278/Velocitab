@@ -83,19 +83,6 @@ public class Settings implements ConfigValidator{
     @Comment("Whether to sort players in the TAB list.")
     private boolean sortPlayers = true;
 
-    @Comment("Ordered list of elements by which players should be sorted. " +
-            "(Correct values are both internal placeholders and, if enabled, PAPI placeholders)")
-    private List<String> sortingPlaceholders = List.of(
-            "%role_weight%",
-            "%username%"
-    );
-
-    @Comment("""
-            How often in milliseconds to periodically update the TAB list, including header and footer, for all users.
-            If set to 0, TAB will be updated on player join/leave instead. (1s = 1000ms)
-            The minimal update rate is 200ms, anything lower will automatically be set to 200ms.""")
-    private int updateRate = 0;
-
     /**
      * Get display name for the server
      *

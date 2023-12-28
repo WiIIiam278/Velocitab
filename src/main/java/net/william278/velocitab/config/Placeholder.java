@@ -85,7 +85,7 @@ public enum Placeholder {
 
     public static CompletableFuture<Nametag> replace(@NotNull Nametag nametag, @NotNull Velocitab plugin,
                                                      @NotNull TabPlayer player) {
-        return replace(nametag.getPrefix() + DELIMITER + nametag.getSuffix(), plugin, player)
+        return replace(nametag.prefix() + DELIMITER + nametag.suffix(), plugin, player)
                 .thenApply(s -> s.split(DELIMITER))
                 .thenApply(v -> new Nametag(v[0], v[1]));
     }

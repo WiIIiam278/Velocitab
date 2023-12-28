@@ -19,7 +19,6 @@
 
 package net.william278.velocitab.tab;
 
-import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
@@ -28,17 +27,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Represents a nametag to be displayed above a player, with prefix and suffix
  */
-@Getter
-public class Nametag {
-    @NotNull
-    private final String prefix;
-    @NotNull
-    private final String suffix;
-
-    public Nametag(@NotNull String prefix, @NotNull String suffix) {
-        this.prefix = prefix;
-        this.suffix = suffix;
-    }
+public record Nametag(@NotNull String prefix, @NotNull String suffix) {
 
     @NotNull
     public Component getPrefixComponent(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {

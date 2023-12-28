@@ -362,6 +362,7 @@ public class PlayerTabList {
     private void updatePeriodically(Group group) {
         cancelTasks(group);
 
+
         if (group.headerFooterUpdateRate() > 0) {
             final ScheduledTask headerFooterTask = plugin.getServer().getScheduler()
                     .buildTask(plugin, () -> {

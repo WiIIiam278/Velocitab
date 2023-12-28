@@ -86,12 +86,16 @@ public enum Placeholder {
     public static CompletableFuture<Nametag> replace(@NotNull Nametag nametag, @NotNull Velocitab plugin,
                                                      @NotNull TabPlayer player) {
         return replace(nametag.prefix() + DELIMITER + nametag.suffix(), plugin, player)
-                .thenApply(s -> s.split(DELIMITER))
-                .thenApply(v -> new Nametag(v[0], v[1]));
+                .thenApply(s -> s.split(DELIMITER, 2))
+                .thenApply(v -> new Nametag(v[0], v.length > 1 ? v[1] : ""));
     }
 
     public static CompletableFuture<String> replace(@NotNull String format, @NotNull Velocitab plugin,
                                                     @NotNull TabPlayer player) {
+
+        if (format.equals(DELIMITER)) {
+            return CompletableFuture.completedFuture("");
+        }
 
         for (Placeholder placeholder : values()) {
             Matcher matcher = placeholder.pattern.matcher(format);

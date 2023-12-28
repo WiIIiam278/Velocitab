@@ -98,7 +98,8 @@ shadowJar {
     relocate 'net.william278.desertwell', 'net.william278.velocitab.libraries.desertwell'
     relocate 'org.json', 'net.william278.velocitab.libraries.json'
     relocate 'org.bstats', 'net.william278.velocitab.libraries.bstats'
-    relocate 'de.exlll', 'net.william278.velocitab.libraries'
+    relocate 'de.exlll', 'net.william278.velocitab.libraries.configlib'
+    relocate 'org.snakeyaml.engine', 'net.william278.velocitab.libraries.snakeyaml'
 
     dependencies {
         exclude dependency(':slf4j-api')

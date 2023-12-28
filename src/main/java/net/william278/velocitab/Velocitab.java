@@ -45,11 +45,11 @@ import net.william278.velocitab.hook.LuckPermsHook;
 import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
-import net.william278.velocitab.util.HookProvider;
-import net.william278.velocitab.util.LoggerProvider;
-import net.william278.velocitab.util.ScoreboardProvider;
+import net.william278.velocitab.providers.HookProvider;
+import net.william278.velocitab.providers.LoggerProvider;
+import net.william278.velocitab.providers.MetricProvider;
+import net.william278.velocitab.providers.ScoreboardProvider;
 import net.william278.velocitab.vanish.VanishManager;
-import org.bstats.charts.SimplePie;
 import org.bstats.velocity.Metrics;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -60,9 +60,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Plugin(id = "velocitab")
+@SuppressWarnings("unused")
 @Getter
-public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProvider, HookProvider {
-    private static final int METRICS_ID = 18247;
+public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProvider, HookProvider, MetricProvider {
     @Setter
     private Settings settings;
     @Setter
@@ -165,15 +165,6 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
         return Version.fromString(getDescription().getVersion().orElseThrow(), "-");
     }
 
-    private void registerMetrics() {
-        final Metrics metrics = metricsFactory.make(this, METRICS_ID);
-        metrics.addCustomChart(new SimplePie("sort_players", () -> settings.isSortPlayers() ? "Enabled" : "Disabled"));
-        metrics.addCustomChart(new SimplePie("formatter_type", () -> settings.getFormatter().getName()));
-        metrics.addCustomChart(new SimplePie("using_luckperms", () -> getLuckPermsHook().isPresent() ? "Yes" : "No"));
-        metrics.addCustomChart(new SimplePie("using_papiproxybridge", () -> getPAPIProxyBridgeHook().isPresent() ? "Yes" : "No"));
-        metrics.addCustomChart(new SimplePie("using_miniplaceholders", () -> getMiniPlaceholdersHook().isPresent() ? "Yes" : "No"));
-    }
-
     private void checkForUpdates() {
         if (!getSettings().isCheckForUpdates()) {
             return;
@@ -193,7 +184,5 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
                 .resource("velocitab")
                 .build();
     }
-
-
 
 }

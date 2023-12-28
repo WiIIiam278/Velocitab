@@ -17,7 +17,7 @@
  *  limitations under the License.
  */
 
-package net.william278.velocitab.util;
+package net.william278.velocitab.providers;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;

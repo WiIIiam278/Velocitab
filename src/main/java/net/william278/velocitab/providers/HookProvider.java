@@ -17,7 +17,7 @@
  *  limitations under the License.
  */
 
-package net.william278.velocitab.util;
+package net.william278.velocitab.providers;
 
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.hook.Hook;

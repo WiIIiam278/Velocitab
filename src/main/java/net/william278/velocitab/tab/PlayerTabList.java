@@ -19,6 +19,8 @@
 
 package net.william278.velocitab.tab;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
@@ -44,8 +46,6 @@ import org.slf4j.event.Level;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -53,17 +53,17 @@ import java.util.concurrent.TimeUnit;
  */
 public class PlayerTabList {
     private final Velocitab plugin;
-    private final ConcurrentHashMap<UUID, TabPlayer> players;
+    private final Map<UUID, TabPlayer> players;
     private final List<UUID> justKicked;
     private final Map<Group, ScheduledTask> placeholderTasks;
     private final Map<Group, ScheduledTask> headerFooterTasks;
 
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
-        this.players = new ConcurrentHashMap<>();
-        this.justKicked = new CopyOnWriteArrayList<>();
-        this.placeholderTasks = new ConcurrentHashMap<>();
-        this.headerFooterTasks = new ConcurrentHashMap<>();
+        this.players = Maps.newConcurrentMap();
+        this.justKicked = Lists.newCopyOnWriteArrayList();
+        this.placeholderTasks = Maps.newConcurrentMap();
+        this.headerFooterTasks = Maps.newConcurrentMap();
         this.reloadUpdate();
     }
 

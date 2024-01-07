@@ -23,7 +23,6 @@ import de.exlll.configlib.Configuration;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.tab.Nametag;
 import org.jetbrains.annotations.NotNull;
 

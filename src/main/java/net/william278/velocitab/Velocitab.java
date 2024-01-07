@@ -69,7 +69,7 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
     private TabGroups tabGroups;
     private final ProxyServer server;
     private final Logger logger;
-    private final Path dataDirectory;
+    private final Path configDirectory;
     @Inject
     private PluginContainer pluginContainer;
     @Inject
@@ -85,10 +85,10 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
     private VanishManager vanishManager;
 
     @Inject
-    public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path dataDirectory) {
+    public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path configDirectory) {
         this.server = server;
         this.logger = logger;
-        this.dataDirectory = dataDirectory;
+        this.configDirectory = configDirectory;
     }
 
     @Subscribe
@@ -121,12 +121,6 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
     public void loadConfigs() {
         loadSettings();
         loadTabGroups();
-    }
-
-    @NotNull
-    @Override
-    public Path getConfigDirectory() {
-        return dataDirectory;
     }
 
     private void prepareVanishManager() {

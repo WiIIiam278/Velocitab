@@ -369,6 +369,7 @@ public class PlayerTabList {
                         group.getTabPlayers(plugin).forEach(TabPlayer::incrementIndexes);
                         updateGroupPlayers(group, false);
                     })
+                    .delay(1, TimeUnit.SECONDS)
                     .repeat(Math.max(200, group.headerFooterUpdateRate()), TimeUnit.MILLISECONDS)
                     .schedule();
             headerFooterTasks.put(group, headerFooterTask);
@@ -377,6 +378,7 @@ public class PlayerTabList {
         if (group.placeholderUpdateRate() > 0) {
             final ScheduledTask updateTask = plugin.getServer().getScheduler()
                     .buildTask(plugin, () -> updateGroupPlayers(group, true))
+                    .delay(1, TimeUnit.SECONDS)
                     .repeat(Math.max(200, group.placeholderUpdateRate()), TimeUnit.MILLISECONDS)
                     .schedule();
             placeholderTasks.put(group, updateTask);
@@ -431,7 +433,8 @@ public class PlayerTabList {
      * Update the TAB list for all players when a plugin or proxy reload is performed
      */
     public void reloadUpdate() {
-        plugin.getTabGroups().getGroups().forEach(this::cancelTasks);
+        placeholderTasks.values().forEach(ScheduledTask::cancel);
+        placeholderTasks.clear();
         plugin.getTabGroups().getGroups().forEach(this::updatePeriodically);
 
         if (players.isEmpty()) {
@@ -439,6 +442,13 @@ public class PlayerTabList {
         }
         // If the update time is set to 0 do not schedule the updater
         players.values().forEach(player -> {
+            final Optional<ServerConnection> server = player.getPlayer().getCurrentServer();
+            if (server.isEmpty()) {
+                return;
+            }
+            final String serverName = server.get().getServerInfo().getName();
+            final Group group = getGroup(serverName);
+            player.setGroup(group);
             this.updatePlayer(player, true);
             player.sendHeaderAndFooter(this);
         });
@@ -465,7 +475,6 @@ public class PlayerTabList {
      */
     public void removeOfflinePlayer(@NotNull Player player) {
         players.remove(player.getUniqueId());
-        System.out.println("Removed " + player.getUsername() + " from tab list cache");
     }
 
     public void vanishPlayer(@NotNull TabPlayer tabPlayer) {

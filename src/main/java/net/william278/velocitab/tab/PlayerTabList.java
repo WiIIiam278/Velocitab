@@ -28,6 +28,7 @@ import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import com.velocitypowered.api.scheduler.ScheduledTask;
+import lombok.AccessLevel;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
@@ -50,8 +51,10 @@ public class PlayerTabList {
     private final Velocitab plugin;
     @Getter
     private final VanishTabList vanishTabList;
-    protected final Map<UUID, TabPlayer> players;
-    protected final List<UUID> justKicked;
+    @Getter(value = AccessLevel.PROTECTED)
+    private final Map<UUID, TabPlayer> players;
+    @Getter(value = AccessLevel.PROTECTED)
+    private final List<UUID> justKicked;
     private final Map<Group, ScheduledTask> placeholderTasks;
     private final Map<Group, ScheduledTask> headerFooterTasks;
 

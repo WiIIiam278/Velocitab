@@ -21,7 +21,7 @@ public class VanishTabList {
 
 
     public void vanishPlayer(@NotNull TabPlayer tabPlayer) {
-        tabList.players.values().forEach(p -> {
+        tabList.getPlayers().values().forEach(p -> {
             if (p.getPlayer().equals(tabPlayer.getPlayer())) {
                 return;
             }
@@ -35,7 +35,7 @@ public class VanishTabList {
     public void unVanishPlayer(@NotNull TabPlayer tabPlayer) {
         final UUID uuid = tabPlayer.getPlayer().getUniqueId();
 
-        tabPlayer.getDisplayName(plugin).thenAccept(c -> tabList.players.values().forEach(p -> {
+        tabPlayer.getDisplayName(plugin).thenAccept(c -> tabList.getPlayers().values().forEach(p -> {
             if (p.getPlayer().equals(tabPlayer.getPlayer())) {
                 return;
             }

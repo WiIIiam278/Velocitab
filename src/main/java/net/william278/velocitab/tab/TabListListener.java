@@ -32,7 +32,7 @@ public class TabListListener {
     public void onKick(KickedFromServerEvent event) {
         event.getPlayer().getTabList().clearAll();
         event.getPlayer().getTabList().clearHeaderAndFooter();
-        tabList.justKicked.add(event.getPlayer().getUniqueId());
+        tabList.getJustKicked().add(event.getPlayer().getUniqueId());
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -52,7 +52,7 @@ public class TabListListener {
         // If fallback is disabled, permit the player to switch excluded servers without a header or footer override
         if (isDefault && !plugin.getSettings().isFallbackEnabled()) {
             event.getPlayer().sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
-            tabList.players.remove(event.getPlayer().getUniqueId());
+            tabList.getPlayers().remove(event.getPlayer().getUniqueId());
             return;
         }
 
@@ -66,7 +66,7 @@ public class TabListListener {
 
         // Remove the player from the tracking list, Print warning if player was not removed
         final UUID uuid = event.getPlayer().getUniqueId();
-        final TabPlayer tabPlayer = tabList.players.get(uuid);
+        final TabPlayer tabPlayer = tabList.getPlayers().get(uuid);
         if (tabPlayer == null) {
             plugin.log(String.format("Failed to remove disconnecting player %s (UUID: %s)",
                     event.getPlayer().getUsername(), uuid));
@@ -77,7 +77,7 @@ public class TabListListener {
 
         // Update the tab list of all players
         plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> tabList.players.values().forEach(player -> {
+                .buildTask(plugin, () -> tabList.getPlayers().values().forEach(player -> {
                     player.getPlayer().getTabList().removeEntry(uuid);
                     player.sendHeaderAndFooter(tabList);
                 }))
@@ -86,7 +86,7 @@ public class TabListListener {
         // Delete player team
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(event.getPlayer()));
         //remove player from tab list cache
-        tabList.justKicked.remove(uuid);
+        tabList.getJustKicked().remove(uuid);
     }
 
     @Subscribe

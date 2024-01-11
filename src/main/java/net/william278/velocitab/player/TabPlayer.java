@@ -20,7 +20,6 @@
 package net.william278.velocitab.player;
 
 import com.velocitypowered.api.proxy.Player;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
@@ -35,7 +34,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.regex.Pattern;
 
 @Getter
 public final class TabPlayer implements Comparable<TabPlayer> {
@@ -47,6 +45,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private Component lastDisplayname;
     private String teamName;
     @Nullable
+    @Setter
     private String customName;
     @Nullable
     @Setter
@@ -54,6 +53,8 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     @NotNull
     @Setter
     private Group group;
+    @Setter
+    private boolean loaded;
 
     public TabPlayer(@NotNull Player player, @NotNull Role role, @NotNull Group group) {
         this.player = player;
@@ -129,6 +130,11 @@ public final class TabPlayer implements Comparable<TabPlayer> {
                 .thenAccept(footer -> player.sendPlayerListHeaderAndFooter(header, footer)));
     }
 
+    public CompletableFuture<Void> sendHeaderAndFooterAsync(@NotNull PlayerTabList tabList) {
+        return tabList.getHeader(this).thenCompose(header -> tabList.getFooter(this)
+                .thenAccept(footer -> player.sendPlayerListHeaderAndFooter(header, footer)));
+    }
+
     public void incrementIndexes() {
         incrementHeaderIndex();
         incrementFooterIndex();
@@ -157,15 +163,6 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         return Optional.ofNullable(customName);
     }
 
-    /**
-     * Sets the custom name of the TabPlayer.
-     *
-     * @param customName The custom name to set
-     */
-    public void setCustomName(@Nullable String customName) {
-        this.customName = customName;
-    }
-
     @Override
     public int compareTo(@NotNull TabPlayer o) {
         final int roleDifference = role.compareTo(o.role);
@@ -179,6 +176,5 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     public boolean equals(Object obj) {
         return obj instanceof TabPlayer other && player.getUniqueId().equals(other.player.getUniqueId());
     }
-
 
 }

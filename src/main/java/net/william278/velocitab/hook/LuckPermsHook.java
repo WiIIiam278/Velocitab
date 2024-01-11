@@ -105,7 +105,7 @@ public class LuckPermsHook extends Hook {
                             final Role oldRole = tabPlayer.getRole();
                             tabPlayer.setRole(getRoleFromMetadata(event.getData().getMetaData()));
                             tabList.updatePlayerDisplayName(tabPlayer);
-                            tabList.recalculateVanishForPlayer(tabPlayer);
+                            tabList.getVanishTabList().recalculateVanishForPlayer(tabPlayer);
                             checkRoleUpdate(tabPlayer, oldRole);
                         })
                         .delay(500, TimeUnit.MILLISECONDS)

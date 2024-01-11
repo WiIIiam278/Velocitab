@@ -1,6 +1,7 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
+    id 'xyz.jpenilla.run-velocity' version '2.2.2'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'org.cadixdev.licenser' version '0.6.1'
     id 'org.ajoberstar.grgit' version '5.2.1'
@@ -22,11 +23,11 @@ repositories {
     mavenCentral()
     maven { url = 'https://repo.papermc.io/repository/maven-public/' }
     maven { url = 'https://repo.william278.net/releases/' }
+    maven { url = 'https://repo.william278.net/velocity/' }
     maven { url = 'https://jitpack.io/' }
     maven { url = 'https://repo.minebench.de/' }
     maven { url = 'https://maven.elytrium.net/repo/' }
     maven { url = 'https://mvn.exceptionflug.de/repository/exceptionflug-public/' }
-    maven { url = 'https://repo.william278.net/velocity/' }
 }
 
 dependencies {
@@ -150,6 +151,12 @@ publishing {
             artifact javadocJar
             artifact sourcesJar
         }
+    }
+}
+
+tasks {
+    runVelocity {
+        velocityVersion("3.3.0-SNAPSHOT")
     }
 }
 

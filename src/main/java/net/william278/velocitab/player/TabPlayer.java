@@ -37,6 +37,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Getter
 public final class TabPlayer implements Comparable<TabPlayer> {
+
     private final Player player;
     @Setter
     private Role role;

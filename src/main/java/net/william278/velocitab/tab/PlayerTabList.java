@@ -70,7 +70,7 @@ public class PlayerTabList {
     }
 
     private void registerListener() {
-        plugin.getServer().getEventManager().register(plugin, new TabListListener(plugin));
+        plugin.getServer().getEventManager().register(plugin, new TabListListener(plugin, this));
     }
 
     /**

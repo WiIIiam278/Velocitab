@@ -43,6 +43,7 @@ import net.william278.velocitab.config.TabGroups;
 import net.william278.velocitab.hook.Hook;
 import net.william278.velocitab.hook.LuckPermsHook;
 import net.william278.velocitab.packet.ScoreboardManager;
+import net.william278.velocitab.packet.ChannelManager;
 import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
 import net.william278.velocitab.providers.HookProvider;
@@ -83,6 +84,7 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
     @Setter
     private SortingManager sortingManager;
     private VanishManager vanishManager;
+    private ChannelManager channelManager;
 
     @Inject
     public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path configDirectory) {
@@ -96,6 +98,7 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
         loadConfigs();
         loadHooks();
         prepareVanishManager();
+        prepareChannelManager();
         prepareScoreboard();
         registerCommands();
         registerMetrics();
@@ -125,6 +128,10 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
 
     private void prepareVanishManager() {
         this.vanishManager = new VanishManager(this);
+    }
+
+    private void prepareChannelManager() {
+        this.channelManager = new ChannelManager(this);
     }
 
     @Override

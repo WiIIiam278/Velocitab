@@ -172,4 +172,18 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         return obj instanceof TabPlayer other && player.getUniqueId().equals(other.player.getUniqueId());
     }
 
+    @Override
+    public String toString() {
+        return "TabPlayer{" +
+                "player=" + player +
+                ", role=" + role +
+                ", headerIndex=" + headerIndex +
+                ", footerIndex=" + footerIndex +
+                ", lastDisplayname=" + lastDisplayname +
+                ", teamName='" + teamName + '\'' +
+                ", lastServer='" + lastServer + '\'' +
+                ", group=" + group.name() +
+                ", loaded=" + loaded +
+                '}';
+    }
 }

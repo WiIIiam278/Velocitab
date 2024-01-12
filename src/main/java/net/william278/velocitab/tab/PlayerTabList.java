@@ -84,6 +84,16 @@ public class PlayerTabList {
     }
 
     /**
+     * Retrieves a TabPlayer object corresponding to the given UUID.
+     *
+     * @param uuid The UUID of the player for which to retrieve the corresponding TabPlayer.
+     * @return An Optional object containing the TabPlayer if found, or an empty Optional if not found.
+     */
+    public Optional<TabPlayer> getTabPlayer(@NotNull UUID uuid) {
+        return Optional.ofNullable(players.get(uuid));
+    }
+
+    /**
      * Loads the tab list for all players connected to the server.
      * Removes the player's entry from the tab list of all other players on the same group servers.
      */
@@ -246,6 +256,13 @@ public class PlayerTabList {
         if (newPlayer.getPlayer().getUniqueId().equals(player.getPlayer().getUniqueId())) {
             return;
         }
+
+        plugin.getChannelManager().getVelocitabEntries().add(newPlayer.getPlayer().getUniqueId());
+
+        plugin.getServer().getScheduler()
+                .buildTask(plugin, () -> plugin.getChannelManager().getVelocitabEntries().remove(newPlayer.getPlayer().getUniqueId()))
+                .delay(500, TimeUnit.MILLISECONDS)
+                .schedule();
 
         player.getPlayer()
                 .getTabList().getEntries().stream()

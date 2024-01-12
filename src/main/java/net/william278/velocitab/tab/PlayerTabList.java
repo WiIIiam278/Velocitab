@@ -257,10 +257,10 @@ public class PlayerTabList {
             return;
         }
 
-        plugin.getChannelManager().getVelocitabEntries().add(newPlayer.getPlayer().getUniqueId());
+        plugin.getPacketEventManager().getVelocitabEntries().add(newPlayer.getPlayer().getUniqueId());
 
         plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> plugin.getChannelManager().getVelocitabEntries().remove(newPlayer.getPlayer().getUniqueId()))
+                .buildTask(plugin, () -> plugin.getPacketEventManager().getVelocitabEntries().remove(newPlayer.getPlayer().getUniqueId()))
                 .delay(500, TimeUnit.MILLISECONDS)
                 .schedule();
 

@@ -39,21 +39,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-public class ChannelManager {
+public class PacketEventManager {
 
     private static final String KEY = "velocitab";
+    private static final String CITIZENS_PREFIX = "CIT";
 
     private final Velocitab plugin;
     @Getter
     private final Set<UUID> velocitabEntries;
-    private final Set<UUID> spamCache;
 
-    public ChannelManager(@NotNull Velocitab plugin) {
+    public PacketEventManager(@NotNull Velocitab plugin) {
         this.plugin = plugin;
         this.velocitabEntries = Sets.newConcurrentHashSet();
-        this.spamCache = Sets.newConcurrentHashSet();
         this.loadPlayers();
         this.loadListeners();
     }
@@ -97,9 +95,8 @@ public class ChannelManager {
     protected void handleEntry(@NotNull UpsertPlayerInfo packet, @NotNull Player player) {
         final List<TabPlayer> toUpdate = packet.getEntries().stream()
                 .filter(entry -> entry.getProfile() != null)
-                .filter(entry -> !entry.getProfile().getName().startsWith("CIT"))
+                .filter(entry -> !entry.getProfile().getName().startsWith(CITIZENS_PREFIX))
                 .filter(entry -> velocitabEntries.stream().noneMatch(uuid -> uuid.equals(entry.getProfile().getId())))
-                .filter(entry -> spamCache.stream().noneMatch(uuid -> uuid.equals(entry.getProfile().getId())))
                 .map(entry -> entry.getProfile().getId())
                 .map(id -> plugin.getTabList().getTabPlayer(id))
                 .filter(Optional::isPresent)
@@ -115,16 +112,9 @@ public class ChannelManager {
                     .filter(entry -> entry.getProfile() != null)
                     .filter(entry -> entry.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId()))
                     .findFirst()
-                    .ifPresent(entry -> {
-                        entry.setDisplayName(new ComponentHolder(player.getProtocolVersion(), tabPlayer.getLastDisplayname()));
-                    });
+                    .ifPresent(entry -> entry.setDisplayName(
+                            new ComponentHolder(player.getProtocolVersion(), tabPlayer.getLastDisplayname())));
         });
-
-        spamCache.addAll(toUpdate.stream().map(p -> p.getPlayer().getUniqueId()).toList());
-
-        plugin.getServer().getScheduler().buildTask(plugin, () -> {
-            toUpdate.stream().map(p -> p.getPlayer().getUniqueId()).toList().forEach(spamCache::remove);
-        }).delay(1, TimeUnit.SECONDS).schedule();
     }
 
 }

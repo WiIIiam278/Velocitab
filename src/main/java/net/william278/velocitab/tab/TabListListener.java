@@ -37,6 +37,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * The TabListListener class is responsible for handling events related to the player tab list.
+ */
+@SuppressWarnings("unused")
 public class TabListListener {
 
     private final Velocitab plugin;
@@ -107,6 +111,7 @@ public class TabListListener {
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(event.getPlayer()));
         //remove player from tab list cache
         tabList.getJustKicked().remove(uuid);
+        tabList.getPlayers().remove(uuid);
     }
 
     @Subscribe

@@ -28,14 +28,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * The VanishTabList handles the tab list for vanished players
+ */
 public class VanishTabList {
     
     private final Velocitab plugin;
     private final PlayerTabList tabList;
     
-    public VanishTabList(Velocitab plugin) {
+    public VanishTabList(Velocitab plugin, PlayerTabList tabList) {
         this.plugin = plugin;
-        this.tabList = plugin.getTabList();
+        this.tabList = tabList;
     }
 
 

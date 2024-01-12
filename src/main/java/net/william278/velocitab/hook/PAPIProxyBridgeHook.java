@@ -34,7 +34,7 @@ public class PAPIProxyBridgeHook extends Hook {
         super(plugin);
         this.api = PlaceholderAPI.createInstance();
         this.api.setCacheExpiry(Math.max(0, plugin.getSettings().getPapiCacheTime()));
-        this.api.setRequestTimeout(1000);
+        this.api.setRequestTimeout(1500);
     }
 
     public CompletableFuture<String> formatPlaceholders(@NotNull String input, @NotNull Player player) {

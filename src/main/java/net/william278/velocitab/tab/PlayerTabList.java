@@ -51,7 +51,7 @@ public class PlayerTabList {
     private final Velocitab plugin;
     @Getter
     private final VanishTabList vanishTabList;
-    @Getter(value = AccessLevel.PROTECTED)
+    @Getter(value = AccessLevel.PUBLIC)
     private final Map<UUID, TabPlayer> players;
     @Getter(value = AccessLevel.PROTECTED)
     private final List<UUID> justKicked;
@@ -60,7 +60,7 @@ public class PlayerTabList {
 
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
-        this.vanishTabList = new VanishTabList(plugin);
+        this.vanishTabList = new VanishTabList(plugin, this);
         this.players = Maps.newConcurrentMap();
         this.justKicked = Lists.newCopyOnWriteArrayList();
         this.placeholderTasks = Maps.newConcurrentMap();
@@ -133,7 +133,6 @@ public class PlayerTabList {
     }
 
 
-
     protected void joinPlayer(@NotNull Player joined, @NotNull Group group) {
         // Add the player to the tracking list if they are not already listed
         final TabPlayer tabPlayer = getTabPlayer(joined).orElseGet(() -> createTabPlayer(joined, group));
@@ -162,7 +161,7 @@ public class PlayerTabList {
                     .ifPresentOrElse(e -> e.setDisplayName(d),
                             () -> joined.getTabList().addEntry(createEntry(tabPlayer, joined.getTabList(), d)));
 
-            tabPlayer.sendHeaderAndFooterAsync(this)
+            tabPlayer.sendHeaderAndFooter(this)
                     .thenAccept(v -> tabPlayer.setLoaded(true))
                     .exceptionally(throwable -> {
                         plugin.log(Level.ERROR, String.format("Failed to send header and footer for %s (UUID: %s)",
@@ -257,7 +256,6 @@ public class PlayerTabList {
                                 .addEntry(createEntry(newPlayer, player.getPlayer().getTabList(), displayName))
                 );
     }
-
 
 
     @NotNull

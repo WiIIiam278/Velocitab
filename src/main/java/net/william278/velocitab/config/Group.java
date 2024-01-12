@@ -87,11 +87,16 @@ public record Group(
 
     @NotNull
     public List<TabPlayer> getTabPlayers(Velocitab plugin) {
-        List<TabPlayer> players = new ArrayList<>();
-        for (RegisteredServer server : registeredServers(plugin)) {
-            server.getPlayersConnected().forEach(player -> plugin.getTabList().getTabPlayer(player).ifPresent(players::add));
-        }
-        return players;
+//        List<TabPlayer> players = new ArrayList<>();
+//        for (RegisteredServer server : registeredServers(plugin)) {
+//            server.getPlayersConnected().forEach(player -> plugin.getTabList().getTabPlayer(player).ifPresent(players::add));
+//        }
+//        return players;
+        return plugin.getTabList().getPlayers()
+                .values()
+                .stream()
+                .filter(tabPlayer -> tabPlayer.getGroup().equals(this))
+                .toList();
     }
 
     @Override

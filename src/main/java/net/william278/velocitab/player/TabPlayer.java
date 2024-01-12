@@ -125,13 +125,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         return Optional.ofNullable(teamName);
     }
 
-
-    public void sendHeaderAndFooter(@NotNull PlayerTabList tabList) {
-        tabList.getHeader(this).thenAccept(header -> tabList.getFooter(this)
-                .thenAccept(footer -> player.sendPlayerListHeaderAndFooter(header, footer)));
-    }
-
-    public CompletableFuture<Void> sendHeaderAndFooterAsync(@NotNull PlayerTabList tabList) {
+    public CompletableFuture<Void> sendHeaderAndFooter(@NotNull PlayerTabList tabList) {
         return tabList.getHeader(this).thenCompose(header -> tabList.getFooter(this)
                 .thenAccept(footer -> player.sendPlayerListHeaderAndFooter(header, footer)));
     }

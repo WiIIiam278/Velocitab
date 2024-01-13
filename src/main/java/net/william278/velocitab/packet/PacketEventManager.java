@@ -107,14 +107,12 @@ public class PacketEventManager {
             return;
         }
 
-        toUpdate.forEach(tabPlayer -> {
-            packet.getEntries().stream()
-                    .filter(entry -> entry.getProfile() != null)
-                    .filter(entry -> entry.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId()))
-                    .findFirst()
-                    .ifPresent(entry -> entry.setDisplayName(
-                            new ComponentHolder(player.getProtocolVersion(), tabPlayer.getLastDisplayname())));
-        });
+        toUpdate.forEach(tabPlayer -> packet.getEntries().stream()
+                .filter(entry -> entry.getProfile() != null)
+                .filter(entry -> entry.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId()))
+                .findFirst()
+                .ifPresent(entry -> entry.setDisplayName(
+                        new ComponentHolder(player.getProtocolVersion(), tabPlayer.getLastDisplayname()))));
     }
 
 }

@@ -38,19 +38,22 @@ public enum Formatter {
     MINEDOWN(
             (text, player, plugin) -> new MineDown(text).toComponent(),
             (text) -> text.replace("__", "_\\_"),
-            "MineDown"
+            "MineDown",
+            (text) -> new MineDown(text).toComponent()
     ),
     MINIMESSAGE(
             (text, player, plugin) -> plugin.getMiniPlaceholdersHook()
                     .map(hook -> hook.format(text, player.getPlayer()))
                     .orElse(MiniMessage.miniMessage().deserialize(text)),
             (text) -> MiniMessage.miniMessage().escapeTags(text),
-            "MiniMessage"
+            "MiniMessage",
+            (text) -> MiniMessage.miniMessage().deserialize(text)
     ),
     LEGACY(
             (text, player, plugin) -> LegacyComponentSerializer.legacyAmpersand().deserialize(text),
             Function.identity(),
-            "Legacy Text"
+            "Legacy Text",
+            (text) -> LegacyComponentSerializer.legacyAmpersand().deserialize(text)
     );
 
     /**
@@ -66,12 +69,14 @@ public enum Formatter {
      * Function to escape formatting characters in a string
      */
     private final Function<String, String> escaper;
+    private final Function<String, Component> emptyFormatter;
 
     Formatter(@NotNull TriFunction<String, TabPlayer, Velocitab, Component> formatter, @NotNull Function<String, String> escaper,
-              @NotNull String name) {
+              @NotNull String name, @NotNull Function<String, Component> emptyFormatter) {
         this.formatter = formatter;
         this.escaper = escaper;
         this.name = name;
+        this.emptyFormatter = emptyFormatter;
     }
 
     @NotNull
@@ -83,6 +88,11 @@ public enum Formatter {
     public String formatLegacySymbols(@NotNull String text, @NotNull TabPlayer player, @NotNull Velocitab plugin) {
         return LegacyComponentSerializer.legacySection()
                 .serialize(format(text, player, plugin));
+    }
+
+    @NotNull
+    public Component emptyFormat(@NotNull String text) {
+        return emptyFormatter.apply(text);
     }
 
     @NotNull

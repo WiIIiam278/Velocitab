@@ -26,6 +26,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import lombok.RequiredArgsConstructor;
 import net.william278.velocitab.Velocitab;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 public class PlayerChannelHandler extends ChannelDuplexHandler {
@@ -40,7 +43,12 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
             return;
         }
 
-        if(!minecraftPacket.containsAction(UpsertPlayerInfo.Action.ADD_PLAYER) && !minecraftPacket.containsAction(UpsertPlayerInfo.Action.UPDATE_LISTED)) {
+
+        if (plugin.getSettings().isRemoveSpectatorEffect() && minecraftPacket.containsAction(UpsertPlayerInfo.Action.UPDATE_GAME_MODE)) {
+            forceGameMode(minecraftPacket.getEntries());
+        }
+
+        if (!minecraftPacket.containsAction(UpsertPlayerInfo.Action.ADD_PLAYER) && !minecraftPacket.containsAction(UpsertPlayerInfo.Action.UPDATE_LISTED)) {
             super.write(ctx, msg, promise);
             return;
         }
@@ -52,5 +60,11 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
 
         plugin.getPacketEventManager().handleEntry(minecraftPacket, player);
         super.write(ctx, msg, promise);
+    }
+
+    private void forceGameMode(@NotNull List<UpsertPlayerInfo.Entry> entries) {
+        entries.stream()
+                .filter(entry -> entry.getProfileId() != null && entry.getGameMode() == 3 && !entry.getProfileId().equals(player.getUniqueId()))
+                .forEach(entry -> entry.setGameMode(0));
     }
 }

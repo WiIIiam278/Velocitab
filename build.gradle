@@ -21,6 +21,7 @@ ext {
 
 repositories {
     mavenCentral()
+    maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
     maven { url = 'https://repo.papermc.io/repository/maven-public/' }
     maven { url = 'https://repo.william278.net/releases/' }
     maven { url = 'https://repo.william278.net/velocity/' }
@@ -31,9 +32,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly ('com.velocitypowered:velocity-api:3.3.0-SNAPSHOT') {
-        exclude group: 'net.kyori'
-    }
+    compileOnly 'com.velocitypowered:velocity-api:3.3.0-SNAPSHOT'
     compileOnly 'com.velocitypowered:velocity-proxy:3.3.0-SNAPSHOT'
     compileOnly 'io.netty:netty-codec-http:4.1.103.Final'
     compileOnly 'org.projectlombok:lombok:1.18.30'
@@ -42,10 +41,6 @@ dependencies {
     compileOnly 'net.william278:PAPIProxyBridge:1.4.2'
     compileOnly 'it.unimi.dsi:fastutil:8.5.12'
     compileOnly 'net.kyori:adventure-nbt:4.14.0'
-    compileOnly 'net.kyori:adventure-api:4.14.0'
-    compileOnly 'net.kyori:adventure-text-minimessage:4.14.0'
-    compileOnly 'net.kyori:adventure-text-serializer-legacy:4.14.0'
-    compileOnly 'net.kyori:adventure-text-serializer-gson:4.14.0'
 
     implementation 'org.apache.commons:commons-text:1.11.0'
     implementation 'net.william278:DesertWell:2.0.4'

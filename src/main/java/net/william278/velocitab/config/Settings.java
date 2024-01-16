@@ -83,6 +83,9 @@ public class Settings implements ConfigValidator{
     @Comment("Whether to sort players in the TAB list.")
     private boolean sortPlayers = true;
 
+    @Comment("Remove gamemode spectator effect for other players in the TAB list.")
+    private boolean removeSpectatorEffect = true;
+
     /**
      * Get display name for the server
      *

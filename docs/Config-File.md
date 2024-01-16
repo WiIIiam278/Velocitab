@@ -41,6 +41,8 @@ enable_mini_placeholders_hook: true
 send_scoreboard_packets: true
 # Whether to sort players in the TAB list.
 sort_players: true
+# Remove gamemode spectator effect for other players in the TAB list.
+remove_spectator_effect: false
 ```
 
 </details>

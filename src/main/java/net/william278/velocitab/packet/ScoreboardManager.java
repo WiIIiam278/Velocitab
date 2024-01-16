@@ -19,6 +19,8 @@
 
 package net.william278.velocitab.packet;
 
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
@@ -33,7 +35,6 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.velocitypowered.api.network.ProtocolVersion.*;
 
@@ -47,9 +48,9 @@ public class ScoreboardManager {
 
     public ScoreboardManager(@NotNull Velocitab velocitab) {
         this.plugin = velocitab;
-        this.createdTeams = new ConcurrentHashMap<>();
-        this.nametags = new ConcurrentHashMap<>();
-        this.versions = new HashSet<>();
+        this.createdTeams = Maps.newConcurrentMap();
+        this.nametags = Maps.newConcurrentMap();
+        this.versions = Sets.newHashSet();
         this.registerVersions();
     }
 

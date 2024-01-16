@@ -25,8 +25,20 @@ import org.slf4j.event.Level;
 
 public interface LoggerProvider {
 
+    /**
+     * Retrieves the logger for the corresponding class.
+     *
+     * @return the logger for the class
+     */
     Logger getLogger();
 
+    /**
+     * Logs a message with the specified log level.
+     *
+     * @param level      the log level
+     * @param message    the log message
+     * @param exceptions the exceptions associated with the log message (optional)
+     */
     default void log(@NotNull Level level, @NotNull String message, @NotNull Throwable... exceptions) {
         switch (level) {
             case ERROR -> {
@@ -47,6 +59,9 @@ public interface LoggerProvider {
         }
     }
 
+    /**
+     * Logs a message with the specified log level.
+     */
     default void log(@NotNull String message) {
         this.log(Level.INFO, message);
     }

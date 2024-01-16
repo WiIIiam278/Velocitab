@@ -27,9 +27,28 @@ public interface MetricProvider {
 
     int METRICS_ID = 18247;
 
+    /**
+     * Retrieves the Metrics Factory used by the MetricProvider.
+     *
+     * @return The Metrics Factory used by the MetricProvider.
+     */
     Metrics.Factory getMetricsFactory();
+
+    /**
+     * Retrieves the Velocitab plugin instance.
+     * @return
+     */
     Velocitab getPlugin();
 
+    /**
+     * Registers metrics for the Velocitab plugin using the Metrics library.
+     * This method adds custom charts to the metrics object, which include information such as:
+     * - Whether player sorting is enabled or disabled
+     * - The type of formatter being used
+     * - Whether LuckPerms hook is present
+     * - Whether PAPIProxyBridge hook is present
+     * - Whether MiniPlaceholders hook is present
+     */
     default void registerMetrics() {
         final Metrics metrics = getMetricsFactory().make(this, METRICS_ID);
         metrics.addCustomChart(new SimplePie("sort_players", () -> getPlugin().getSettings().isSortPlayers() ? "Enabled" : "Disabled"));

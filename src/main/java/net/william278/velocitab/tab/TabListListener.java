@@ -55,7 +55,6 @@ public class TabListListener {
     public void onKick(KickedFromServerEvent event) {
         event.getPlayer().getTabList().clearAll();
         event.getPlayer().getTabList().clearHeaderAndFooter();
-        tabList.getJustKicked().add(event.getPlayer().getUniqueId());
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -110,7 +109,6 @@ public class TabListListener {
         // Delete player team
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(event.getPlayer()));
         //remove player from tab list cache
-        tabList.getJustKicked().remove(uuid);
         tabList.getPlayers().remove(uuid);
     }
 

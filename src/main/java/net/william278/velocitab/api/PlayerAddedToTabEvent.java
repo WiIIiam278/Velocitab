@@ -21,8 +21,9 @@ package net.william278.velocitab.api;
 
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("unused")
-public record PlayerAddedToTabEvent(TabPlayer player, Group group) {
+public record PlayerAddedToTabEvent(@NotNull TabPlayer player, @NotNull Group group) {
 
 }

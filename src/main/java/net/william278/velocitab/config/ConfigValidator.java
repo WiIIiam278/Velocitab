@@ -21,6 +21,10 @@ package net.william278.velocitab.config;
 
 public interface ConfigValidator {
 
-    void validateConfig();
+    /**
+     * Validates the configuration settings.
+     * @throws IllegalStateException if the configuration is invalid
+     */
+    void validateConfig() throws IllegalStateException;
 
 }

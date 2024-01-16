@@ -29,20 +29,61 @@ import java.util.concurrent.TimeUnit;
 
 public interface ScoreboardProvider {
 
+    /**
+     * Retrieves the Velocitab plugin instance.
+     *
+     * @return The Velocitab plugin instance.
+     */
     Velocitab getPlugin();
 
+    /**
+     * Retrieves the optional scoreboard manager.
+     *
+     * @return An {@code Optional} object that may contain a {@code ScoreboardManager} instance.
+     */
     Optional<ScoreboardManager> getScoreboardManager();
 
+    /**
+     * Sets the scoreboard manager.
+     *
+     * @param scoreboardManager The scoreboard manager to be set.
+     */
     void setScoreboardManager(ScoreboardManager scoreboardManager);
 
+    /**
+     * Retrieves the tab list for the player.
+     *
+     * @return The PlayerTabList object representing the tab list for the player.
+     */
     PlayerTabList getTabList();
 
+    /**
+     * Sets the tab list for the player.
+     *
+     * @param tabList The PlayerTabList object representing the tab list to be set for the player.
+     */
     void setTabList(PlayerTabList tabList);
 
+    /**
+     * Returns the SortingManager instance.
+     *
+     * @return The SortingManager instance.
+     */
     SortingManager getSortingManager();
 
+    /**
+     * Sets the sorting manager for the ScoreboardProvider.
+     *
+     * @param sortingManager The sorting manager to be set.
+     */
     void setSortingManager(SortingManager sortingManager);
 
+    /**
+     * Prepares the scoreboard by initializing the necessary components.
+     * This method is responsible for setting up the scoreboard manager, player tab list,
+     * scheduler tasks, and sorting manager.
+     *
+     */
     default void prepareScoreboard() {
         if (getPlugin().getSettings().isSendScoreboardPackets()) {
             ScoreboardManager scoreboardManager = new ScoreboardManager(getPlugin());
@@ -60,6 +101,9 @@ public interface ScoreboardProvider {
         setSortingManager(sortingManager);
     }
 
+    /**
+     * Disables the ScoreboardManager and closes the tab list for the player.
+     */
     default void disableScoreboardManager() {
         if (getScoreboardManager().isPresent() && getPlugin().getSettings().isSendScoreboardPackets()) {
             getScoreboardManager().get().close();

@@ -53,8 +53,6 @@ public class PlayerTabList {
     private final VanishTabList vanishTabList;
     @Getter(value = AccessLevel.PUBLIC)
     private final Map<UUID, TabPlayer> players;
-    @Getter(value = AccessLevel.PROTECTED)
-    private final List<UUID> justKicked;
     private final Map<Group, ScheduledTask> placeholderTasks;
     private final Map<Group, ScheduledTask> headerFooterTasks;
 
@@ -62,7 +60,6 @@ public class PlayerTabList {
         this.plugin = plugin;
         this.vanishTabList = new VanishTabList(plugin, this);
         this.players = Maps.newConcurrentMap();
-        this.justKicked = Lists.newCopyOnWriteArrayList();
         this.placeholderTasks = Maps.newConcurrentMap();
         this.headerFooterTasks = Maps.newConcurrentMap();
         this.reloadUpdate();
@@ -149,15 +146,6 @@ public class PlayerTabList {
         tabPlayer.setGroup(group);
         players.putIfAbsent(joined.getUniqueId(), tabPlayer);
 
-        int delay;
-
-        if (justKicked.contains(joined.getUniqueId())) {
-            delay = 1000;
-            justKicked.remove(joined.getUniqueId());
-        } else {
-            delay = 500;
-        }
-
         //store last server, so it's possible to have the last server on disconnect
         tabPlayer.setLastServer(joined.getCurrentServer().map(ServerConnection::getServerInfo).map(ServerInfo::getName).orElse(""));
 
@@ -224,7 +212,7 @@ public class PlayerTabList {
                         // Fire event without listening for result
                         plugin.getServer().getEventManager().fireAndForget(new PlayerAddedToTabEvent(tabPlayer, group));
                     })
-                    .delay(delay, TimeUnit.MILLISECONDS)
+                    .delay(300, TimeUnit.MILLISECONDS)
                     .schedule();
         }).exceptionally(throwable -> {
             plugin.log(Level.ERROR, String.format("Failed to set display name for %s (UUID: %s)",

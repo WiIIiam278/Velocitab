@@ -50,7 +50,7 @@ public class TabGroups implements ConfigValidator {
                     "&7[%server%] &f%prefix%%username%",
                     new Nametag("&f%prefix%", "&f%suffix%"),
                     List.of("lobby", "survival", "creative", "minigames", "skyblock", "prison", "hub"),
-                    List.of("%role_weight%", "%username%"),
+                    List.of("%role_weight%", "%username_lower%"),
                     1000,
                     1000
             )

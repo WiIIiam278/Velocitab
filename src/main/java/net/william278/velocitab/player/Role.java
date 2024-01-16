@@ -73,6 +73,4 @@ public class Role implements Comparable<Role> {
         return Integer.toString(weight);
     }
 
-
-
 }

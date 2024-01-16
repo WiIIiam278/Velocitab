@@ -76,7 +76,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
-                .color(getLastColor(nametag.prefix()))
+                .color(getLastColor(nametag.prefix(), plugin))
                 .prefix(nametag.getPrefixComponent(plugin, tabPlayer))
                 .suffix(nametag.getSuffixComponent(plugin, tabPlayer))
                 .entities(Arrays.asList(teamMembers));
@@ -101,7 +101,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
-                .color(getLastColor(nametag.prefix()))
+                .color(getLastColor(nametag.prefix(), plugin))
                 .prefix(nametag.getPrefixComponent(plugin, tabPlayer))
                 .suffix(nametag.getSuffixComponent(plugin, tabPlayer));
     }
@@ -131,7 +131,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .mode(UpdateMode.REMOVE_TEAM);
     }
 
-    public static int getLastColor(@Nullable String text) {
+    public static int getLastColor(@Nullable String text, @NotNull Velocitab plugin) {
         if (text == null) {
             return 15;
         }
@@ -140,8 +140,8 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         text = text + "z";
 
         //serialize & deserialize to downsample rgb to legacy
-        Component legacyComponent = LegacyComponentSerializer.legacyAmpersand().deserialize(text);
-        text = LegacyComponentSerializer.legacyAmpersand().serialize(legacyComponent);
+        Component component = plugin.getFormatter().emptyFormat(text);
+        text = LegacyComponentSerializer.legacyAmpersand().serialize(component);
 
         int lastFormatIndex = text.lastIndexOf("&");
         if (lastFormatIndex == -1 || lastFormatIndex == text.length() - 1) {

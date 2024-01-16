@@ -61,13 +61,13 @@ public class TabListListener {
     @Subscribe
     public void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
         final Player joined = event.getPlayer();
-        plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined));
 
         final String serverName = joined.getCurrentServer()
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
                 .orElse("");
         final Group group = tabList.getGroup(serverName);
+        plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined, group));
         final boolean isDefault = !group.servers().contains(serverName);
 
         // If the server is not in a group, use fallback.

@@ -29,6 +29,7 @@ import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import com.velocitypowered.proxy.protocol.StateRegistry;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.tab.Nametag;
 import org.jetbrains.annotations.NotNull;
@@ -82,6 +83,13 @@ public class ScoreboardManager {
         if (team != null) {
             final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player).orElseThrow();
             dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, team), tabPlayer);
+        }
+    }
+
+    public void resetCache(@NotNull Player player, @NotNull Group group) {
+        final String team = createdTeams.remove(player.getUniqueId());
+        if (team != null) {
+            dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, team), group);
         }
     }
 
@@ -215,6 +223,17 @@ public class ScoreboardManager {
         } catch (Throwable e) {
             plugin.log(Level.ERROR, "Failed to dispatch packet (unsupported client or server version)", e);
         }
+    }
+
+    private void dispatchGroupPacket(@NotNull UpdateTeamsPacket packet, @NotNull Group group) {
+        group.registeredServers(plugin).forEach(server -> server.getPlayersConnected().forEach(connected -> {
+            try {
+                final ConnectedPlayer connectedPlayer = (ConnectedPlayer) connected;
+                connectedPlayer.getConnection().write(packet);
+            } catch (Throwable e) {
+                plugin.log(Level.ERROR, "Failed to dispatch packet (unsupported client or server version)", e);
+            }
+        }));
     }
 
     private void dispatchGroupPacket(@NotNull UpdateTeamsPacket packet, @NotNull TabPlayer tabPlayer) {

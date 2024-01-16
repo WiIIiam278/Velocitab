@@ -11,17 +11,14 @@ To add additional frames of animation to a header format for a [server group](se
 
 ```yaml
 headers:
-  default:
   - '&rainbow&Running Velocitab by William278'
   - '&rainbow:10&Running Velocitab by William278'
   - '&rainbow:20&Running Velocitab by William278'
 ```
 </details>
 
-By default, the plugin will switch between each frame whenever it is updated. To get this to animate, you must configure your `update_rate` setting.
-
 ### Setting the frame rate
-The `update_rate` setting in your `config.yml` file&mdash;set to `0` by default&mdash;controls the length (in milliseconds&dagger;) between your TAB list being updated. On each update, the header or footer format will use the next frame in the list, looping back to the first after the last one has been displayed. 
+The `header_footer_update_rate` setting in your `tab_groups.yml` (different for each group) file&mdash;set to `0` by default&mdash;controls the length (in milliseconds&dagger;) between your TAB list being updated. On each update, the header or footer format will use the next frame in the list, looping back to the first after the last one has been displayed. 
 
 A good starting value for this could be `1000`, which is equivalent to one second. Once you've changed the value, use `/velocitab reload` to update the TAB menu in-game without restarting your proxy. Note the minimum update rate is `200` to avoid excessive network packet traffic, so values between `1`-`199` will be rounded up to `200`. If this value is set to `0` or below (as it is by default), the TAB menu will only update when a player joins or leaves, permissions are recalculated on LuckPerms, or the proxy is reloaded.
 
@@ -35,10 +32,9 @@ Wondering how to make something like the above example? Here's how! This example
 <details>
 <summary>Example rainbow fade (config.yml)</summary>
 
-Please note this is not a complete config file; you will need to add the relevant sections to the correct part in your own Velocitab `config.yml`. 
+Please note this is not a complete tab_groups file; you will need to add the relevant sections to the correct part in your own Velocitab `tab_groups.yml`. 
 ```yaml
 headers:
-  default:
   - '&rainbow&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
   - '&rainbow:2&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
   - '&rainbow:4&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
@@ -71,18 +67,15 @@ headers:
   - '&rainbow:58&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
   - '&rainbow:60&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
 footers:
-  default:
   - |
     \n&7For Velocity proxy servers:
     &#1bd96a-#6cffa9&https://modrinth.com/plugin/velocitab
     &#1bd96a-#6cffa9&https://william278.net/project/veloictab'
-formats:
-  default: '&#999-#fff&[%server%] &f%username%'
-formatting_type: MINEDOWN
-server_groups:
-  default:
-  - server
-  - server2
-update_rate: 200
+format: '&#999-#fff&[%server%] &f%username%'
+header_footer_update_rate: 200
+```
+In config.yml
+```yaml
+formatter: MINEDOWN
 ```
 </details>

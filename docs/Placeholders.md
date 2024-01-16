@@ -11,6 +11,7 @@ Placeholders can be included in the header, footer and player name format of the
 | `%current_date%`         | Current real-world date of the server                | `24 Feb 2023`      |
 | `%current_time%`         | Current real-world time of the server                | `21:45:32`         |
 | `%username%`             | The player's username                                | `William278`       |
+| `%username_lower%`       | The player's username, in lowercase                  | `william278`       |
 | `%server%`               | Name of the server the player is on                  | `alpha`            |
 | `%ping%`                 | Ping of the player (in ms)                           | `6`                |
 | `%prefix%`               | The player's prefix (from LuckPerms)                 | `&4[Admin]`        |

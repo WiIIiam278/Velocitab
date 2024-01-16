@@ -22,6 +22,7 @@ package net.william278.velocitab.sorting;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
 import java.util.ArrayList;
@@ -35,22 +36,24 @@ public class SortingManager {
     private final Velocitab plugin;
     private static final String DELIMITER = ":::";
 
-    public SortingManager(Velocitab plugin) {
+    public SortingManager(@NotNull Velocitab plugin) {
         this.plugin = plugin;
     }
 
-    public CompletableFuture<String> getTeamName(TabPlayer player) {
+    @NotNull
+    public CompletableFuture<String> getTeamName(@NotNull TabPlayer player) {
         if (!plugin.getSettings().isSortPlayers()) {
             return CompletableFuture.completedFuture("");
         }
 
-        return Placeholder.replace(String.join(DELIMITER, plugin.getSettings().getSortingElements()), plugin, player)
+        return Placeholder.replace(String.join(DELIMITER, player.getGroup().sortingPlaceholders()), plugin, player)
                 .thenApply(s -> Arrays.asList(s.split(DELIMITER)))
                 .thenApply(v -> v.stream().map(this::adaptValue).collect(Collectors.toList()))
                 .thenApply(v -> handleList(player, v));
     }
 
-    private String handleList(TabPlayer player, List<String> values) {
+    @NotNull
+    private String handleList(@NotNull TabPlayer player, @NotNull List<String> values) {
         String result = String.join("", values);
 
         if (result.length() > 12) {
@@ -63,7 +66,8 @@ public class SortingManager {
         return result;
     }
 
-    private String adaptValue(String value) {
+    @NotNull
+    private String adaptValue(@NotNull String value) {
         if (value.isEmpty()) {
             return "";
         }
@@ -81,6 +85,7 @@ public class SortingManager {
         return value;
     }
 
+    @NotNull
     public String compressNumber(double number) {
         int wholePart = (int) number;
         final char decimalChar = (char) ((number - wholePart) * Character.MAX_VALUE);

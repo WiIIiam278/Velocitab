@@ -60,8 +60,8 @@ public class VanishManager {
             return;
         }
 
-        plugin.getTabList().vanishPlayer(tabPlayer.get());
-        plugin.getScoreboardManager().ifPresent(scoreboardManager -> scoreboardManager.vanishPlayer(player));
+        plugin.getTabList().getVanishTabList().vanishPlayer(tabPlayer.get());
+        plugin.getScoreboardManager().ifPresent(scoreboardManager -> scoreboardManager.vanishPlayer(tabPlayer.get()));
     }
 
     public void unVanishPlayer(@NotNull Player player) {
@@ -71,7 +71,7 @@ public class VanishManager {
             return;
         }
 
-        plugin.getTabList().unVanishPlayer(tabPlayer.get());
-        plugin.getScoreboardManager().ifPresent(scoreboardManager -> scoreboardManager.unVanishPlayer(player));
+        plugin.getTabList().getVanishTabList().unVanishPlayer(tabPlayer.get());
+        plugin.getScoreboardManager().ifPresent(scoreboardManager -> scoreboardManager.unVanishPlayer(tabPlayer.get()));
     }
 }

@@ -1,4 +1,5 @@
-This page contains the configuration file reference for Velocitab. The config file is located in `/plugins/velocitab/config.yml`
+This page contains configuration file references for Velocitab. 
+The config file is located in `/plugins/velocitab/config.yml` and the tab groups file is located in `/plugins/velocitab/tab_groups.yml`
 
 ## Example config
 <details>
@@ -9,27 +10,15 @@ This page contains the configuration file reference for Velocitab. The config fi
 # ┃       Velocitab Config       ┃
 # ┃    Developed by William278   ┃
 # ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-# ┗╸ Placeholders: %players_online%, %max_players_online%, %local_players_online%, %current_date%, %current_time%, %username%, %server%, %ping%, %prefix%, %suffix%, %role%
-# Header(s) to display above the TAB list for each server group.
-# List multiple headers and set update_rate to the number of ticks between frames for basic animations
-headers:
-  default:
-  - '&rainbow&Running Velocitab by William278'
-# Footer(s) to display below the TAB list for each server group, same as headers.
-footers:
-  default:
-  - '[There are currently %players_online%/%max_players_online% players online](gray)'
-formats:
-  default: '&7[%server%] &f%prefix%%username%'
+# ┣╸ Information: https://william278.net/project/velocitab
+# ┗╸ Documentation: https://william278.net/docs/velocitab
+
+# Check for updates on startup
+check_for_updates: true
 # Whether to remove nametag from players' heads if the nametag associated with their server group is empty.
-remove_nametags: false
+remove_nametags: true
 # Which text formatter to use (MINEDOWN, MINIMESSAGE, or LEGACY)
-formatting_type: MINEDOWN
-# The servers in each group of servers
-server_groups:
-  default:
-  - server
-  - server2
+formatter: MINEDOWN
 # All servers which are not in other groups will be put in the fallback group.
 # "false" will exclude them from Velocitab.
 fallback_enabled: true
@@ -44,18 +33,57 @@ server_display_names:
 # Whether to enable the PAPIProxyBridge hook for PAPI support
 enable_papi_hook: true
 # How long in seconds to cache PAPI placeholders for, in milliseconds. (0 to disable)
-papi_cache_time: 30000
+papi_cache_time: 200
 # If you are using MINIMESSAGE formatting, enable this to support MiniPlaceholders in formatting.
-enable_miniplaceholders_hook: true
+enable_mini_placeholders_hook: true
+# Whether to send scoreboard teams packets. Required for player list sorting and nametag formatting.
+# Turn this off if you're using scoreboard teams on backend servers.
+send_scoreboard_packets: true
 # Whether to sort players in the TAB list.
 sort_players: true
-# Ordered list of elements by which players should be sorted. (Correct values are both internal placeholders and, if enabled, PAPI placeholders)
-sorting_placeholders:
-- %role_weight%
-- %username%
-# How often in milliseconds to periodically update the TAB list, including header and footer, for all users.
-# If set to 0, TAB will be updated on player join/leave instead. (1s = 1000ms)
-update_rate: 0
+# Remove gamemode spectator effect for other players in the TAB list.
+remove_spectator_effect: false
+```
+
+</details>
+
+## Example tab groups
+
+<details>
+
+<summary>tab_groups.yml</summary>
+
+```yaml
+# ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+# ┃      Velocitab TabGroups     ┃
+# ┃    Developed by William278   ┃
+# ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+# ┣╸ Information: https://william278.net/project/velocitab
+# ┗╸ Documentation: https://william278.net/docs/velocitab
+
+groups:
+- name: default
+  headers:
+  - '&rainbow&Running Velocitab by William278'
+  footers:
+  - '[There are currently %players_online%/%max_players_online% players online](gray)'
+  format: '&7[%server%] &f%prefix%%username%'
+  nametag:
+    prefix: '&f%prefix%'
+    suffix: '&f%suffix%'
+  servers:
+  - lobby
+  - survival
+  - creative
+  - minigames
+  - skyblock
+  - prison
+  - hub
+  sorting_placeholders:
+  - '%role_weight%'
+  - '%username_lower%'
+  header_footer_update_rate: 1000
+  placeholder_update_rate: 1000
 ```
 
 </details>

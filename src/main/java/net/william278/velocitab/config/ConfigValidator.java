@@ -17,13 +17,14 @@
  *  limitations under the License.
  */
 
-package net.william278.velocitab.api;
+package net.william278.velocitab.config;
 
-import net.william278.velocitab.config.Group;
-import net.william278.velocitab.player.TabPlayer;
-import org.jetbrains.annotations.NotNull;
+public interface ConfigValidator {
 
-@SuppressWarnings("unused")
-public record PlayerAddedToTabEvent(@NotNull TabPlayer player, @NotNull Group group) {
+    /**
+     * Validates the configuration settings.
+     * @throws IllegalStateException if the configuration is invalid
+     */
+    void validateConfig() throws IllegalStateException;
 
 }

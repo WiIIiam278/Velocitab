@@ -20,9 +20,12 @@
 package net.william278.velocitab.packet;
 
 import com.velocitypowered.api.network.ProtocolVersion;
+import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import io.netty.buffer.ByteBuf;
+import net.kyori.adventure.nbt.BinaryTag;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,7 +43,8 @@ public class Protocol765Adapter extends Protocol404Adapter {
     }
 
     protected void writeComponent(ByteBuf buf, Component component) {
-        new ComponentHolder(ProtocolVersion.MINECRAFT_1_20_3, component).write(buf);
+        final BinaryTag tag = ComponentHolder.serialize(GsonComponentSerializer.gson().serializeToTree(component));
+        ProtocolUtils.writeBinaryTag(buf, ProtocolVersion.MINECRAFT_1_20_3, tag);
     }
 
 }

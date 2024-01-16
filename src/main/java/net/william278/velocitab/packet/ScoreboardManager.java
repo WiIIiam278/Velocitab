@@ -19,6 +19,8 @@
 
 package net.william278.velocitab.packet;
 
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
@@ -28,11 +30,11 @@ import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import com.velocitypowered.proxy.protocol.StateRegistry;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.tab.Nametag;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static com.velocitypowered.api.network.ProtocolVersion.*;
 
@@ -42,13 +44,13 @@ public class ScoreboardManager {
     private final Velocitab plugin;
     private final Set<TeamsPacketAdapter> versions;
     private final Map<UUID, String> createdTeams;
-    private final Map<String, TabPlayer.Nametag> nametags;
+    private final Map<String, Nametag> nametags;
 
     public ScoreboardManager(@NotNull Velocitab velocitab) {
         this.plugin = velocitab;
-        this.createdTeams = new ConcurrentHashMap<>();
-        this.nametags = new ConcurrentHashMap<>();
-        this.versions = new HashSet<>();
+        this.createdTeams = Maps.newConcurrentMap();
+        this.nametags = Maps.newConcurrentMap();
+        this.versions = Sets.newHashSet();
         this.registerVersions();
     }
 
@@ -78,64 +80,37 @@ public class ScoreboardManager {
     public void resetCache(@NotNull Player player) {
         final String team = createdTeams.remove(player.getUniqueId());
         if (team != null) {
-            dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, team), player);
+            final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player).orElseThrow();
+            dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, team), tabPlayer);
         }
     }
 
-    public void vanishPlayer(@NotNull Player player) {
+    public void vanishPlayer(@NotNull TabPlayer tabPlayer) {
+        this.handleVanish(tabPlayer, true);
+    }
+
+    public void unVanishPlayer(@NotNull TabPlayer tabPlayer) {
+        this.handleVanish(tabPlayer, false);
+    }
+
+    private void handleVanish(@NotNull TabPlayer tabPlayer, boolean vanish) {
         if (!plugin.getSettings().isSortPlayers()) {
             return;
         }
 
-        final Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
-        if (optionalServerConnection.isEmpty()) {
-            return;
-        }
-
-        final RegisteredServer serverInfo = optionalServerConnection.get().getServer();
-        final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
-
+        final Player player = tabPlayer.getPlayer();
         final String teamName = createdTeams.get(player.getUniqueId());
         if (teamName == null) {
             return;
         }
+        final List<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
 
-        final UpdateTeamsPacket packet = UpdateTeamsPacket.removeTeam(plugin, teamName);
-        siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
-            final boolean canSee = plugin.getVanishManager().canSee(connected.getUsername(), player.getUsername());
-
-            if (canSee) {
-                return;
-            }
-
-            dispatchPacket(packet, connected);
-        }));
-    }
-
-    public void unVanishPlayer(@NotNull Player player) {
-        if (!plugin.getSettings().isSortPlayers()) {
-            return;
-        }
-
-        final Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
-        if (optionalServerConnection.isEmpty()) {
-            return;
-        }
-
-        final RegisteredServer serverInfo = optionalServerConnection.get().getServer();
-        final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
-        final String teamName = createdTeams.get(player.getUniqueId());
-        if (teamName == null) {
-            return;
-        }
-
-        final Optional<TabPlayer.Nametag> cachedTag = Optional.ofNullable(nametags.getOrDefault(teamName, null));
+        final Optional<Nametag> cachedTag = Optional.ofNullable(nametags.getOrDefault(teamName, null));
         cachedTag.ifPresent(nametag -> {
-            final UpdateTeamsPacket packet = UpdateTeamsPacket.create(
-                    plugin, createdTeams.get(player.getUniqueId()),
-                    nametag, player.getUsername()
-            );
+            final UpdateTeamsPacket packet = vanish ? UpdateTeamsPacket.removeTeam(plugin, teamName) :
+                    UpdateTeamsPacket.create(plugin, tabPlayer, teamName, nametag, player.getUsername());
             siblings.forEach(server -> server.getPlayersConnected().stream().filter(p -> p != player)
+                    .filter(p -> vanish && !plugin.getVanishManager().canSee(p.getUsername(), player.getUsername()))
                     .forEach(connected -> dispatchPacket(packet, connected)));
         });
     }
@@ -143,38 +118,38 @@ public class ScoreboardManager {
     /**
      * Updates the role of the player in the scoreboard.
      *
-     * @param player The player whose role will be updated. Must not be null.
-     * @param role   The new role of the player. Must not be null.
-     * @param force  Whether to force the update even if the player's nametag is the same.
+     * @param tabPlayer The TabPlayer object representing the player whose role will be updated.
+     * @param role      The new role of the player. Must not be null.
+     * @param force     Whether to force the update even if the player's nametag is the same.
      */
-    public void updateRole(@NotNull Player player, @NotNull String role, boolean force) {
+    public void updateRole(@NotNull TabPlayer tabPlayer, @NotNull String role, boolean force) {
+        final Player player = tabPlayer.getPlayer();
         if (!player.isActive()) {
             plugin.getTabList().removeOfflinePlayer(player);
             return;
         }
 
         final String name = player.getUsername();
-        final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player).orElseThrow();
         tabPlayer.getNametag(plugin).thenAccept(newTag -> {
             if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
                 if (createdTeams.containsKey(player.getUniqueId())) {
                     dispatchGroupPacket(
                             UpdateTeamsPacket.removeTeam(plugin, createdTeams.get(player.getUniqueId())),
-                            player
+                            tabPlayer
                     );
                 }
 
                 createdTeams.put(player.getUniqueId(), role);
                 this.nametags.put(role, newTag);
                 dispatchGroupPacket(
-                        UpdateTeamsPacket.create(plugin, role, newTag, name),
-                        player
+                        UpdateTeamsPacket.create(plugin, tabPlayer, role, newTag, name),
+                        tabPlayer
                 );
             } else if (force || (this.nametags.containsKey(role) && !this.nametags.get(role).equals(newTag))) {
                 this.nametags.put(role, newTag);
                 dispatchGroupPacket(
-                        UpdateTeamsPacket.changeNametag(plugin, role, newTag),
-                        player
+                        UpdateTeamsPacket.changeNametag(plugin, tabPlayer, role, newTag),
+                        tabPlayer
                 );
             }
         }).exceptionally(e -> {
@@ -184,18 +159,13 @@ public class ScoreboardManager {
     }
 
 
-    public void resendAllTeams(@NotNull Player player) {
+    public void resendAllTeams(@NotNull TabPlayer tabPlayer) {
         if (!plugin.getSettings().isSendScoreboardPackets()) {
             return;
         }
 
-        final Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
-        if (optionalServerConnection.isEmpty()) {
-            return;
-        }
-
-        final RegisteredServer serverInfo = optionalServerConnection.get().getServer();
-        final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
+        final Player player = tabPlayer.getPlayer();
+        final List<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
         final List<Player> players = siblings.stream()
                 .map(RegisteredServer::getPlayersConnected)
                 .flatMap(Collection::stream)
@@ -223,11 +193,10 @@ public class ScoreboardManager {
             roles.add(role);
 
             // Send packet
-            final TabPlayer.Nametag tag = nametags.get(role);
+            final Nametag tag = nametags.get(role);
             if (tag != null) {
-                final TabPlayer.Nametag nametag = nametags.get(role);
                 final UpdateTeamsPacket packet = UpdateTeamsPacket.create(
-                        plugin, role, nametag, p.getUsername()
+                        plugin, tabPlayer, role, tag, p.getUsername()
                 );
                 dispatchPacket(packet, player);
             }
@@ -248,14 +217,14 @@ public class ScoreboardManager {
         }
     }
 
-    private void dispatchGroupPacket(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
+    private void dispatchGroupPacket(@NotNull UpdateTeamsPacket packet, @NotNull TabPlayer tabPlayer) {
+        final Player player = tabPlayer.getPlayer();
         final Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
         if (optionalServerConnection.isEmpty()) {
             return;
         }
 
-        final RegisteredServer serverInfo = optionalServerConnection.get().getServer();
-        final List<RegisteredServer> siblings = plugin.getTabList().getGroupServers(serverInfo.getServerInfo().getName());
+        final List<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
         siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
             try {
                 final boolean canSee = plugin.getVanishManager().canSee(connected.getUsername(), player.getUsername());
@@ -324,10 +293,10 @@ public class ScoreboardManager {
         dispatchPacket(removeTeam, player);
 
         if (canSee) {
-            final TabPlayer.Nametag tag = nametags.get(team);
+            final Nametag tag = nametags.get(team);
             if (tag != null) {
                 final UpdateTeamsPacket addTeam = UpdateTeamsPacket.create(
-                        plugin, team, tag, target.getPlayer().getUsername()
+                        plugin, tabPlayer, team, tag, target.getPlayer().getUsername()
                 );
                 dispatchPacket(addTeam, player);
             }

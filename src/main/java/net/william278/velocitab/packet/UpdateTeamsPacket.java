@@ -30,6 +30,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.tab.Nametag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,8 +65,9 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     }
 
     @NotNull
-    protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull String teamName,
-                                              @NotNull TabPlayer.Nametag nametag,
+    protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer,
+                                              @NotNull String teamName,
+                                              @NotNull Nametag nametag,
                                               @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
@@ -74,23 +76,24 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
-                .color(getLastColor(nametag.getPrefix()))
-                .prefix(nametag.getPrefixComponent(plugin))
-                .suffix(nametag.getSuffixComponent(plugin))
+                .color(getLastColor(nametag.prefix(), plugin))
+                .prefix(nametag.getPrefixComponent(plugin, tabPlayer))
+                .suffix(nametag.getSuffixComponent(plugin, tabPlayer))
                 .entities(Arrays.asList(teamMembers));
     }
 
-    private static boolean isNametagPresent(@NotNull TabPlayer.Nametag nametag, @NotNull Velocitab plugin) {
+    private static boolean isNametagPresent(@NotNull Nametag nametag, @NotNull Velocitab plugin) {
         if (!plugin.getSettings().isRemoveNametags()) {
             return true;
         }
 
-        return !nametag.getPrefix().isEmpty() || !nametag.getSuffix().isEmpty();
+        return !nametag.prefix().isEmpty() || !nametag.suffix().isEmpty();
     }
 
     @NotNull
-    protected static UpdateTeamsPacket changeNametag(@NotNull Velocitab plugin, @NotNull String teamName,
-                                                     @NotNull TabPlayer.Nametag nametag) {
+    protected static UpdateTeamsPacket changeNametag(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer,
+                                                     @NotNull String teamName,
+                                                     @NotNull Nametag nametag) {
         return new UpdateTeamsPacket(plugin)
                 .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
                 .mode(UpdateMode.UPDATE_INFO)
@@ -98,9 +101,9 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(CollisionRule.ALWAYS)
-                .color(getLastColor(nametag.getPrefix()))
-                .prefix(nametag.getPrefixComponent(plugin))
-                .suffix(nametag.getSuffixComponent(plugin));
+                .color(getLastColor(nametag.prefix(), plugin))
+                .prefix(nametag.getPrefixComponent(plugin, tabPlayer))
+                .suffix(nametag.getSuffixComponent(plugin, tabPlayer));
     }
 
     @NotNull
@@ -128,7 +131,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .mode(UpdateMode.REMOVE_TEAM);
     }
 
-    public static int getLastColor(@Nullable String text) {
+    public static int getLastColor(@Nullable String text, @NotNull Velocitab plugin) {
         if (text == null) {
             return 15;
         }
@@ -137,8 +140,8 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         text = text + "z";
 
         //serialize & deserialize to downsample rgb to legacy
-        Component legacyComponent = LegacyComponentSerializer.legacyAmpersand().deserialize(text);
-        text = LegacyComponentSerializer.legacyAmpersand().serialize(legacyComponent);
+        Component component = plugin.getFormatter().emptyFormat(text);
+        text = LegacyComponentSerializer.legacyAmpersand().serialize(component);
 
         int lastFormatIndex = text.lastIndexOf("&");
         if (lastFormatIndex == -1 || lastFormatIndex == text.length() - 1) {

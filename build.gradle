@@ -21,6 +21,7 @@ ext {
 
 repositories {
     mavenCentral()
+    maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
     maven { url = 'https://repo.papermc.io/repository/maven-public/' }
     maven { url = 'https://repo.william278.net/releases/' }
     maven { url = 'https://repo.william278.net/velocity/' }
@@ -31,9 +32,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly ('com.velocitypowered:velocity-api:3.3.0-SNAPSHOT') {
-        exclude group: 'net.kyori'
-    }
+    compileOnly 'com.velocitypowered:velocity-api:3.3.0-SNAPSHOT'
     compileOnly 'com.velocitypowered:velocity-proxy:3.3.0-SNAPSHOT'
     compileOnly 'io.netty:netty-codec-http:4.1.103.Final'
     compileOnly 'org.projectlombok:lombok:1.18.30'
@@ -42,18 +41,12 @@ dependencies {
     compileOnly 'net.william278:PAPIProxyBridge:1.4.2'
     compileOnly 'it.unimi.dsi:fastutil:8.5.12'
     compileOnly 'net.kyori:adventure-nbt:4.14.0'
-    compileOnly 'net.kyori:adventure-api:4.14.0'
-    compileOnly 'net.kyori:adventure-text-minimessage:4.14.0'
-    compileOnly 'net.kyori:adventure-text-serializer-legacy:4.14.0'
-    compileOnly 'net.kyori:adventure-text-serializer-gson:4.14.0'
-
 
     implementation 'org.apache.commons:commons-text:1.11.0'
-    implementation 'net.william278:annotaml:2.0.7'
     implementation 'net.william278:DesertWell:2.0.4'
-    implementation 'dev.dejvokep:boosted-yaml:1.3.1'
     implementation 'de.themoep:minedown-adventure:1.7.2-SNAPSHOT'
     implementation 'org.bstats:bstats-velocity:3.0.2'
+    implementation 'com.github.Exlll.ConfigLib:configlib-yaml:v4.3.0'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
@@ -94,14 +87,14 @@ shadowJar {
     relocate 'org.jetbrains', 'net.william278.velocitab.libraries'
     relocate 'org.intellij', 'net.william278.velocitab.libraries'
     relocate 'de.themoep', 'net.william278.velocitab.libraries'
-    relocate 'dev.dejvokep.boostedyaml', 'net.william278.velocitab.libraries.boostedyaml'
     relocate 'net.william278.annotaml', 'net.william278.velocitab.libraries.annotaml'
     relocate 'net.william278.desertwell', 'net.william278.velocitab.libraries.desertwell'
-    relocate 'org.json', 'net.william278.velocitab.libraries.json'
     relocate 'org.bstats', 'net.william278.velocitab.libraries.bstats'
+    relocate 'de.exlll.configlib', 'net.william278.velocitab.libraries.configlib'
 
     dependencies {
         exclude dependency(':slf4j-api')
+        exclude dependency('org.json:json')
     }
 
     destinationDirectory.set(file("$rootDir/target"))

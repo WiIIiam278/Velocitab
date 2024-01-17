@@ -101,6 +101,7 @@ public class PacketEventManager {
                 .map(id -> plugin.getTabList().getTabPlayer(id))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
+                .filter(TabPlayer::isLoaded)
                 .toList();
 
         if (toUpdate.isEmpty()) {
@@ -108,8 +109,7 @@ public class PacketEventManager {
         }
 
         toUpdate.forEach(tabPlayer -> packet.getEntries().stream()
-                .filter(entry -> entry.getProfile() != null)
-                .filter(entry -> entry.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId()))
+                .filter(entry -> entry.getProfileId().equals(tabPlayer.getPlayer().getUniqueId()))
                 .findFirst()
                 .ifPresent(entry -> entry.setDisplayName(
                         new ComponentHolder(player.getProtocolVersion(), tabPlayer.getLastDisplayname()))));

@@ -19,6 +19,7 @@
 
 package net.william278.velocitab.hook;
 
+import com.google.common.collect.Maps;
 import com.velocitypowered.api.proxy.Player;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
@@ -34,7 +35,6 @@ import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,7 +49,7 @@ public class LuckPermsHook extends Hook {
     public LuckPermsHook(@NotNull Velocitab plugin) throws IllegalStateException {
         super(plugin);
         this.api = LuckPermsProvider.get();
-        this.lastUpdate = new HashMap<>();
+        this.lastUpdate = Maps.newConcurrentMap();
         this.event = api.getEventBus().subscribe(
                 plugin, UserDataRecalculateEvent.class, this::onLuckPermsGroupUpdate
         );

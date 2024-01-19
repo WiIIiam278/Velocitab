@@ -19,7 +19,6 @@
 
 package net.william278.velocitab.tab;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
@@ -289,7 +288,7 @@ public class PlayerTabList {
     }
 
     public void updatePlayerDisplayName(@NotNull TabPlayer tabPlayer) {
-        final Component lastDisplayName = tabPlayer.getLastDisplayname();
+        final Component lastDisplayName = tabPlayer.getLastDisplayName();
         tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
             if (displayName == null || displayName.equals(lastDisplayName)) {
                 return;

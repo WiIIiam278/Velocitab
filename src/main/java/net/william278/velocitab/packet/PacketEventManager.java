@@ -112,7 +112,7 @@ public class PacketEventManager {
                 .filter(entry -> entry.getProfileId().equals(tabPlayer.getPlayer().getUniqueId()))
                 .findFirst()
                 .ifPresent(entry -> entry.setDisplayName(
-                        new ComponentHolder(player.getProtocolVersion(), tabPlayer.getLastDisplayname()))));
+                        new ComponentHolder(player.getProtocolVersion(), tabPlayer.getLastDisplayName()))));
     }
 
 }

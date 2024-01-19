@@ -43,7 +43,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private Role role;
     private int headerIndex = 0;
     private int footerIndex = 0;
-    private Component lastDisplayname;
+    private Component lastDisplayName;
     private String teamName;
     @Nullable
     @Setter
@@ -107,7 +107,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     public CompletableFuture<Component> getDisplayName(@NotNull Velocitab plugin) {
         return Placeholder.replace(group.format(), plugin, this)
                 .thenApply(formatted -> plugin.getFormatter().format(formatted, this, plugin))
-                .thenApply(c -> this.lastDisplayname = c);
+                .thenApply(c -> this.lastDisplayName = c);
     }
 
     @NotNull
@@ -179,7 +179,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
                 ", role=" + role +
                 ", headerIndex=" + headerIndex +
                 ", footerIndex=" + footerIndex +
-                ", lastDisplayname=" + lastDisplayname +
+                ", lastDisplayname=" + lastDisplayName +
                 ", teamName='" + teamName + '\'' +
                 ", lastServer='" + lastServer + '\'' +
                 ", group=" + group.name() +

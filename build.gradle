@@ -21,13 +21,12 @@ ext {
 
 repositories {
     mavenCentral()
-    maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
-    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
-    maven { url = 'https://repo.william278.net/releases/' }
     maven { url = 'https://repo.william278.net/velocity/' }
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url = 'https://repo.william278.net/releases/' }
     maven { url = 'https://jitpack.io/' }
     maven { url = 'https://repo.minebench.de/' }
-    maven { url = 'https://mvn.exceptionflug.de/repository/exceptionflug-public/' }
 }
 
 dependencies {

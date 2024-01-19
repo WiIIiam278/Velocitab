@@ -19,6 +19,7 @@
 
 package net.william278.velocitab.sorting;
 
+import com.google.common.collect.Lists;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
@@ -89,13 +90,11 @@ public class SortingManager {
     public String compressNumber(double number) {
         int wholePart = (int) number;
         final char decimalChar = (char) ((number - wholePart) * Character.MAX_VALUE);
-        final List<Character> charList = new ArrayList<>();
+        final List<Character> charList = Lists.newArrayList();
 
         while (wholePart > 0) {
             char digit = (char) (wholePart % Character.MAX_VALUE);
-
             charList.add(0, digit);
-
             wholePart /= Character.MAX_VALUE;
         }
 

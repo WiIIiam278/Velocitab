@@ -27,7 +27,7 @@ import com.velocitypowered.api.event.connection.PostLoginEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 import com.velocitypowered.proxy.network.Connections;
-import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfo;
+import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket;
 import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import io.netty.channel.Channel;
 import lombok.Getter;
@@ -92,7 +92,7 @@ public class PacketEventManager {
         }
     }
 
-    protected void handleEntry(@NotNull UpsertPlayerInfo packet, @NotNull Player player) {
+    protected void handleEntry(@NotNull UpsertPlayerInfoPacket packet, @NotNull Player player) {
         final List<TabPlayer> toUpdate = packet.getEntries().stream()
                 .filter(entry -> entry.getProfile() != null)
                 .filter(entry -> !entry.getProfile().getName().startsWith(CITIZENS_PREFIX))

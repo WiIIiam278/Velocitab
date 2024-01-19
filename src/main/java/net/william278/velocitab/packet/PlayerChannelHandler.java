@@ -20,7 +20,7 @@
 package net.william278.velocitab.packet;
 
 import com.velocitypowered.api.proxy.Player;
-import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfo;
+import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+
 @RequiredArgsConstructor
 public class PlayerChannelHandler extends ChannelDuplexHandler {
 
@@ -38,17 +39,17 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        if (!(msg instanceof final UpsertPlayerInfo minecraftPacket)) {
+        if (!(msg instanceof final UpsertPlayerInfoPacket minecraftPacket)) {
             super.write(ctx, msg, promise);
             return;
         }
 
 
-        if (plugin.getSettings().isRemoveSpectatorEffect() && minecraftPacket.containsAction(UpsertPlayerInfo.Action.UPDATE_GAME_MODE)) {
+        if (plugin.getSettings().isRemoveSpectatorEffect() && minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.UPDATE_GAME_MODE)) {
             forceGameMode(minecraftPacket.getEntries());
         }
 
-        if (!minecraftPacket.containsAction(UpsertPlayerInfo.Action.ADD_PLAYER) && !minecraftPacket.containsAction(UpsertPlayerInfo.Action.UPDATE_LISTED)) {
+        if (!minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.ADD_PLAYER) && !minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.UPDATE_LISTED)) {
             super.write(ctx, msg, promise);
             return;
         }
@@ -62,7 +63,7 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
         super.write(ctx, msg, promise);
     }
 
-    private void forceGameMode(@NotNull List<UpsertPlayerInfo.Entry> entries) {
+    private void forceGameMode(@NotNull List<UpsertPlayerInfoPacket.Entry> entries) {
         entries.stream()
                 .filter(entry -> entry.getProfileId() != null && entry.getGameMode() == 3 && !entry.getProfileId().equals(player.getUniqueId()))
                 .forEach(entry -> entry.setGameMode(0));

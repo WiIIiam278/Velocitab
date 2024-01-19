@@ -23,7 +23,6 @@ repositories {
     mavenCentral()
     maven { url = 'https://repo.william278.net/velocity/' }
     maven { url = 'https://repo.papermc.io/repository/maven-public/' }
-    maven { url = 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
     maven { url = 'https://repo.william278.net/releases/' }
     maven { url = 'https://jitpack.io/' }
     maven { url = 'https://repo.minebench.de/' }
@@ -38,7 +37,7 @@ dependencies {
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.0.0'
     compileOnly 'net.william278:PAPIProxyBridge:1.4.2'
     compileOnly 'it.unimi.dsi:fastutil:8.5.12'
-    compileOnly 'net.kyori:adventure-nbt:4.14.0'
+    compileOnly 'net.kyori:adventure-nbt:4.15.0'
 
     implementation 'org.apache.commons:commons-text:1.11.0'
     implementation 'net.william278:DesertWell:2.0.4'

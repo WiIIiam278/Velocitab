@@ -32,9 +32,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 /**
- * The Velocitab API class.
+ * The Velocitab API.
  * <p>
  * Retrieve an instance of the API class via {@link #getInstance()}.
+ *
+ * @since 1.5.1
  */
 @SuppressWarnings("unused")
 public class VelocitabAPI {
@@ -51,8 +53,8 @@ public class VelocitabAPI {
     /**
      * Entrypoint to the {@link VelocitabAPI} API - returns an instance of the API
      *
-     * @return instance of the HuskSync API
-     * @since 1.5.2
+     * @return instance of the Velocitab API
+     * @since 1.5.1
      */
     @NotNull
     public static VelocitabAPI getInstance() {
@@ -66,7 +68,8 @@ public class VelocitabAPI {
      * <b>(Internal use only)</b> - Register the API.
      *
      * @param plugin the plugin instance
-     * @since 3.0
+     * @hidden This method is for internal use only
+     * @since 1.5.1
      */
     @ApiStatus.Internal
     public static void register(@NotNull Velocitab plugin) {
@@ -75,6 +78,9 @@ public class VelocitabAPI {
 
     /**
      * <b>(Internal use only)</b> - Unregister the API.
+     *
+     * @hidden This method is for internal use only
+     * @since 1.5.1
      */
     @ApiStatus.Internal
     public static void unregister() {
@@ -86,7 +92,7 @@ public class VelocitabAPI {
      *
      * @param player the Velocity player to get the {@link TabPlayer} instance for
      * @return the {@link TabPlayer} instance for the given player or an empty optional if the player is not in a group server
-     * @since 2.0
+     * @since 1.5.1
      */
     public Optional<TabPlayer> getUser(@NotNull Player player) {
         return plugin.getTabList().getTabPlayer(player);
@@ -98,6 +104,7 @@ public class VelocitabAPI {
      *
      * @param player The player for whom to set the custom name
      * @param name   The custom name to set
+     * @since 1.5.1
      */
     public void setCustomPlayerName(@NotNull Player player, @Nullable String name) {
         getUser(player).ifPresent(tabPlayer -> {
@@ -111,15 +118,17 @@ public class VelocitabAPI {
      *
      * @param player The player for whom to get the custom name
      * @return An Optional object containing the custom name, or empty if no custom name has been set.
+     * @since 1.5.1
      */
     public Optional<String> getCustomPlayerName(@NotNull Player player) {
         return getUser(player).flatMap(TabPlayer::getCustomName);
     }
 
     /**
-     * {@link PlayerTabList} handles the tab list for all players on the server groups.
+     * Get the {@link PlayerTabList}, which handles the tab list for players across different server groups.
      *
      * @return the {@link PlayerTabList} global instance.
+     * @since 1.5.1
      */
     @NotNull
     public PlayerTabList getTabList() {
@@ -127,9 +136,10 @@ public class VelocitabAPI {
     }
 
     /**
-     * Sets the VanishIntegration for the VelocitabAPI.
+     * Sets the VanishIntegration to use for determining whether the plugin should show a player in the tab list.
      *
      * @param vanishIntegration the VanishIntegration to set
+     * @since 1.5.1
      */
     public void setVanishIntegration(@NotNull VanishIntegration vanishIntegration) {
         plugin.getVanishManager().setIntegration(vanishIntegration);
@@ -140,6 +150,7 @@ public class VelocitabAPI {
      * This integration allows checking if a player can see another player and if a player is vanished.
      *
      * @return The VanishIntegration instance associated with the VelocitabAPI
+     * @since 1.5.1
      */
     @NotNull
     public VanishIntegration getVanishIntegration() {
@@ -150,6 +161,7 @@ public class VelocitabAPI {
      * Vanishes the player by hiding them from the tab list and scoreboard if enabled.
      *
      * @param player The player to vanish
+     * @since 1.5.1
      */
     public void vanishPlayer(@NotNull Player player) {
         plugin.getVanishManager().vanishPlayer(player);
@@ -159,6 +171,7 @@ public class VelocitabAPI {
      * Un-vanishes the given player by showing them in the tab list and scoreboard if enabled.
      *
      * @param player The player to unvanish
+     * @since 1.5.1
      */
     public void unVanishPlayer(@NotNull Player player) {
         plugin.getVanishManager().unVanishPlayer(player);
@@ -170,13 +183,18 @@ public class VelocitabAPI {
      * @param player the player for whom to retrieve the server group
      * @return the name of the server group that the player is connected to,
      * or a null value if the player is not connected to a server group
+     * @since 1.5.1
      */
     @Nullable
     public Group getServerGroup(@NotNull Player player) {
         return getUser(player).map(TabPlayer::getGroup).orElse(null);
     }
 
-
+    /**
+     * An exception indicating the Velocitab API was accessed before it was registered.
+     *
+     * @since 1.5.1
+     */
     static final class NotRegisteredException extends IllegalStateException {
 
         private static final String MESSAGE = """

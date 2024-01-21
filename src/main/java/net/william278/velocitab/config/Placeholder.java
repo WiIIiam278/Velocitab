@@ -103,11 +103,13 @@ public enum Placeholder {
             if (placeholder.parameterised) {
                 // Replace the placeholder with the result of the replacer function with the parameter
                 format = matcher.replaceAll(matchResult ->
-                        placeholder.replacer.apply(StringUtils.chop(matchResult.group().replace("%" + placeholder.name().toLowerCase(), ""))
-                                , plugin, player));
+                        Matcher.quoteReplacement(
+                                placeholder.replacer.apply(StringUtils.chop(matchResult.group().replace("%" + placeholder.name().toLowerCase(), ""))
+                                        , plugin, player)
+                        ));
             } else {
                 // Replace the placeholder with the result of the replacer function
-                format = matcher.replaceAll(matchResult -> placeholder.replacer.apply(null, plugin, player));
+                format = matcher.replaceAll(matchResult -> Matcher.quoteReplacement(placeholder.replacer.apply(null, plugin, player)));
             }
 
         }

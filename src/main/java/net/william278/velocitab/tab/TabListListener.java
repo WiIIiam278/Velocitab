@@ -31,7 +31,6 @@ import com.velocitypowered.api.proxy.server.ServerInfo;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
-import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -52,9 +51,13 @@ public class TabListListener {
     }
 
     @Subscribe
-    public void onKick(KickedFromServerEvent event) {
+    public void onKick(@NotNull KickedFromServerEvent event) {
         event.getPlayer().getTabList().clearAll();
         event.getPlayer().getTabList().clearHeaderAndFooter();
+
+        if (event.getResult() instanceof KickedFromServerEvent.DisconnectPlayer) {
+            tabList.removePlayer(event.getPlayer());
+        }
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -73,7 +76,15 @@ public class TabListListener {
         // If the server is not in a group, use fallback.
         // If fallback is disabled, permit the player to switch excluded servers without a header or footer override
         if (isDefault && !plugin.getSettings().isFallbackEnabled()) {
-            event.getPlayer().sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
+            final Component header = event.getPlayer().getPlayerListHeader();
+            final Component footer = event.getPlayer().getPlayerListFooter();
+
+            plugin.getServer().getScheduler().buildTask(plugin, () -> {
+                if (header.equals(event.getPlayer().getPlayerListHeader()) && footer.equals(event.getPlayer().getPlayerListFooter())) {
+                    event.getPlayer().sendPlayerListHeaderAndFooter(header, footer);
+                }
+            }).delay(500, TimeUnit.MILLISECONDS).schedule();
+
             tabList.getPlayers().remove(event.getPlayer().getUniqueId());
             return;
         }
@@ -89,27 +100,9 @@ public class TabListListener {
 
         // Remove the player from the tracking list, Print warning if player was not removed
         final UUID uuid = event.getPlayer().getUniqueId();
-        final TabPlayer tabPlayer = tabList.getPlayers().get(uuid);
-        if (tabPlayer == null) {
-            plugin.log(String.format("Failed to remove disconnecting player %s (UUID: %s)",
-                    event.getPlayer().getUsername(), uuid));
-        }
 
         // Remove the player from the tab list of all other players
-        plugin.getServer().getAllPlayers().forEach(player -> player.getTabList().removeEntry(uuid));
-
-        // Update the tab list of all players
-        plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> tabList.getPlayers().values().forEach(player -> {
-                    player.getPlayer().getTabList().removeEntry(uuid);
-                    player.sendHeaderAndFooter(tabList);
-                }))
-                .delay(500, TimeUnit.MILLISECONDS)
-                .schedule();
-        // Delete player team
-        plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(event.getPlayer()));
-        //remove player from tab list cache
-        tabList.getPlayers().remove(uuid);
+        tabList.removePlayer(event.getPlayer());
     }
 
     @Subscribe

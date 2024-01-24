@@ -76,6 +76,7 @@ public final class VelocitabCommand {
                         })
                 )
                 .then(LiteralArgumentBuilder.<CommandSource>literal("name")
+                        .requires(src -> src.hasPermission("velocitab.command.name"))
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("name", StringArgumentType.word())
                                 .executes(ctx -> {
                                     if (!(ctx.getSource() instanceof Player player)) {

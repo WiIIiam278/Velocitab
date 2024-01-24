@@ -17,6 +17,9 @@ defaultTasks 'licenseFormat', 'build'
 ext {
     set 'version', version.toString()
     set 'description', description.toString()
+
+    set 'velocity_api_version', velocity_api_version.toString()
+    set 'velocity_minimum_build', velocity_minimum_build.toString()
 }
 
 repositories {
@@ -29,8 +32,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'com.velocitypowered:velocity-api:3.3.0-SNAPSHOT'
-    compileOnly 'com.velocitypowered:velocity-proxy:3.3.0-SNAPSHOT'
+    compileOnly "com.velocitypowered:velocity-api:${velocity_api_version}-SNAPSHOT"
+    compileOnly "com.velocitypowered:velocity-proxy:${velocity_api_version}-SNAPSHOT"
+
     compileOnly 'io.netty:netty-codec-http:4.1.105.Final'
     compileOnly 'org.projectlombok:lombok:1.18.30'
     compileOnly 'net.luckperms:api:5.4'
@@ -146,7 +150,7 @@ publishing {
 
 tasks {
     runVelocity {
-        velocityVersion("3.3.0-SNAPSHOT")
+        velocityVersion("${velocity_api_version}-SNAPSHOT")
     }
 }
 

@@ -22,9 +22,14 @@ package net.william278.velocitab.config;
 import de.exlll.configlib.NameFormatters;
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
+import net.william278.desertwell.util.Version;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Path;
+import java.util.Objects;
 
 /**
  * Interface for getting and setting data from plugin configuration files
@@ -99,7 +104,30 @@ public interface ConfigProvider {
         getTabGroups().validateConfig();
     }
 
+    /**
+     * Load the tab groups from the config file
+     *
+     * @since 1.0
+     */
+    @NotNull
+    default Metadata getMetadata() {
+        final URL resource = ConfigProvider.class.getResource("/metadata.yml");
+        try (InputStream input = Objects.requireNonNull(resource, "Metadata file missing").openStream()) {
+            return YamlConfigurations.read(input, Metadata.class, YAML_CONFIGURATION_PROPERTIES.build());
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to load plugin metadata", e);
+        }
+    }
 
+    default void checkCompatibility() {
+        final Metadata metadata = getMetadata();
+        final Version proxyVersion = getVelocityVersion();
+        metadata.validateApiVersion(proxyVersion);
+        metadata.validateBuild(proxyVersion);
+    }
+
+    @NotNull
+    Version getVelocityVersion();
 
     /**
      * Get the plugin config directory

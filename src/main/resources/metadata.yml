@@ -1,0 +1,2 @@
+velocity_api_version: '${velocity_api_version}'
+velocity_minimum_build: ${velocity_minimum_build}

@@ -62,7 +62,8 @@ public class ScoreboardManager {
             versions.add(new Protocol404Adapter(plugin));
             versions.add(new Protocol48Adapter(plugin));
         } catch (NoSuchFieldError e) {
-            throw new IllegalStateException("Failed to register scoreboard packet adapters. Try to update velocity to latest build", e);
+            throw new IllegalStateException("Failed to register Scoreboard Teams packets." +
+                    " Velocitab probably does not (yet) support your Proxy version.", e);
         }
     }
 

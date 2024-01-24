@@ -220,6 +220,24 @@ public class PlayerTabList {
         });
     }
 
+    protected void removePlayer(@NotNull Player target) {
+        final UUID uuid = target.getUniqueId();
+        plugin.getServer().getAllPlayers().forEach(player -> player.getTabList().removeEntry(uuid));
+
+        // Update the tab list of all players
+        plugin.getServer().getScheduler()
+                .buildTask(plugin, () -> getPlayers().values().forEach(player -> {
+                    player.getPlayer().getTabList().removeEntry(uuid);
+                    player.sendHeaderAndFooter(this);
+                }))
+                .delay(500, TimeUnit.MILLISECONDS)
+                .schedule();
+        // Delete player team
+        plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(target));
+        //remove player from tab list cache
+        getPlayers().remove(uuid);
+    }
+
     @NotNull
     CompletableFuture<TabListEntry> createEntry(@NotNull TabPlayer player, @NotNull TabList tabList) {
         return player.getDisplayName(plugin).thenApply(name -> TabListEntry.builder()

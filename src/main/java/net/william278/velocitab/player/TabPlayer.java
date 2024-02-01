@@ -44,6 +44,8 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private int headerIndex = 0;
     private int footerIndex = 0;
     private Component lastDisplayName;
+    private Component lastHeader;
+    private Component lastFooter;
     private String teamName;
     @Nullable
     @Setter
@@ -127,7 +129,11 @@ public final class TabPlayer implements Comparable<TabPlayer> {
 
     public CompletableFuture<Void> sendHeaderAndFooter(@NotNull PlayerTabList tabList) {
         return tabList.getHeader(this).thenCompose(header -> tabList.getFooter(this)
-                .thenAccept(footer -> player.sendPlayerListHeaderAndFooter(header, footer)));
+                .thenAccept(footer -> {
+                    lastHeader = header;
+                    lastFooter = footer;
+                    player.sendPlayerListHeaderAndFooter(header, footer);
+                }));
     }
 
     public void incrementIndexes() {

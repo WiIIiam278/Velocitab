@@ -24,6 +24,7 @@ import de.exlll.configlib.Configuration;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -97,7 +98,9 @@ public class Settings implements ConfigValidator{
     }
 
     @Override
-    public void validateConfig() {
-
+    public void validateConfig(@NotNull Velocitab plugin) {
+        if (papiCacheTime < 0) {
+            throw new IllegalStateException("PAPI cache time must be greater than or equal to 0");
+        }
     }
 }

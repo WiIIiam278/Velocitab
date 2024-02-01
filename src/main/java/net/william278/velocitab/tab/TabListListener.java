@@ -31,8 +31,10 @@ import com.velocitypowered.api.proxy.server.ServerInfo;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
+import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -76,12 +78,24 @@ public class TabListListener {
         // If the server is not in a group, use fallback.
         // If fallback is disabled, permit the player to switch excluded servers without a header or footer override
         if (isDefault && !plugin.getSettings().isFallbackEnabled()) {
-            final Component header = event.getPlayer().getPlayerListHeader();
-            final Component footer = event.getPlayer().getPlayerListFooter();
+            final Optional<TabPlayer> tabPlayer = tabList.getTabPlayer(joined);
+            if (tabPlayer.isEmpty()) {
+                return;
+            }
+            final Component header = tabPlayer.get().getLastHeader();
+            final Component footer = tabPlayer.get().getLastFooter();
+            final Component displayName = tabPlayer.get().getLastDisplayName();
 
             plugin.getServer().getScheduler().buildTask(plugin, () -> {
                 if (header.equals(event.getPlayer().getPlayerListHeader()) && footer.equals(event.getPlayer().getPlayerListFooter())) {
                     event.getPlayer().sendPlayerListHeaderAndFooter(header, footer);
+                    event.getPlayer().getCurrentServer().ifPresent(serverConnection ->
+                            serverConnection.getServer().getPlayersConnected().forEach(player ->
+                                    player.getTabList().getEntry(joined.getUniqueId()).ifPresent(entry -> {
+                                        if (entry.getDisplayNameComponent().isPresent() && entry.getDisplayNameComponent().get().equals(displayName)) {
+                                            entry.setDisplayName(Component.text(joined.getUsername()));
+                                        }
+                                    })));
                 }
             }).delay(500, TimeUnit.MILLISECONDS).schedule();
 

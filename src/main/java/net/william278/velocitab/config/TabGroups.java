@@ -19,13 +19,18 @@
 
 package net.william278.velocitab.config;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import de.exlll.configlib.Configuration;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.tab.Nametag;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 @SuppressWarnings("FieldMayBeFinal")
@@ -42,19 +47,20 @@ public class TabGroups implements ConfigValidator {
             ┣╸ Information: https://william278.net/project/velocitab
             ┗╸ Documentation: https://william278.net/docs/velocitab""";
 
-    public List<Group> groups = List.of(
-            new Group(
-                    "default",
-                    List.of("&rainbow&Running Velocitab by William278"),
-                    List.of("[There are currently %players_online%/%max_players_online% players online](gray)"),
-                    "&7[%server%] &f%prefix%%username%",
-                    new Nametag("&f%prefix%", "&f%suffix%"),
-                    List.of("lobby", "survival", "creative", "minigames", "skyblock", "prison", "hub"),
-                    List.of("%role_weight%", "%username_lower%"),
-                    1000,
-                    1000
-            )
+    private static final Group DEFAULT_GROUP = new Group(
+            "default",
+            List.of("&rainbow&Running Velocitab by William278"),
+            List.of("[There are currently %players_online%/%max_players_online% players online](gray)"),
+            "&7[%server%] &f%prefix%%username%",
+            new Nametag("&f%prefix%", "&f%suffix%"),
+            List.of("lobby", "survival", "creative", "minigames", "skyblock", "prison", "hub"),
+            List.of("%role_weight%", "%username_lower%"),
+            false,
+            1000,
+            1000
     );
+
+    public List<Group> groups = List.of(DEFAULT_GROUP);
 
     @NotNull
     public Group getGroupFromName(@NotNull String name) {
@@ -80,12 +86,68 @@ public class TabGroups implements ConfigValidator {
 
 
     @Override
-    public void validateConfig() {
+    public void validateConfig(@NotNull Velocitab plugin) {
         if (groups.isEmpty()) {
             throw new IllegalStateException("No tab groups defined in config");
         }
         if (groups.stream().noneMatch(group -> group.name().equals("default"))) {
             throw new IllegalStateException("No default tab group defined in config");
         }
+
+        final Multimap<Group, String> missingKeys = getMissingKeys();
+
+        if (missingKeys.isEmpty()) {
+            return;
+        }
+
+        fixMissingKeys(plugin, missingKeys);
+    }
+
+    @NotNull
+    private Multimap<Group, String> getMissingKeys() {
+        final Multimap<Group, String> missingKeys = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
+
+        for (Group group : groups) {
+            if (group.format() == null) {
+                missingKeys.put(group, "format");
+            }
+            if (group.nametag() == null) {
+                missingKeys.put(group, "nametag");
+            }
+            if (group.servers() == null) {
+                missingKeys.put(group, "servers");
+            }
+            if (group.sortingPlaceholders() == null) {
+                missingKeys.put(group, "sortingPlaceholders");
+            }
+        }
+
+        return missingKeys;
+    }
+
+    private void fixMissingKeys(@NotNull Velocitab plugin, @NotNull Multimap<Group, String> missingKeys) {
+        missingKeys.forEach((group, keys) -> {
+            plugin.log("Missing required key(s) " + keys + " for group " + group.name());
+            plugin.log("Using default values for group " + group.name());
+
+            groups.remove(group);
+
+            group = new Group(
+                    group.name(),
+                    group.headers(),
+                    group.footers(),
+                    group.format() == null ? DEFAULT_GROUP.format() : group.format(),
+                    group.nametag() == null ? DEFAULT_GROUP.nametag() : group.nametag(),
+                    group.servers() == null ? DEFAULT_GROUP.servers() : group.servers(),
+                    group.sortingPlaceholders() == null ? DEFAULT_GROUP.sortingPlaceholders() : group.sortingPlaceholders(),
+                    group.collisions(),
+                    group.headerFooterUpdateRate(),
+                    group.placeholderUpdateRate()
+            );
+
+            groups.add(group);
+        });
+
+        plugin.saveTabGroups();
     }
 }

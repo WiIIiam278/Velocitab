@@ -75,7 +75,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .displayName(Component.empty())
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
-                .collisionRule(CollisionRule.ALWAYS)
+                .collisionRule(tabPlayer.getGroup().collisions() ? CollisionRule.ALWAYS : CollisionRule.NEVER)
                 .color(getLastColor(nametag.prefix(), plugin))
                 .prefix(nametag.getPrefixComponent(plugin, tabPlayer))
                 .suffix(nametag.getSuffixComponent(plugin, tabPlayer))
@@ -100,7 +100,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .displayName(Component.empty())
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
-                .collisionRule(CollisionRule.ALWAYS)
+                .collisionRule(tabPlayer.getGroup().collisions() ? CollisionRule.ALWAYS : CollisionRule.NEVER)
                 .color(getLastColor(nametag.prefix(), plugin))
                 .prefix(nametag.getPrefixComponent(plugin, tabPlayer))
                 .suffix(nametag.getSuffixComponent(plugin, tabPlayer));

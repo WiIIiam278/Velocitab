@@ -23,6 +23,7 @@ import de.exlll.configlib.NameFormatters;
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
 import net.william278.desertwell.util.Version;
+import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -42,7 +43,12 @@ public interface ConfigProvider {
     @NotNull
     YamlConfigurationProperties.Builder<?> YAML_CONFIGURATION_PROPERTIES = YamlConfigurationProperties.newBuilder()
             .charset(StandardCharsets.UTF_8)
+            .outputNulls(true)
+            .inputNulls(false)
             .setNameFormatter(NameFormatters.LOWER_UNDERSCORE);
+
+    @NotNull
+    Velocitab getPlugin();
 
     /**
      * Get the plugin settings, read from the config file
@@ -72,7 +78,7 @@ public interface ConfigProvider {
                 Settings.class,
                 YAML_CONFIGURATION_PROPERTIES.header(Settings.CONFIG_HEADER).build()
         ));
-        getSettings().validateConfig();
+        getSettings().validateConfig(getPlugin());
     }
 
     /**
@@ -103,7 +109,7 @@ public interface ConfigProvider {
                 TabGroups.class,
                 YAML_CONFIGURATION_PROPERTIES.header(TabGroups.CONFIG_HEADER).build()
         ));
-        getTabGroups().validateConfig();
+        getTabGroups().validateConfig(getPlugin());
     }
 
     /**
@@ -130,6 +136,23 @@ public interface ConfigProvider {
 
     @NotNull
     Version getVelocityVersion();
+
+    /**
+     * Saves the tab groups to the "tab_groups.yml" config file.
+     * Uses the YamlConfigurations.save method to write the tab groups object to the specified config file path.
+     * This method assumes that the getConfigDirectory method returns a valid directory path.
+     *
+     * @throws IllegalStateException if the getConfigDirectory method returns null
+     * @since 1.0
+     */
+    default void saveTabGroups() {
+        YamlConfigurations.save(
+                getConfigDirectory().resolve("tab_groups.yml"),
+                TabGroups.class,
+                getTabGroups(),
+                YAML_CONFIGURATION_PROPERTIES.header(TabGroups.CONFIG_HEADER).build()
+        );
+    }
 
     /**
      * Get the plugin config directory

@@ -47,6 +47,7 @@ public interface ConfigProvider {
             .inputNulls(false)
             .setNameFormatter(NameFormatters.LOWER_UNDERSCORE);
 
+    @NotNull
     Velocitab getPlugin();
 
     /**
@@ -135,6 +136,7 @@ public interface ConfigProvider {
 
     @NotNull
     Version getVelocityVersion();
+
     /**
      * Saves the tab groups to the "tab_groups.yml" config file.
      * Uses the YamlConfigurations.save method to write the tab groups object to the specified config file path.

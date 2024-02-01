@@ -137,6 +137,7 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
     }
 
     @Override
+    @NotNull
     public Velocitab getPlugin() {
         return this;
     }

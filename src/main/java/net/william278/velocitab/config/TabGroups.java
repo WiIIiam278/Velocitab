@@ -94,6 +94,17 @@ public class TabGroups implements ConfigValidator {
             throw new IllegalStateException("No default tab group defined in config");
         }
 
+        final Multimap<Group, String> missingKeys = getMissingKeys();
+
+        if (missingKeys.isEmpty()) {
+            return;
+        }
+
+        fixMissingKeys(plugin, missingKeys);
+    }
+
+    @NotNull
+    private Multimap<Group, String> getMissingKeys() {
         final Multimap<Group, String> missingKeys = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
 
         for (Group group : groups) {
@@ -111,10 +122,10 @@ public class TabGroups implements ConfigValidator {
             }
         }
 
-        if (missingKeys.isEmpty()) {
-            return;
-        }
+        return missingKeys;
+    }
 
+    private void fixMissingKeys(@NotNull Velocitab plugin, @NotNull Multimap<Group, String> missingKeys) {
         missingKeys.forEach((group, keys) -> {
             plugin.log("Missing required key(s) " + keys + " for group " + group.name());
             plugin.log("Using default values for group " + group.name());

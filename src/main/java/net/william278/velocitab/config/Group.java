@@ -21,7 +21,6 @@ package net.william278.velocitab.config;
 
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
-import de.exlll.configlib.Comment;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.tab.Nametag;
@@ -32,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("unused")
 public record Group(
         String name,
         List<String> headers,
@@ -40,10 +40,7 @@ public record Group(
         Nametag nametag,
         List<String> servers,
         List<String> sortingPlaceholders,
-        @Comment("""
-                How often in milliseconds to periodically update the TAB list, including header and footer, for all users.
-                If set to 0, TAB will be updated on player join/leave instead. (1s = 1000ms)
-                The minimal update rate is 200ms, anything lower will automatically be set to 200ms.""")
+        boolean collisions,
         int headerFooterUpdateRate,
         int placeholderUpdateRate
 ) {

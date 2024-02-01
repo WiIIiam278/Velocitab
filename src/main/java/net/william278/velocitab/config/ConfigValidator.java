@@ -19,12 +19,15 @@
 
 package net.william278.velocitab.config;
 
+import net.william278.velocitab.Velocitab;
+import org.jetbrains.annotations.NotNull;
+
 public interface ConfigValidator {
 
     /**
      * Validates the configuration settings.
      * @throws IllegalStateException if the configuration is invalid
      */
-    void validateConfig() throws IllegalStateException;
+    void validateConfig(@NotNull Velocitab plugin) throws IllegalStateException;
 
 }

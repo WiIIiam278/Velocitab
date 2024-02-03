@@ -21,6 +21,7 @@ package net.william278.velocitab.commands;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.velocitypowered.api.command.BrigadierCommand;
@@ -77,7 +78,7 @@ public final class VelocitabCommand {
                 )
                 .then(LiteralArgumentBuilder.<CommandSource>literal("name")
                         .requires(src -> src.hasPermission("velocitab.command.name"))
-                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("name", StringArgumentType.word())
+                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("name", StringArgumentType.greedyString())
                                 .executes(ctx -> {
                                     if (!(ctx.getSource() instanceof Player player)) {
                                         ctx.getSource().sendMessage(Component.text("You must be a player to use this command!", MAIN_COLOR));
@@ -95,9 +96,35 @@ public final class VelocitabCommand {
                                     tabPlayer.get().setCustomName(name);
                                     plugin.getTabList().updatePlayerDisplayName(tabPlayer.get());
 
+                                    ctx.getSource().sendMessage(Component.text("Your name has been updated!", MAIN_COLOR));
+
                                     return Command.SINGLE_SUCCESS;
                                 })
-                        )
+                        ).executes(ctx -> {
+                            if (!(ctx.getSource() instanceof Player player)) {
+                                ctx.getSource().sendMessage(Component.text("You must be a player to use this command!", MAIN_COLOR));
+                                return Command.SINGLE_SUCCESS;
+                            }
+
+                            Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
+
+                            if (tabPlayer.isEmpty()) {
+                                ctx.getSource().sendMessage(Component.text("You must in a correct server!", MAIN_COLOR));
+                                return Command.SINGLE_SUCCESS;
+                            }
+
+                            // If no custom name is applied, ask for argument
+                            String customName = tabPlayer.get().getCustomName().orElse("");
+                            if (customName.isEmpty() || customName.equals(player.getUsername())) {
+                                ctx.getSource().sendMessage(Component.text("You must specify a name!", MAIN_COLOR));
+                                return Command.SINGLE_SUCCESS;
+                            }
+
+                            tabPlayer.get().setCustomName(null);
+                            plugin.getTabList().updatePlayerDisplayName(tabPlayer.get());
+                            player.sendMessage(Component.text("Your name has been reset!", MAIN_COLOR));
+                            return Command.SINGLE_SUCCESS;
+                        })
                 )
                 .then(LiteralArgumentBuilder.<CommandSource>literal("reload")
                         .requires(src -> src.hasPermission("velocitab.command.reload"))

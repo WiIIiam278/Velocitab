@@ -58,7 +58,6 @@ public class SortingManager {
 
         if (result.length() > 12) {
             result = result.substring(0, 12);
-            plugin.log(Level.WARN, "Sorting element list is too long, truncating to 16 characters");
         }
 
         result += player.getPlayer().getUniqueId().toString().substring(0, 4); // Make unique

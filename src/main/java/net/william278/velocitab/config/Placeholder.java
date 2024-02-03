@@ -51,8 +51,8 @@ public enum Placeholder {
     USERNAME_LOWER((plugin, player) -> player.getCustomName().orElse(player.getPlayer().getUsername()).toLowerCase()),
     SERVER((plugin, player) -> player.getServerDisplayName(plugin)),
     PING((plugin, player) -> Long.toString(player.getPlayer().getPing())),
-    PREFIX((plugin, player) -> player.getRole().getPrefix().orElse("")),
-    SUFFIX((plugin, player) -> player.getRole().getSuffix().orElse("")),
+    PREFIX((plugin, player) -> player.getRole().getPrefix().orElse("%luckperms_prefix%")),
+    SUFFIX((plugin, player) -> player.getRole().getSuffix().orElse("%luckperms_suffix%")),
     ROLE((plugin, player) -> player.getRole().getName().orElse("")),
     ROLE_DISPLAY_NAME((plugin, player) -> player.getRole().getDisplayName().orElse("")),
     ROLE_WEIGHT((plugin, player) -> player.getRoleWeightString()),
@@ -61,7 +61,7 @@ public enum Placeholder {
     DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getLastTeamName().orElse(""))),
     LUCKPERMS_META_((param, plugin, player) -> plugin.getLuckPermsHook()
             .map(hook -> hook.getMeta(player.getPlayer(), param))
-            .orElse(""));
+            .orElse("%luckperms_meta_" + param + "%"));
 
     /**
      * Function to replace placeholders with a real value

@@ -21,6 +21,7 @@ package net.william278.velocitab.commands;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.velocitypowered.api.command.BrigadierCommand;
@@ -77,7 +78,7 @@ public final class VelocitabCommand {
                 )
                 .then(LiteralArgumentBuilder.<CommandSource>literal("name")
                         .requires(src -> src.hasPermission("velocitab.command.name"))
-                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("name", StringArgumentType.word())
+                        .then(RequiredArgumentBuilder.<CommandSource, String>argument("name", StringArgumentType.greedyString())
                                 .executes(ctx -> {
                                     if (!(ctx.getSource() instanceof Player player)) {
                                         ctx.getSource().sendMessage(Component.text("You must be a player to use this command!", MAIN_COLOR));

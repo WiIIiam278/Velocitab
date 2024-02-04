@@ -51,17 +51,21 @@ public enum Placeholder {
     USERNAME_LOWER((plugin, player) -> player.getCustomName().orElse(player.getPlayer().getUsername()).toLowerCase()),
     SERVER((plugin, player) -> player.getServerDisplayName(plugin)),
     PING((plugin, player) -> Long.toString(player.getPlayer().getPing())),
-    PREFIX((plugin, player) -> player.getRole().getPrefix().orElse("%luckperms_prefix%")),
-    SUFFIX((plugin, player) -> player.getRole().getSuffix().orElse("%luckperms_suffix%")),
-    ROLE((plugin, player) -> player.getRole().getName().orElse("")),
-    ROLE_DISPLAY_NAME((plugin, player) -> player.getRole().getDisplayName().orElse("")),
+    PREFIX((plugin, player) -> player.getRole().getPrefix()
+            .orElse(getPlaceholderFallback(plugin, "%luckperms_prefix%"))),
+    SUFFIX((plugin, player) -> player.getRole().getSuffix()
+            .orElse(getPlaceholderFallback(plugin, "%luckperms_suffix%"))),
+    ROLE((plugin, player) -> player.getRole().getName()
+            .orElse(getPlaceholderFallback(plugin, "%luckperms_primary_group_name%"))),
+    ROLE_DISPLAY_NAME((plugin, player) -> player.getRole().getDisplayName()
+            .orElse(getPlaceholderFallback(plugin, "%luckperms_primary_group_name%"))),
     ROLE_WEIGHT((plugin, player) -> player.getRoleWeightString()),
     SERVER_GROUP((plugin, player) -> player.getGroup().name()),
     SERVER_GROUP_INDEX((plugin, player) -> Integer.toString(player.getServerGroupPosition(plugin))),
     DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getLastTeamName().orElse(""))),
     LUCKPERMS_META_((param, plugin, player) -> plugin.getLuckPermsHook()
             .map(hook -> hook.getMeta(player.getPlayer(), param))
-            .orElse("%luckperms_meta_" + param + "%"));
+            .orElse(getPlaceholderFallback(plugin, "%luckperms_meta_" + param + "%")));
 
     /**
      * Function to replace placeholders with a real value
@@ -89,6 +93,14 @@ public enum Placeholder {
         return replace(nametag.prefix() + DELIMITER + nametag.suffix(), plugin, player)
                 .thenApply(s -> s.split(DELIMITER, 2))
                 .thenApply(v -> new Nametag(v[0], v.length > 1 ? v[1] : ""));
+    }
+
+    @NotNull
+    private static String getPlaceholderFallback(@NotNull Velocitab plugin, @NotNull String fallback) {
+        if (plugin.getPAPIProxyBridgeHook().isPresent() && plugin.getSettings().isFallbackToPapiIfPlaceholderBlank()) {
+            return fallback;
+        }
+        return "";
     }
 
     public static CompletableFuture<String> replace(@NotNull String format, @NotNull Velocitab plugin,

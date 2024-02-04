@@ -34,7 +34,7 @@ import java.util.Map;
 @Getter
 @Configuration
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class Settings implements ConfigValidator{
+public class Settings implements ConfigValidator {
 
     public static final String CONFIG_HEADER = """
             ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -79,6 +79,10 @@ public class Settings implements ConfigValidator{
     @Comment("Whether to send scoreboard teams packets. Required for player list sorting and nametag formatting."
             + "\nTurn this off if you're using scoreboard teams on backend servers.")
     private boolean sendScoreboardPackets = true;
+
+    @Comment("If built-in placeholders return a blank string, fallback to Placeholder API equivalents.\n"
+            + "For example, if %prefix% returns a blank string, use %luckperms_prefix%. Requires PAPIProxyBridge.")
+    private boolean fallbackToPapiIfPlaceholderBlank = false;
 
     @Comment("Whether to sort players in the TAB list.")
     private boolean sortPlayers = true;

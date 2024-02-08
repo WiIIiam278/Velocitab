@@ -3,26 +3,28 @@ Velocitab supports a number of Placeholders that will be replaced with their res
 ## Default placeholders
 Placeholders can be included in the header, footer and player name format of the TAB list. The following placeholders are supported out of the box:
 
-| Placeholder              | Description                                          | Example            |
-|--------------------------|------------------------------------------------------|--------------------|
-| `%players_online%`       | Players online on the proxy                          | `6`                |
-| `%max_players_online%`   | Player capacity of the proxy                         | `500`              |
-| `%local_players_online%` | Players online on the server the player is on        | `3`                |
-| `%current_date%`         | Current real-world date of the server                | `24 Feb 2023`      |
-| `%current_time%`         | Current real-world time of the server                | `21:45:32`         |
-| `%username%`             | The player's username                                | `William278`       |
-| `%username_lower%`       | The player's username, in lowercase                  | `william278`       |
-| `%server%`               | Name of the server the player is on                  | `alpha`            |
-| `%ping%`                 | Ping of the player (in ms)                           | `6`                |
-| `%prefix%`               | The player's prefix (from LuckPerms)                 | `&4[Admin]`        |
-| `%suffix%`               | The player's suffix (from LuckPerms)                 | `&c `              |
-| `%role%`                 | The player's primary LuckPerms group name            | `admin`            |
-| `%role_display_name%`    | The player's primary LuckPerms group display name    | `Admin`            |
-| `%role_weight%`          | Comparable-formatted primary LuckPerms group weight. | `100`              |
-| `%luckperms_meta_(key)%` | Formats a meta key from the user's LuckPerms group   | (varies)           |
-| `%server_group%`         | The name of the server group the player is on        | `default`          |
-| `%server_group_index%`   | Indexed order of the server group in the list        | `0`                |
-| `%debug_team_name%`      | (Debug) Player's team name, used for [[Sorting]]     | `1alphaWilliam278` |
+| Placeholder                     | Description                                          | Example            |
+|---------------------------------|------------------------------------------------------|--------------------|
+| `%players_online%`              | Players online on the proxy                          | `6`                |
+| `%max_players_online%`          | Player capacity of the proxy                         | `500`              |
+| `%local_players_online%`        | Players online on the server the player is on        | `3`                |
+| `%group_players_online_(name)%` | Players online on the group provided                 | `11`               |
+| `%group_players_online%`        | Players online on player's group                     | `15`               |
+| `%current_date%`                | Current real-world date of the server                | `24 Feb 2023`      |
+| `%current_time%`                | Current real-world time of the server                | `21:45:32`         |
+| `%username%`                    | The player's username                                | `William278`       |
+| `%username_lower%`              | The player's username, in lowercase                  | `william278`       |
+| `%server%`                      | Name of the server the player is on                  | `alpha`            |
+| `%ping%`                        | Ping of the player (in ms)                           | `6`                |
+| `%prefix%`                      | The player's prefix (from LuckPerms)                 | `&4[Admin]`        |
+| `%suffix%`                      | The player's suffix (from LuckPerms)                 | `&c `              |
+| `%role%`                        | The player's primary LuckPerms group name            | `admin`            |
+| `%role_display_name%`           | The player's primary LuckPerms group display name    | `Admin`            |
+| `%role_weight%`                 | Comparable-formatted primary LuckPerms group weight. | `100`              |
+| `%luckperms_meta_(key)%`        | Formats a meta key from the user's LuckPerms group   | (varies)           |
+| `%server_group%`                | The name of the server group the player is on        | `default`          |
+| `%server_group_index%`          | Indexed order of the server group in the list        | `0`                |
+| `%debug_team_name%`             | (Debug) Player's team name, used for [[Sorting]]     | `1alphaWilliam278` |
 
 ### Customising server display names
 You can make use of the `server_display_names` feature in `config.yml` to customise how server display name appear when using the `%server%` placeholder. In the below example, if a user is connected to a server with the name "`very-long-server-`name" and the player name format for the group that server belongs to includes a `%server%` placeholder, the placeholder would be replaced with "`VSLN`" instead of the full server name.

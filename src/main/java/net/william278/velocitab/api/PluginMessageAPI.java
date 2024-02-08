@@ -19,11 +19,11 @@
 
 package net.william278.velocitab.api;
 
+import com.google.common.collect.Sets;
 import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
-import lombok.RequiredArgsConstructor;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.packet.UpdateTeamsPacket;
 import net.william278.velocitab.player.TabPlayer;
@@ -31,25 +31,39 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
 
-@RequiredArgsConstructor
 public class PluginMessageAPI {
 
-    private static final MinecraftChannelIdentifier VELOCITAB_CHANNEL = MinecraftChannelIdentifier.from("velocitab:main");
-    private static final String SPLITERATOR = ":::";
     private final Velocitab plugin;
+    private final Set<MinecraftChannelIdentifier> channels;
+
+    public PluginMessageAPI(@NotNull Velocitab plugin) {
+        this.plugin = plugin;
+        this.channels = Sets.newConcurrentHashSet();
+    }
 
     public void registerChannel() {
-        plugin.getServer().getChannelRegistrar().register(VELOCITAB_CHANNEL);
+        Arrays.stream(PluginMessageRequest.values())
+                .map(PluginMessageRequest::name)
+                .forEach(request -> {
+                    final String channelName = request.toLowerCase();
+                    final MinecraftChannelIdentifier channel = MinecraftChannelIdentifier.from("velocitab:" + channelName);
+                    channels.add(channel);
+                    plugin.getServer().getChannelRegistrar().register(channel);
+                });
         plugin.getServer().getEventManager().register(plugin, PluginMessageEvent.class, this::onPluginMessage);
     }
 
     public void unregisterChannel() {
-        plugin.getServer().getChannelRegistrar().unregister(VELOCITAB_CHANNEL);
+        channels.forEach(channel -> plugin.getServer().getChannelRegistrar().unregister(channel));
     }
 
     private void onPluginMessage(@NotNull PluginMessageEvent pluginMessageEvent) {
-        if (!pluginMessageEvent.getIdentifier().equals(VELOCITAB_CHANNEL)) {
+        final Optional<MinecraftChannelIdentifier> channel = channels.stream()
+                .filter(identifier -> identifier.equals(pluginMessageEvent.getIdentifier()))
+                .findFirst();
+        if (channel.isEmpty()) {
             return;
         }
         if (!(pluginMessageEvent.getSource() instanceof ServerConnection serverConnection)) {
@@ -67,21 +81,16 @@ public class PluginMessageAPI {
             return;
         }
 
-        final String data = new String(pluginMessageEvent.getData());
-        final String[] split = data.split(SPLITERATOR, 2);
-        if (split.length != 2) {
-            return;
-        }
-
-        final Optional<APIRequest> request = APIRequest.get(split[0]);
+        final Optional<PluginMessageRequest> request = PluginMessageRequest.get(channel.get());
         if (request.isEmpty()) {
             return;
         }
 
-        handleAPIRequest(tabPlayer, request.get(), split[1]);
+        final String data = new String(pluginMessageEvent.getData());
+        handleAPIRequest(tabPlayer, request.get(), data);
     }
 
-    private void handleAPIRequest(@NotNull TabPlayer tabPlayer, @NotNull APIRequest request, String arg) {
+    private void handleAPIRequest(@NotNull TabPlayer tabPlayer, @NotNull PluginMessageRequest request, @NotNull String arg) {
         switch (request) {
             case UPDATE_CUSTOM_NAME -> {
                 tabPlayer.setCustomName(arg);
@@ -104,13 +113,13 @@ public class PluginMessageAPI {
         }
     }
 
-    private enum APIRequest {
+    private enum PluginMessageRequest {
         UPDATE_CUSTOM_NAME,
         UPDATE_TEAM_COLOR;
 
-        public static Optional<APIRequest> get(String name) {
+        public static Optional<PluginMessageRequest> get(@NotNull MinecraftChannelIdentifier channelIdentifier) {
             return Arrays.stream(values())
-                    .filter(request -> request.name().equalsIgnoreCase(name))
+                    .filter(request -> request.name().equalsIgnoreCase(channelIdentifier.getName()))
                     .findFirst();
         }
     }

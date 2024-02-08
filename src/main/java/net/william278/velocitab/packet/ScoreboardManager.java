@@ -195,6 +195,14 @@ public class ScoreboardManager {
                 return;
             }
 
+            final Optional<TabPlayer> optionalTabPlayer = plugin.getTabList().getTabPlayer(p);
+
+            if (optionalTabPlayer.isEmpty()) {
+                return;
+            }
+
+            final TabPlayer targetTabPlayer = optionalTabPlayer.get();
+
             // Prevent duplicate packets
             if (roles.contains(role)) {
                 return;
@@ -205,7 +213,7 @@ public class ScoreboardManager {
             final Nametag tag = nametags.get(role);
             if (tag != null) {
                 final UpdateTeamsPacket packet = UpdateTeamsPacket.create(
-                        plugin, tabPlayer, role, tag, p.getUsername()
+                        plugin, targetTabPlayer, role, tag, p.getUsername()
                 );
                 dispatchPacket(packet, player);
             }

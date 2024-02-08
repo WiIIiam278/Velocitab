@@ -6,7 +6,7 @@ Velocitab provides a plugin message API.
 To change a player's username in the tablist, you can send a plugin message with the channel `velocitab:main` and as data `UPDATE_CUSTOM_NAME:::customName`.
 Remember to replace `customName` with the desired name.
 <details>
-<summary>Example &mdash; Changing player's username in tablist</summary>
+<summary>Example &mdash; Changing player's username in the TAB List</summary>
 
 ```java
 player.sendPluginMessage(plugin, "velocitab:main", "UPDATE_CUSTOM_NAME:::Steve".getBytes());

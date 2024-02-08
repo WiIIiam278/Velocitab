@@ -19,7 +19,7 @@
 
 package net.william278.velocitab.api;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Maps;
 import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
@@ -29,40 +29,37 @@ import net.william278.velocitab.packet.UpdateTeamsPacket;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 public class PluginMessageAPI {
 
     private final Velocitab plugin;
-    private final Set<MinecraftChannelIdentifier> channels;
+    private final Map<String, MinecraftChannelIdentifier> channels;
 
     public PluginMessageAPI(@NotNull Velocitab plugin) {
         this.plugin = plugin;
-        this.channels = Sets.newConcurrentHashSet();
+        this.channels = Maps.newHashMap();
     }
 
     public void registerChannel() {
         Arrays.stream(PluginMessageRequest.values())
                 .map(PluginMessageRequest::name)
+                .map(s -> s.toLowerCase(Locale.ENGLISH))
                 .forEach(request -> {
-                    final String channelName = request.toLowerCase();
-                    final MinecraftChannelIdentifier channel = MinecraftChannelIdentifier.from("velocitab:" + channelName);
-                    channels.add(channel);
+                    final String channelName = "velocitab:" + request;
+                    final MinecraftChannelIdentifier channel = MinecraftChannelIdentifier.from(channelName);
+                    channels.put(channelName, channel);
                     plugin.getServer().getChannelRegistrar().register(channel);
                 });
         plugin.getServer().getEventManager().register(plugin, PluginMessageEvent.class, this::onPluginMessage);
     }
 
     public void unregisterChannel() {
-        channels.forEach(channel -> plugin.getServer().getChannelRegistrar().unregister(channel));
+        channels.forEach((name, channel) -> plugin.getServer().getChannelRegistrar().unregister(channel));
     }
 
     private void onPluginMessage(@NotNull PluginMessageEvent pluginMessageEvent) {
-        final Optional<MinecraftChannelIdentifier> channel = channels.stream()
-                .filter(identifier -> identifier.equals(pluginMessageEvent.getIdentifier()))
-                .findFirst();
+        final Optional<MinecraftChannelIdentifier> channel = Optional.ofNullable(channels.get(pluginMessageEvent.getIdentifier().getId()));
         if (channel.isEmpty()) {
             return;
         }

@@ -9,7 +9,7 @@ Remember to replace `customName` with the desired name.
 <summary>Example &mdash; Changing player's username in the TAB List</summary>
 
 ```java
-player.sendPluginMessage(plugin, "velocitab:main", "UPDATE_CUSTOM_NAME:::Steve".getBytes());
+player.sendPluginMessage(plugin, "velocitab:update_custom_name", "Steve".getBytes());
 ```
 </details>
 
@@ -22,6 +22,6 @@ This option overrides the glow effect if set
 <summary>Example &mdash; Changing player's team color</summary>
 
 ```java
-player.sendPluginMessage(plugin, "velocitab:main", "UPDATE_TEAM_COLOR:::a".getBytes());
+player.sendPluginMessage(plugin, "velocitab:update_team_color", "a".getBytes());
 ```
 </details>

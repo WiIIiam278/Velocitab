@@ -45,6 +45,10 @@ public enum Placeholder {
             .map(RegisteredServer::getPlayersConnected)
             .map(players -> Integer.toString(players.size()))
             .orElse("")),
+    LOCAL_GROUP_PLAYERS_ONLINE_((param, plugin, player) -> plugin.getTabGroups().getGroup(param)
+            .map(group -> Integer.toString(group.getPlayers(plugin).size()))
+            .orElse("Group " + param + " not found")),
+    LOCAL_GROUP_PLAYERS_ONLINE((plugin, player) -> Integer.toString(player.getGroup().getPlayers(plugin).size())),
     CURRENT_DATE((plugin, player) -> DateTimeFormatter.ofPattern("dd MMM yyyy").format(LocalDateTime.now())),
     CURRENT_TIME((plugin, player) -> DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalDateTime.now())),
     USERNAME((plugin, player) -> player.getCustomName().orElse(player.getPlayer().getUsername())),

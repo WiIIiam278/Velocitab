@@ -34,6 +34,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.william278.desertwell.util.UpdateChecker;
 import net.william278.desertwell.util.Version;
+import net.william278.velocitab.api.PluginMessageAPI;
 import net.william278.velocitab.api.VelocitabAPI;
 import net.william278.velocitab.commands.VelocitabCommand;
 import net.william278.velocitab.config.ConfigProvider;
@@ -86,6 +87,7 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
     private SortingManager sortingManager;
     private VanishManager vanishManager;
     private PacketEventManager packetEventManager;
+    private PluginMessageAPI pluginMessageAPI;
 
     @Inject
     public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path configDirectory) {
@@ -114,7 +116,7 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
         server.getScheduler().tasksByPlugin(this).forEach(ScheduledTask::cancel);
         disableScoreboardManager();
         getLuckPermsHook().ifPresent(LuckPermsHook::closeEvent);
-        VelocitabAPI.unregister();
+        unregisterAPI();
         logger.info("Successfully disabled Velocitab");
     }
 
@@ -149,6 +151,19 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
 
     private void prepareAPI() {
         VelocitabAPI.register(this);
+        if (settings.isEnablePluginMessageApi()) {
+            pluginMessageAPI = new PluginMessageAPI(this);
+            pluginMessageAPI.registerChannel();
+            getLogger().info("Registered Velocitab Plugin Message API");
+        }
+        getLogger().info("Registered Velocitab API");
+    }
+
+    private void unregisterAPI() {
+        VelocitabAPI.unregister();
+        if (pluginMessageAPI != null) {
+            pluginMessageAPI.unregisterChannel();
+        }
     }
 
     private void registerCommands() {

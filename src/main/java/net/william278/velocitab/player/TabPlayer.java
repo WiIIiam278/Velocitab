@@ -26,6 +26,7 @@ import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
+import net.william278.velocitab.packet.UpdateTeamsPacket;
 import net.william278.velocitab.tab.Nametag;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.apache.commons.lang3.ObjectUtils;
@@ -47,6 +48,9 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private Component lastHeader;
     private Component lastFooter;
     private String teamName;
+    @Nullable
+    @Setter
+    private UpdateTeamsPacket.TeamColor teamColor;
     @Nullable
     @Setter
     private String customName;

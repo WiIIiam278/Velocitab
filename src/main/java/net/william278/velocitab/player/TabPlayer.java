@@ -22,10 +22,12 @@ package net.william278.velocitab.player;
 import com.velocitypowered.api.proxy.Player;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
+import net.william278.velocitab.packet.UpdateTeamsPacket;
 import net.william278.velocitab.tab.Nametag;
 import net.william278.velocitab.tab.PlayerTabList;
 import org.apache.commons.lang3.ObjectUtils;
@@ -36,6 +38,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Getter
+@ToString
 public final class TabPlayer implements Comparable<TabPlayer> {
 
     private final Player player;
@@ -47,6 +50,9 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private Component lastHeader;
     private Component lastFooter;
     private String teamName;
+    @Nullable
+    @Setter
+    private UpdateTeamsPacket.TeamColor teamColor;
     @Nullable
     @Setter
     private String customName;
@@ -176,20 +182,5 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     @Override
     public boolean equals(Object obj) {
         return obj instanceof TabPlayer other && player.getUniqueId().equals(other.player.getUniqueId());
-    }
-
-    @Override
-    public String toString() {
-        return "TabPlayer{" +
-                "player=" + player +
-                ", role=" + role +
-                ", headerIndex=" + headerIndex +
-                ", footerIndex=" + footerIndex +
-                ", lastDisplayname=" + lastDisplayName +
-                ", teamName='" + teamName + '\'' +
-                ", lastServer='" + lastServer + '\'' +
-                ", group=" + group.name() +
-                ", loaded=" + loaded +
-                '}';
     }
 }

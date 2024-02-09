@@ -32,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 @SuppressWarnings("FieldMayBeFinal")
 @Getter
@@ -68,6 +69,13 @@ public class TabGroups implements ConfigValidator {
                 .filter(group -> group.name().equals(name))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No group with name " + name + " found"));
+    }
+
+    @NotNull
+    public Optional<Group> getGroup(@NotNull String name) {
+        return groups.stream()
+                .filter(group -> group.name().equals(name))
+                .findFirst();
     }
 
     @NotNull

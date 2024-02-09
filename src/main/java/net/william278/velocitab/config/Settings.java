@@ -90,6 +90,9 @@ public class Settings implements ConfigValidator {
     @Comment("Remove gamemode spectator effect for other players in the TAB list.")
     private boolean removeSpectatorEffect = true;
 
+    @Comment("Whether to enable the Plugin Message API (allows backend plugins to perform certain operations)")
+    private boolean enablePluginMessageApi = true;
+
     /**
      * Get display name for the server
      *

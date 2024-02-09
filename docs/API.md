@@ -2,6 +2,8 @@ The Velocitab API provides methods for vanishing ("hiding") and modifying userna
 
 The API is distributed on Maven through [repo.william278.net](https://repo.william278.net/#/releases/net/william278/velocitab/) and can be included in any Maven, Gradle, etc. project. JavaDocs are [available here](https://repo.william278.net/javadoc/releases/net/william278/velocitab/latest).
 
+Velocitab also provides a plugin message API, which is documented in the [[Plugin Message API Examples]] page.
+
 ## Compatibility
 [![Maven](https://repo.william278.net/api/badge/latest/releases/net/william278/velocitab?color=00fb9a&name=Maven&prefix=v)](https://repo.william278.net/#/releases/net/william278/velocitab/)
 

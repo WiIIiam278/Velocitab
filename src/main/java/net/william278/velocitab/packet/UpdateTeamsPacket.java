@@ -76,7 +76,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(tabPlayer.getGroup().collisions() ? CollisionRule.ALWAYS : CollisionRule.NEVER)
-                .color(getLastColor(nametag.prefix(), plugin))
+                .color(getLastColor(tabPlayer, nametag.prefix(), plugin))
                 .prefix(nametag.getPrefixComponent(plugin, tabPlayer))
                 .suffix(nametag.getSuffixComponent(plugin, tabPlayer))
                 .entities(Arrays.asList(teamMembers));
@@ -101,7 +101,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(tabPlayer.getGroup().collisions() ? CollisionRule.ALWAYS : CollisionRule.NEVER)
-                .color(getLastColor(nametag.prefix(), plugin))
+                .color(getLastColor(tabPlayer, nametag.prefix(), plugin))
                 .prefix(nametag.getPrefixComponent(plugin, tabPlayer))
                 .suffix(nametag.getSuffixComponent(plugin, tabPlayer));
     }
@@ -131,7 +131,11 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .mode(UpdateMode.REMOVE_TEAM);
     }
 
-    public static int getLastColor(@Nullable String text, @NotNull Velocitab plugin) {
+    public static int getLastColor(@NotNull TabPlayer tabPlayer, @Nullable String text, @NotNull Velocitab plugin) {
+        if (tabPlayer.getTeamColor() != null) {
+            text = "&" + tabPlayer.getTeamColor().colorChar();
+        }
+
         if (text == null) {
             return 15;
         }
@@ -177,6 +181,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         ITALIC('f', 20),
         RESET('r', 21);
 
+        @Getter
         private final char colorChar;
         private final int id;
 

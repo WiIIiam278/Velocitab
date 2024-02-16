@@ -40,7 +40,7 @@ dependencies {
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.0.0'
     compileOnly 'net.william278:PAPIProxyBridge:1.5'
-    compileOnly 'it.unimi.dsi:fastutil:8.5.12'
+    compileOnly 'it.unimi.dsi:fastutil:8.5.13'
     compileOnly 'net.kyori:adventure-nbt:4.15.0'
 
     implementation 'org.apache.commons:commons-text:1.11.0'

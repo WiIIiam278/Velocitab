@@ -28,10 +28,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Interface for getting and setting data from plugin configuration files
@@ -128,10 +130,25 @@ public interface ConfigProvider {
     }
 
     default void checkCompatibility() {
+        if (getSkipCompatibilityCheck().orElse(false)) {
+            getPlugin().getLogger().warn("Skipping compatibility check");
+            return;
+        }
+
         final Metadata metadata = getMetadata();
         final Version proxyVersion = getVelocityVersion();
         metadata.validateApiVersion(proxyVersion);
         metadata.validateBuild(proxyVersion);
+    }
+
+    @NotNull
+    default Optional<Boolean> getSkipCompatibilityCheck() {
+        return ManagementFactory.getRuntimeMXBean().getInputArguments().stream()
+                .filter(s -> s.startsWith("-Dvelocitab.skip-compatibility-check="))
+                .map(s -> s.substring(s.indexOf('=') + 1))
+                .filter(s -> s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
+                .map(Boolean::parseBoolean)
+                .findFirst();
     }
 
     @NotNull

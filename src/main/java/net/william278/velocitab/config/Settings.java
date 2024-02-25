@@ -50,7 +50,11 @@ public class Settings implements ConfigValidator {
     @Comment("Whether to remove nametag from players' heads if the nametag associated with their server group is empty.")
     private boolean removeNametags = false;
 
-    @Comment("Which text formatter to use (MINEDOWN, MINIMESSAGE, or LEGACY)")
+    @Comment("""
+            Which text formatter to use (MINEDOWN, MINIMESSAGE, LEGACY or UNIVERSAL)
+            UNIVERSAL supports all formatting options.
+
+            (&x&0&8&4&c&f&bc LEGACY OF LEGACY - &#084cfbc LEGACY - &#084cfbc& MINEDOWN - <color:#084cfbc> MINIMESSAGE)""")
     private Formatter formatter = Formatter.MINEDOWN;
 
     @Comment("All servers which are not in other groups will be put in the fallback group."

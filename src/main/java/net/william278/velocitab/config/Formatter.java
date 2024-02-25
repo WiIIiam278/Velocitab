@@ -20,6 +20,8 @@
 package net.william278.velocitab.config;
 
 import de.themoep.minedown.adventure.MineDown;
+import lombok.AccessLevel;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -29,6 +31,8 @@ import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Different formatting markup options for the TAB list
@@ -54,7 +58,55 @@ public enum Formatter {
             Function.identity(),
             "Legacy Text",
             (text) -> LegacyComponentSerializer.legacyAmpersand().deserialize(text)
+    ),
+    UNIVERSAL(
+            (text, player, plugin) -> {
+                text = text.replaceAll(getLEGACY_RESET(), getREPLACE_RESET());
+                text = getHEX().serialize(getSTUPID().deserialize(text));
+                text = replaceHexColorCodes(text);
+                text = text.replaceAll(getREPLACE_RESET(), getLEGACY_RESET());
+                final Component component = MINEDOWN.formatter.apply(text, player, plugin);
+                final String string = MiniMessage.miniMessage().serialize(component).replace("\\<", "<").replace("\\", "");
+                return MINIMESSAGE.formatter.apply(string, player, plugin);
+            },
+            (text) -> text,
+            "Universal",
+            (text) -> MINEDOWN.emptyFormat(text)
     );
+
+    @NotNull
+    private static String replaceHexColorCodes(@NotNull String text) {
+        final Matcher matcher = getHEX_PATTERN().matcher(text);
+        final StringBuilder valueBuffer = new StringBuilder();
+        while (matcher.find()) {
+            final String hex = matcher.group();
+            final int start = matcher.start();
+            final int end = matcher.end();
+            matcher.appendReplacement(valueBuffer, hex + "&");
+        }
+        matcher.appendTail(valueBuffer);
+        return valueBuffer.toString();
+    }
+
+    @Getter(value = AccessLevel.PRIVATE)
+    private final static Pattern HEX_PATTERN = Pattern.compile("&#[a-fA-F0-9]{6}");
+    @Getter(value = AccessLevel.PRIVATE)
+    private final static String LEGACY_RESET = "&r";
+    @Getter(value = AccessLevel.PRIVATE)
+    private final static String REPLACE_RESET = "###RESET###";
+    @Getter(value = AccessLevel.PRIVATE)
+    private final static LegacyComponentSerializer STUPID = LegacyComponentSerializer.builder()
+            .character('&')
+            .hexCharacter('#')
+            .useUnusualXRepeatedCharacterHexFormat()
+            .hexColors()
+            .build();
+    @Getter(value = AccessLevel.PRIVATE)
+    private final static LegacyComponentSerializer HEX = LegacyComponentSerializer.builder()
+            .character('&')
+            .hexCharacter('#')
+            .hexColors()
+            .build();
 
     /**
      * Name of the formatter

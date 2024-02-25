@@ -19,6 +19,7 @@
 
 package net.william278.velocitab.tab;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
@@ -128,7 +129,7 @@ public class PlayerTabList {
                 return;
             }
 
-            final List<RegisteredServer> serversInGroup = new ArrayList<>(tabPlayer.getGroup().registeredServers(plugin));
+            final List<RegisteredServer> serversInGroup = Lists.newArrayList(tabPlayer.getGroup().registeredServers(plugin));
             if (serversInGroup.isEmpty()) {
                 return;
             }

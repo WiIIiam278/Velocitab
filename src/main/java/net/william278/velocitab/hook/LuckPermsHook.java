@@ -45,6 +45,7 @@ public class LuckPermsHook extends Hook {
     private final LuckPerms api;
     private final EventSubscription<UserDataRecalculateEvent> event;
     private final Map<UUID, Long> lastUpdate;
+    private boolean enabled;
 
     public LuckPermsHook(@NotNull Velocitab plugin) throws IllegalStateException {
         super(plugin);
@@ -53,10 +54,12 @@ public class LuckPermsHook extends Hook {
         this.event = api.getEventBus().subscribe(
                 plugin, UserDataRecalculateEvent.class, this::onLuckPermsGroupUpdate
         );
+        this.enabled = true;
     }
 
     public void closeEvent() {
         event.close();
+        this.enabled = false;
     }
 
     @NotNull
@@ -92,6 +95,10 @@ public class LuckPermsHook extends Hook {
         }
         lastUpdate.put(event.getUser().getUniqueId(), System.currentTimeMillis());
 
+        if (!enabled) {
+            return;
+        }
+
         final PlayerTabList tabList = plugin.getTabList();
         plugin.getServer().getPlayer(event.getUser().getUniqueId())
                 .ifPresent(player -> plugin.getServer().getScheduler()
@@ -103,7 +110,12 @@ public class LuckPermsHook extends Hook {
 
                             final TabPlayer tabPlayer = tabPlayerOptional.get();
                             final Role oldRole = tabPlayer.getRole();
-                            tabPlayer.setRole(getRoleFromMetadata(event.getData().getMetaData()));
+                            final Role newRole = getRoleFromMetadata(event.getUser().getCachedData().getMetaData());
+                            if (oldRole.equals(newRole)) {
+                                return;
+                            }
+
+                            tabPlayer.setRole(newRole);
                             tabList.updatePlayerDisplayName(tabPlayer);
                             tabList.getVanishTabList().recalculateVanishForPlayer(tabPlayer);
                             checkRoleUpdate(tabPlayer, oldRole);

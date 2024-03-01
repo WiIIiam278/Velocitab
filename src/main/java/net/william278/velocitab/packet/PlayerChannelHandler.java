@@ -26,9 +26,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import lombok.RequiredArgsConstructor;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @RequiredArgsConstructor
@@ -44,6 +46,11 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
             return;
         }
 
+        final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
+        if (tabPlayer.isEmpty()) {
+            super.write(ctx, msg, promise);
+            return;
+        }
 
         if (plugin.getSettings().isRemoveSpectatorEffect() && minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.UPDATE_GAME_MODE)) {
             forceGameMode(minecraftPacket.getEntries());

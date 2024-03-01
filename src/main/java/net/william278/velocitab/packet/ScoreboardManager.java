@@ -82,8 +82,9 @@ public class ScoreboardManager {
     public void resetCache(@NotNull Player player) {
         final String team = createdTeams.remove(player.getUniqueId());
         if (team != null) {
-            final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player).orElseThrow();
-            dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, team), tabPlayer);
+            plugin.getTabList().getTabPlayer(player).ifPresent(tabPlayer ->
+                    dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, team), tabPlayer)
+            );
         }
     }
 

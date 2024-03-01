@@ -77,11 +77,16 @@ public class TabListListener {
 
         // If the server is not in a group, use fallback.
         // If fallback is disabled, permit the player to switch excluded servers without a header or footer override
-        if (isDefault && !plugin.getSettings().isFallbackEnabled() && event.getPreviousServer() != null) {
+        if (isDefault && !plugin.getSettings().isFallbackEnabled()) {
             final Optional<TabPlayer> tabPlayer = tabList.getTabPlayer(joined);
             if (tabPlayer.isEmpty()) {
                 return;
             }
+
+            if (event.getPreviousServer() == null) {
+                return;
+            }
+
             final Component header = tabPlayer.get().getLastHeader();
             final Component footer = tabPlayer.get().getLastFooter();
             final Component displayName = tabPlayer.get().getLastDisplayName();

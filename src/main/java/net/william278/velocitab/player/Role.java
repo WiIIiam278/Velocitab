@@ -20,12 +20,16 @@
 package net.william278.velocitab.player;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class Role implements Comparable<Role> {
+
     public static final int DEFAULT_WEIGHT = 0;
     public static final Role DEFAULT_ROLE = new Role(DEFAULT_WEIGHT, null, null, null, null);
     @Getter
@@ -38,14 +42,6 @@ public class Role implements Comparable<Role> {
     private final String prefix;
     @Nullable
     private final String suffix;
-
-    public Role(int weight, @Nullable String name, @Nullable String displayName, @Nullable String prefix, @Nullable String suffix) {
-        this.weight = weight;
-        this.name = name;
-        this.displayName = displayName;
-        this.prefix = prefix;
-        this.suffix = suffix;
-    }
 
     @Override
     public int compareTo(@NotNull Role o) {
@@ -73,4 +69,15 @@ public class Role implements Comparable<Role> {
         return Integer.toString(weight);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        final Role role = (Role) obj;
+        return weight == role.weight &&
+                Objects.equals(name, role.name) &&
+                Objects.equals(displayName, role.displayName) &&
+                Objects.equals(prefix, role.prefix) &&
+                Objects.equals(suffix, role.suffix);
+    }
 }

@@ -41,6 +41,7 @@ import java.util.concurrent.CompletableFuture;
 @ToString
 public final class TabPlayer implements Comparable<TabPlayer> {
 
+    private final Velocitab plugin;
     private final Player player;
     @Setter
     private Role role;
@@ -65,7 +66,9 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     @Setter
     private boolean loaded;
 
-    public TabPlayer(@NotNull Player player, @NotNull Role role, @NotNull Group group) {
+    public TabPlayer(@NotNull Velocitab plugin, @NotNull Player player,
+                     @NotNull Role role, @NotNull Group group) {
+        this.plugin = plugin;
         this.player = player;
         this.role = role;
         this.group = group;
@@ -134,12 +137,23 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     public CompletableFuture<Void> sendHeaderAndFooter(@NotNull PlayerTabList tabList) {
-        return tabList.getHeader(this).thenCompose(header -> tabList.getFooter(this)
-                .thenAccept(footer -> {
+        return tabList.getHeader(this).thenCompose(header -> tabList.getFooter(this).thenAccept(footer -> {
+            final boolean disabled = plugin.getSettings().isDisableHeaderFooterIfEmpty();
+            if (disabled) {
+                if (!Component.empty().equals(header)) {
                     lastHeader = header;
+                    player.sendPlayerListHeader(header);
+                }
+                if (!Component.empty().equals(footer)) {
                     lastFooter = footer;
-                    player.sendPlayerListHeaderAndFooter(header, footer);
-                }));
+                    player.sendPlayerListFooter(footer);
+                }
+            } else {
+                lastHeader = header;
+                lastFooter = footer;
+                player.sendPlayerListHeaderAndFooter(header, footer);
+            }
+        }));
     }
 
     public void incrementIndexes() {

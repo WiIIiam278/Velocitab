@@ -129,7 +129,7 @@ public class PlayerTabList {
                 return;
             }
 
-            final List<RegisteredServer> serversInGroup = Lists.newArrayList(tabPlayer.getGroup().registeredServers(plugin));
+            final Set<RegisteredServer> serversInGroup = tabPlayer.getGroup().registeredServers(plugin);
             if (serversInGroup.isEmpty()) {
                 return;
             }
@@ -283,7 +283,7 @@ public class PlayerTabList {
 
     @NotNull
     public TabPlayer createTabPlayer(@NotNull Player player, @NotNull Group group) {
-        return new TabPlayer(player,
+        return new TabPlayer(plugin, player,
                 plugin.getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE),
                 group
         );
@@ -379,7 +379,7 @@ public class PlayerTabList {
      * @param incrementIndexes Whether to increment the header and footer indexes.
      */
     private void updateGroupPlayers(@NotNull Group group, boolean all, boolean incrementIndexes) {
-        List<TabPlayer> groupPlayers = group.getTabPlayers(plugin);
+        Set<TabPlayer> groupPlayers = group.getTabPlayers(plugin);
         if (groupPlayers.isEmpty()) {
             return;
         }

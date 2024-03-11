@@ -19,6 +19,7 @@
 
 package net.william278.velocitab.config;
 
+import com.google.common.collect.Sets;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.william278.velocitab.Velocitab;
@@ -27,9 +28,12 @@ import net.william278.velocitab.tab.Nametag;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 public record Group(
@@ -38,8 +42,8 @@ public record Group(
         List<String> footers,
         String format,
         Nametag nametag,
-        List<String> servers,
-        List<String> sortingPlaceholders,
+        Set<String> servers,
+        Set<String> sortingPlaceholders,
         boolean collisions,
         int headerFooterUpdateRate,
         int placeholderUpdateRate
@@ -58,15 +62,35 @@ public record Group(
     }
 
     @NotNull
-    public List<RegisteredServer> registeredServers(Velocitab plugin) {
+    public Set<RegisteredServer> registeredServers(@NotNull Velocitab plugin) {
         if (isDefault() && plugin.getSettings().isFallbackEnabled()) {
-            return new ArrayList<>(plugin.getServer().getAllServers());
+            return Sets.newHashSet(plugin.getServer().getAllServers());
         }
-        return servers.stream()
-                .map(plugin.getServer()::getServer)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .toList();
+        return getRegexServers(plugin);
+    }
+
+    @NotNull
+    private Set<RegisteredServer> getRegexServers(@NotNull Velocitab plugin) {
+        final Set<RegisteredServer> totalServers = Sets.newHashSet();
+        for (String server : servers) {
+            if (!server.contains("*") && !server.contains(".")) {
+                plugin.getServer().getServer(server).ifPresent(totalServers::add);
+                continue;
+            }
+
+            try {
+                final Matcher matcher = Pattern.compile(server
+                                .replace(".", "\\.")
+                                .replace("*", ".*"))
+                        .matcher("");
+                plugin.getServer().getAllServers().stream()
+                        .filter(registeredServer -> matcher.reset(registeredServer.getServerInfo().getName()).matches())
+                        .forEach(totalServers::add);
+            } catch (PatternSyntaxException ignored) {
+                plugin.getServer().getServer(server).ifPresent(totalServers::add);
+            }
+        }
+        return totalServers;
     }
 
     public boolean isDefault() {
@@ -74,8 +98,8 @@ public record Group(
     }
 
     @NotNull
-    public List<Player> getPlayers(Velocitab plugin) {
-        List<Player> players = new ArrayList<>();
+    public Set<Player> getPlayers(@NotNull Velocitab plugin) {
+        Set<Player> players = Sets.newHashSet();
         for (RegisteredServer server : registeredServers(plugin)) {
             players.addAll(server.getPlayersConnected());
         }
@@ -83,12 +107,12 @@ public record Group(
     }
 
     @NotNull
-    public List<TabPlayer> getTabPlayers(Velocitab plugin) {
+    public Set<TabPlayer> getTabPlayers(@NotNull Velocitab plugin) {
         return plugin.getTabList().getPlayers()
                 .values()
                 .stream()
                 .filter(tabPlayer -> tabPlayer.getGroup().equals(this))
-                .toList();
+                .collect(Collectors.toSet());
     }
 
     @Override

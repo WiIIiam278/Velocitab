@@ -114,6 +114,7 @@ public class TabListListener {
     @Subscribe(order = PostOrder.LAST)
     public void onPlayerQuit(@NotNull DisconnectEvent event) {
         if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) {
+            checkDelayedDisconnect(event);
             return;
         }
 
@@ -122,6 +123,21 @@ public class TabListListener {
 
         // Remove the player from the tab list of all other players
         tabList.removePlayer(event.getPlayer());
+    }
+
+    private void checkDelayedDisconnect(@NotNull DisconnectEvent event) {
+        final Player player = event.getPlayer();
+        plugin.getServer().getScheduler().buildTask(plugin, () -> {
+            final Optional<Player> actualPlayer = plugin.getServer().getPlayer(player.getUniqueId());
+            if (actualPlayer.isPresent() && !actualPlayer.get().equals(player)) {
+                return;
+            }
+            if (player.getCurrentServer().isPresent()) {
+                return;
+            }
+            tabList.removePlayer(player);
+            plugin.log("Player " + player.getUsername() + " was not removed from the tab list, removing now.");
+        }).delay(500, TimeUnit.MILLISECONDS).schedule();
     }
 
     @Subscribe

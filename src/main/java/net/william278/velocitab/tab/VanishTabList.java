@@ -24,8 +24,8 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -79,7 +79,7 @@ public class VanishTabList {
      */
     public void recalculateVanishForPlayer(@NotNull TabPlayer tabPlayer) {
         final Player player = tabPlayer.getPlayer();
-        final List<String> serversInGroup = tabPlayer.getGroup().servers();
+        final Set<String> serversInGroup = tabPlayer.getGroup().servers();
 
         plugin.getServer().getAllPlayers().forEach(p -> {
             if (p.equals(player)) {

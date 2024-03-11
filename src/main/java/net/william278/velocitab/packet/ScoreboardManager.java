@@ -113,7 +113,7 @@ public class ScoreboardManager {
         if (teamName == null) {
             return;
         }
-        final List<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
+        final Set<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
 
         final Optional<Nametag> cachedTag = Optional.ofNullable(nametags.getOrDefault(teamName, null));
         cachedTag.ifPresent(nametag -> {
@@ -175,7 +175,7 @@ public class ScoreboardManager {
         }
 
         final Player player = tabPlayer.getPlayer();
-        final List<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
+        final Set<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
         final List<Player> players = siblings.stream()
                 .map(RegisteredServer::getPlayersConnected)
                 .flatMap(Collection::stream)
@@ -253,7 +253,7 @@ public class ScoreboardManager {
             return;
         }
 
-        final List<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
+        final Set<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
         siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
             try {
                 final boolean canSee = plugin.getVanishManager().canSee(connected.getUsername(), player.getUsername());

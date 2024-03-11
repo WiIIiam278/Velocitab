@@ -17,6 +17,8 @@ The config file is located in `/plugins/velocitab/config.yml` and the tab groups
 check_for_updates: true
 # Whether to remove nametag from players' heads if the nametag associated with their server group is empty.
 remove_nametags: true
+# Whether to disable header and footer if they are empty and let backend servers handle them.
+disable_header_footer_if_empty: true
 # Which text formatter to use (MINEDOWN, MINIMESSAGE, or LEGACY)
 formatter: MINEDOWN
 # All servers which are not in other groups will be put in the fallback group.
@@ -33,16 +35,21 @@ server_display_names:
 # Whether to enable the PAPIProxyBridge hook for PAPI support
 enable_papi_hook: true
 # How long in seconds to cache PAPI placeholders for, in milliseconds. (0 to disable)
-papi_cache_time: 200
+papi_cache_time: 30000
 # If you are using MINIMESSAGE formatting, enable this to support MiniPlaceholders in formatting.
 enable_mini_placeholders_hook: true
 # Whether to send scoreboard teams packets. Required for player list sorting and nametag formatting.
 # Turn this off if you're using scoreboard teams on backend servers.
 send_scoreboard_packets: true
+# If built-in placeholders return a blank string, fallback to Placeholder API equivalents.
+# For example, if %prefix% returns a blank string, use %luckperms_prefix%. Requires PAPIProxyBridge.
+fallback_to_papi_if_placeholder_blank: false
 # Whether to sort players in the TAB list.
 sort_players: true
 # Remove gamemode spectator effect for other players in the TAB list.
 remove_spectator_effect: false
+# Whether to enable the Plugin Message API (allows backend plugins to perform certain operations)
+enable_plugin_message_api: true
 ```
 
 </details>

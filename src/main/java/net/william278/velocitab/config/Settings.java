@@ -50,6 +50,9 @@ public class Settings implements ConfigValidator {
     @Comment("Whether to remove nametag from players' heads if the nametag associated with their server group is empty.")
     private boolean removeNametags = false;
 
+    @Comment("Whether to disable header and footer if they are empty and let backend servers handle them.")
+    private boolean disableHeaderFooterIfEmpty = true;
+
     @Comment("Which text formatter to use (MINEDOWN, MINIMESSAGE, or LEGACY)")
     private Formatter formatter = Formatter.MINEDOWN;
 

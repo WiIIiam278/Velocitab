@@ -19,6 +19,7 @@
 
 package net.william278.velocitab.config;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import de.exlll.configlib.Configuration;
@@ -29,10 +30,7 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.tab.Nametag;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @SuppressWarnings("FieldMayBeFinal")
 @Getter
@@ -54,8 +52,8 @@ public class TabGroups implements ConfigValidator {
             List.of("[There are currently %players_online%/%max_players_online% players online](gray)"),
             "&7[%server%] &f%prefix%%username%",
             new Nametag("&f%prefix%", "&f%suffix%"),
-            List.of("lobby", "survival", "creative", "minigames", "skyblock", "prison", "hub"),
-            List.of("%role_weight%", "%username_lower%"),
+            Set.of("lobby", "survival", "creative", "minigames", "skyblock", "prison", "hub"),
+            Set.of("%role_weight%", "%username_lower%"),
             false,
             1000,
             1000
@@ -113,7 +111,7 @@ public class TabGroups implements ConfigValidator {
 
     @NotNull
     private Multimap<Group, String> getMissingKeys() {
-        final Multimap<Group, String> missingKeys = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
+        final Multimap<Group, String> missingKeys = Multimaps.newSetMultimap(Maps.newHashMap(), HashSet::new);
 
         for (Group group : groups) {
             if (group.format() == null) {

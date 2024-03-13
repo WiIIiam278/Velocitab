@@ -54,11 +54,13 @@ public class TabListListener {
 
     @Subscribe
     public void onKick(@NotNull KickedFromServerEvent event) {
-        event.getPlayer().getTabList().clearAll();
-        event.getPlayer().getTabList().clearHeaderAndFooter();
+        if (event.getResult() instanceof KickedFromServerEvent.DisconnectPlayer) {
+            Player player = event.getPlayer();
 
-        if (event.getResult() instanceof KickedFromServerEvent.DisconnectPlayer || event.getResult() instanceof KickedFromServerEvent.RedirectPlayer) {
-            tabList.removePlayer(event.getPlayer());
+            player.getTabList().clearAll();
+            player.getTabList().clearHeaderAndFooter();
+    
+            tabList.removePlayer(player);
         }
     }
 

@@ -27,15 +27,16 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * The VanishTabList handles the tab list for vanished players
  */
 public class VanishTabList {
-    
+
     private final Velocitab plugin;
     private final PlayerTabList tabList;
-    
+
     public VanishTabList(Velocitab plugin, PlayerTabList tabList) {
         this.plugin = plugin;
         this.tabList = tabList;
@@ -79,8 +80,6 @@ public class VanishTabList {
      */
     public void recalculateVanishForPlayer(@NotNull TabPlayer tabPlayer) {
         final Player player = tabPlayer.getPlayer();
-        final Set<String> serversInGroup = tabPlayer.getGroup().servers();
-
         plugin.getServer().getAllPlayers().forEach(p -> {
             if (p.equals(player)) {
                 return;
@@ -94,8 +93,8 @@ public class VanishTabList {
             final TabPlayer target = targetOptional.get();
             final String serverName = target.getServerName();
 
-            if (plugin.getSettings().isOnlyListPlayersInSameGroup()
-                    && !serversInGroup.contains(serverName)) {
+            if (tabPlayer.getGroup().onlyListPlayersInSameServer()
+                    && !tabPlayer.getServerName().equals(serverName)) {
                 return;
             }
 
@@ -115,5 +114,4 @@ public class VanishTabList {
             }
         });
     }
-    
 }

@@ -175,13 +175,9 @@ public class ScoreboardManager {
         }
 
         final Player player = tabPlayer.getPlayer();
-        final Set<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
-        final List<Player> players = siblings.stream()
-                .map(RegisteredServer::getPlayersConnected)
-                .flatMap(Collection::stream)
-                .toList();
+        final Set<Player> players = tabPlayer.getGroup().getPlayers(plugin, tabPlayer);
 
-        final List<String> roles = new ArrayList<>();
+        final Set<String> roles = Sets.newHashSet();
         players.forEach(p -> {
             if (p == player || !p.isActive()) {
                 return;
@@ -253,8 +249,8 @@ public class ScoreboardManager {
             return;
         }
 
-        final Set<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
-        siblings.forEach(server -> server.getPlayersConnected().forEach(connected -> {
+        final Set<Player> players = tabPlayer.getGroup().getPlayers(plugin);
+        players.forEach(connected -> {
             try {
                 final boolean canSee = plugin.getVanishManager().canSee(connected.getUsername(), player.getUsername());
                 if (!canSee) {
@@ -266,7 +262,7 @@ public class ScoreboardManager {
             } catch (Throwable e) {
                 plugin.log(Level.ERROR, "Failed to dispatch packet (unsupported client or server version)", e);
             }
-        }));
+        });
     }
 
     public void registerPacket() {

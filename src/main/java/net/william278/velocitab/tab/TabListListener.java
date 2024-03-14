@@ -19,6 +19,7 @@
 
 package net.william278.velocitab.tab;
 
+import com.google.common.collect.Sets;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
@@ -35,6 +36,7 @@ import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -46,20 +48,34 @@ public class TabListListener {
 
     private final Velocitab plugin;
     private final PlayerTabList tabList;
+    // In 1.8 there is a packet delay problem
+    private final Set<UUID> justQuit;
 
     public TabListListener(@NotNull Velocitab plugin, @NotNull PlayerTabList tabList) {
         this.plugin = plugin;
         this.tabList = tabList;
+        this.justQuit = Sets.newConcurrentHashSet();
     }
 
     @Subscribe
     public void onKick(@NotNull KickedFromServerEvent event) {
-        event.getPlayer().getTabList().clearAll();
+        event.getPlayer().getTabList().getEntries().stream()
+                .filter(entry -> entry.getProfile() != null && !entry.getProfile().getId().equals(event.getPlayer().getUniqueId()))
+                .forEach(entry -> event.getPlayer().getTabList().removeEntry(entry.getProfile().getId()));
         event.getPlayer().getTabList().clearHeaderAndFooter();
 
-        if (event.getResult() instanceof KickedFromServerEvent.DisconnectPlayer || event.getResult() instanceof KickedFromServerEvent.RedirectPlayer) {
+        if (event.getResult() instanceof KickedFromServerEvent.DisconnectPlayer) {
             tabList.removePlayer(event.getPlayer());
+        } else if (event.getResult() instanceof KickedFromServerEvent.RedirectPlayer redirectPlayer) {
+            tabList.removePlayer(event.getPlayer(), redirectPlayer.getServer());
         }
+
+        justQuit.add(event.getPlayer().getUniqueId());
+
+        plugin.getServer().getScheduler().buildTask(plugin,
+                        () -> justQuit.remove(event.getPlayer().getUniqueId()))
+                .delay(300, TimeUnit.MILLISECONDS)
+                .schedule();
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -73,7 +89,8 @@ public class TabListListener {
                 .orElse("");
         final Group group = tabList.getGroup(serverName);
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined, group));
-        final boolean isDefault = !group.servers().contains(serverName);
+        final boolean isDefault = group.registeredServers(plugin).stream()
+                .noneMatch(server -> server.getServerInfo().getName().equalsIgnoreCase(serverName));
 
         // If the server is not in a group, use fallback.
         // If fallback is disabled, permit the player to switch excluded servers without a header or footer override
@@ -92,19 +109,27 @@ public class TabListListener {
             final Component displayName = tabPlayer.get().getLastDisplayName();
 
             plugin.getServer().getScheduler().buildTask(plugin, () -> {
-                if (header.equals(event.getPlayer().getPlayerListHeader()) && footer.equals(event.getPlayer().getPlayerListFooter())) {
-                    event.getPlayer().sendPlayerListHeaderAndFooter(header, footer);
-                    event.getPlayer().getCurrentServer().ifPresent(serverConnection ->
-                            serverConnection.getServer().getPlayersConnected().forEach(player ->
-                                    player.getTabList().getEntry(joined.getUniqueId()).ifPresent(entry -> {
-                                        if (entry.getDisplayNameComponent().isPresent() && entry.getDisplayNameComponent().get().equals(displayName)) {
-                                            entry.setDisplayName(Component.text(joined.getUsername()));
-                                        }
-                                    })));
+                final Component currentHeader = joined.getPlayerListHeader();
+                final Component currentFooter = joined.getPlayerListFooter();
+                if ((header.equals(currentHeader) && footer.equals(currentFooter)) ||
+                        (currentHeader.equals(Component.empty()) && currentFooter.equals(Component.empty()))
+                ) {
+                    joined.sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
+                    joined.getCurrentServer().ifPresent(serverConnection -> serverConnection.getServer().getPlayersConnected().forEach(player ->
+                            player.getTabList().getEntry(joined.getUniqueId())
+                                    .ifPresent(entry -> entry.setDisplayName(Component.text(joined.getUsername())))));
                 }
             }).delay(500, TimeUnit.MILLISECONDS).schedule();
 
             tabList.getPlayers().remove(event.getPlayer().getUniqueId());
+            return;
+        }
+
+        if (justQuit.contains(joined.getUniqueId())) {
+            plugin.getServer().getScheduler().buildTask(plugin,
+                            () -> tabList.joinPlayer(joined, group))
+                    .delay(250, TimeUnit.MILLISECONDS)
+                    .schedule();
             return;
         }
 
@@ -117,9 +142,6 @@ public class TabListListener {
             checkDelayedDisconnect(event);
             return;
         }
-
-        // Remove the player from the tracking list, Print warning if player was not removed
-        final UUID uuid = event.getPlayer().getUniqueId();
 
         // Remove the player from the tab list of all other players
         tabList.removePlayer(event.getPlayer());

@@ -19,7 +19,6 @@
 
 package net.william278.velocitab.tab;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
@@ -37,7 +36,9 @@ import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
+import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.event.Level;
 
 import java.util.*;
@@ -97,11 +98,13 @@ public class PlayerTabList {
     public void load() {
         plugin.getServer().getAllPlayers().forEach(p -> {
             final Optional<ServerConnection> server = p.getCurrentServer();
-            if (server.isEmpty()) return;
+            if (server.isEmpty()) {
+                return;
+            }
 
             final String serverName = server.get().getServerInfo().getName();
             final Group group = getGroup(serverName);
-            final boolean isDefault = !group.servers().contains(serverName);
+            final boolean isDefault = group.registeredServers(plugin).stream().noneMatch(s -> s.getServerInfo().getName().equals(serverName));
 
             if (isDefault && !plugin.getSettings().isFallbackEnabled()) {
                 return;
@@ -146,12 +149,12 @@ public class PlayerTabList {
         tabPlayer.setGroup(group);
         players.putIfAbsent(joined.getUniqueId(), tabPlayer);
 
+        final String serverName = getServerName(joined);
+
         //store last server, so it's possible to have the last server on disconnect
-        tabPlayer.setLastServer(joined.getCurrentServer().map(ServerConnection::getServerInfo).map(ServerInfo::getName).orElse(""));
+        tabPlayer.setLastServer(serverName);
 
         final boolean isVanished = plugin.getVanishManager().isVanished(joined.getUsername());
-        final boolean isDefault = group.isDefault();
-        final boolean isFallback = isDefault && plugin.getSettings().isFallbackEnabled();
 
         tabPlayer.getDisplayName(plugin).thenAccept(d -> {
 
@@ -167,16 +170,20 @@ public class PlayerTabList {
                         return null;
                     });
 
+            final Set<String> serversInGroup = group.registeredServers(plugin).stream()
+                    .map(server -> server.getServerInfo().getName())
+                    .collect(HashSet::new, HashSet::add, HashSet::addAll);
+
+            serversInGroup.remove(serverName);
+
             // Update lists
             plugin.getServer().getScheduler()
                     .buildTask(plugin, () -> {
                         final TabList tabList = joined.getTabList();
-                        for (final TabPlayer player : players.values()) {
+                        final Set<TabPlayer> tabPlayers = group.getTabPlayers(plugin);
+                        for (final TabPlayer player : tabPlayers) {
                             // Skip players on other servers if the setting is enabled
-                            if (plugin.getSettings().isOnlyListPlayersInSameGroup()
-                                    && !isFallback &&
-                                    !group.servers().contains(player.getServerName())
-                            ) {
+                            if (group.onlyListPlayersInSameServer() && !serverName.equals(getServerName(player.getPlayer()))) {
                                 continue;
                             }
                             // check if current player can see the joined player
@@ -187,7 +194,8 @@ public class PlayerTabList {
                             }
                             // check if joined player can see current player
                             if ((plugin.getVanishManager().isVanished(player.getPlayer().getUsername()) &&
-                                    !plugin.getVanishManager().canSee(joined.getUsername(), player.getPlayer().getUsername())) && player.getPlayer() != joined) {
+                                    !plugin.getVanishManager().canSee(joined.getUsername(), player.getPlayer().getUsername())) &&
+                                    player.getPlayer() != joined) {
                                 tabList.removeEntry(player.getPlayer().getUniqueId());
                             } else {
                                 tabList.getEntry(player.getPlayer().getUniqueId()).ifPresentOrElse(
@@ -221,16 +229,35 @@ public class PlayerTabList {
         });
     }
 
+    @NotNull
+    private String getServerName(@NotNull Player player) {
+        return player.getCurrentServer()
+                .map(serverConnection -> serverConnection.getServerInfo().getName())
+                .orElse("");
+    }
+
     protected void removePlayer(@NotNull Player target) {
+        removePlayer(target, null);
+    }
+
+    protected void removePlayer(@NotNull Player target, @Nullable RegisteredServer server) {
         final UUID uuid = target.getUniqueId();
         plugin.getServer().getAllPlayers().forEach(player -> player.getTabList().removeEntry(uuid));
 
+        final Set<Player> currentServerPlayers = Optional.ofNullable(server)
+                .map(RegisteredServer::getPlayersConnected)
+                .map(HashSet::new)
+                .orElseGet(HashSet::new);
+        currentServerPlayers.add(target);
+
         // Update the tab list of all players
         plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> getPlayers().values().forEach(player -> {
-                    player.getPlayer().getTabList().removeEntry(uuid);
-                    player.sendHeaderAndFooter(this);
-                }))
+                .buildTask(plugin, () -> getPlayers().values().stream()
+                        .filter(p -> currentServerPlayers.isEmpty() || !currentServerPlayers.contains(p.getPlayer()))
+                        .forEach(player -> {
+                            player.getPlayer().getTabList().removeEntry(uuid);
+                            player.sendHeaderAndFooter(this);
+                        }))
                 .delay(500, TimeUnit.MILLISECONDS)
                 .schedule();
         // Delete player team
@@ -240,20 +267,15 @@ public class PlayerTabList {
     }
 
     @NotNull
-    CompletableFuture<TabListEntry> createEntry(@NotNull TabPlayer player, @NotNull TabList tabList) {
-        return player.getDisplayName(plugin).thenApply(name -> TabListEntry.builder()
-                .profile(player.getPlayer().getGameProfile())
-                .displayName(name)
-                .latency(0)
-                .tabList(tabList)
-                .build());
+    protected CompletableFuture<TabListEntry> createEntry(@NotNull TabPlayer player, @NotNull TabList tabList) {
+        return player.getDisplayName(plugin).thenApply(name -> createEntry(player, tabList, name));
     }
 
     protected TabListEntry createEntry(@NotNull TabPlayer player, @NotNull TabList tabList, @NotNull Component displayName) {
         return TabListEntry.builder()
                 .profile(player.getPlayer().getGameProfile())
                 .displayName(displayName)
-                .latency(0)
+                .latency(Math.max((int) player.getPlayer().getPing(), 0))
                 .tabList(tabList)
                 .build();
     }
@@ -314,15 +336,19 @@ public class PlayerTabList {
             }
 
             final boolean isVanished = plugin.getVanishManager().isVanished(tabPlayer.getPlayer().getUsername());
+            final Set<TabPlayer> players = tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer);
 
-            players.values().forEach(player -> {
+            players.forEach(player -> {
                 if (isVanished && !plugin.getVanishManager().canSee(player.getPlayer().getUsername(), tabPlayer.getPlayer().getUsername())) {
                     return;
                 }
 
                 player.getPlayer().getTabList().getEntries().stream()
                         .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
-                        .ifPresent(entry -> entry.setDisplayName(displayName));
+                        .ifPresent(entry -> {
+                            entry.setDisplayName(displayName);
+                            entry.setLatency(Math.max((int) tabPlayer.getPlayer().getPing(), 0));
+                        });
             });
         });
     }
@@ -379,7 +405,7 @@ public class PlayerTabList {
      * @param incrementIndexes Whether to increment the header and footer indexes.
      */
     private void updateGroupPlayers(@NotNull Group group, boolean all, boolean incrementIndexes) {
-        Set<TabPlayer> groupPlayers = group.getTabPlayers(plugin);
+        final Set<TabPlayer> groupPlayers = group.getTabPlayers(plugin);
         if (groupPlayers.isEmpty()) {
             return;
         }
@@ -449,7 +475,7 @@ public class PlayerTabList {
 
     @NotNull
     public Group getGroup(@NotNull String serverName) {
-        return plugin.getTabGroups().getGroupFromServer(serverName);
+        return plugin.getTabGroups().getGroupFromServer(serverName, plugin);
     }
 
 

@@ -26,8 +26,6 @@ formatter: MINEDOWN
 fallback_enabled: true
 # The formats to use for the fallback group.
 fallback_group: default
-# Only show other players on a server that is part of the same server group as the player.
-only_list_players_in_same_group: true
 # Define custom names to be shown in the TAB list for specific server names.
 # If no custom display name is provided for a server, its original name will be used.
 server_display_names:
@@ -79,18 +77,19 @@ groups:
     prefix: '&f%prefix%'
     suffix: '&f%suffix%'
   servers:
-  - lobby
+  - ^lobby[^ ]*
   - survival
   - creative
   - minigames
   - skyblock
   - prison
-  - hub
   sorting_placeholders:
   - '%role_weight%'
   - '%username_lower%'
+  collisions: false
   header_footer_update_rate: 1000
   placeholder_update_rate: 1000
+  only_list_players_in_same_server: false
 ```
 
 </details>

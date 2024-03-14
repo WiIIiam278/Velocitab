@@ -27,6 +27,7 @@ import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.tab.Nametag;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.event.Level;
 
 import java.util.List;
 import java.util.Set;
@@ -43,10 +44,11 @@ public record Group(
         String format,
         Nametag nametag,
         Set<String> servers,
-        Set<String> sortingPlaceholders,
+        List<String> sortingPlaceholders,
         boolean collisions,
         int headerFooterUpdateRate,
-        int placeholderUpdateRate
+        int placeholderUpdateRate,
+        boolean onlyListPlayersInSameServer
 ) {
 
     @NotNull
@@ -63,7 +65,7 @@ public record Group(
 
     @NotNull
     public Set<RegisteredServer> registeredServers(@NotNull Velocitab plugin) {
-        if (isDefault() && plugin.getSettings().isFallbackEnabled()) {
+        if (isDefault(plugin) && plugin.getSettings().isFallbackEnabled()) {
             return Sets.newHashSet(plugin.getServer().getAllServers());
         }
         return getRegexServers(plugin);
@@ -73,28 +75,21 @@ public record Group(
     private Set<RegisteredServer> getRegexServers(@NotNull Velocitab plugin) {
         final Set<RegisteredServer> totalServers = Sets.newHashSet();
         for (String server : servers) {
-            if (!server.contains("*") && !server.contains(".")) {
-                plugin.getServer().getServer(server).ifPresent(totalServers::add);
-                continue;
-            }
-
             try {
-                final Matcher matcher = Pattern.compile(server
-                                .replace(".", "\\.")
-                                .replace("*", ".*"))
-                        .matcher("");
+                final Matcher matcher = Pattern.compile(server, Pattern.CASE_INSENSITIVE).matcher("");
                 plugin.getServer().getAllServers().stream()
                         .filter(registeredServer -> matcher.reset(registeredServer.getServerInfo().getName()).matches())
                         .forEach(totalServers::add);
-            } catch (PatternSyntaxException ignored) {
+            } catch (PatternSyntaxException exception) {
+                plugin.log(Level.WARN, "Invalid regex pattern " + server + " in group " + name, exception);
                 plugin.getServer().getServer(server).ifPresent(totalServers::add);
             }
         }
         return totalServers;
     }
 
-    public boolean isDefault() {
-        return name.equals("default");
+    public boolean isDefault(@NotNull Velocitab plugin) {
+        return name.equals(plugin.getSettings().getFallbackGroup());
     }
 
     @NotNull
@@ -107,12 +102,34 @@ public record Group(
     }
 
     @NotNull
+    public Set<Player> getPlayers(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {
+        if (onlyListPlayersInSameServer) {
+            return tabPlayer.getPlayer().getCurrentServer()
+                    .map(s -> Sets.newHashSet(s.getServer().getPlayersConnected()))
+                    .orElseGet(Sets::newHashSet);
+        }
+        return getPlayers(plugin);
+    }
+
+    @NotNull
     public Set<TabPlayer> getTabPlayers(@NotNull Velocitab plugin) {
         return plugin.getTabList().getPlayers()
                 .values()
                 .stream()
                 .filter(tabPlayer -> tabPlayer.getGroup().equals(this))
                 .collect(Collectors.toSet());
+    }
+
+    @NotNull
+    public Set<TabPlayer> getTabPlayers(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {
+        if (onlyListPlayersInSameServer) {
+            return plugin.getTabList().getPlayers()
+                    .values()
+                    .stream()
+                    .filter(player -> player.getGroup().equals(this) && player.getServerName().equals(tabPlayer.getServerName()))
+                    .collect(Collectors.toSet());
+        }
+        return getTabPlayers(plugin);
     }
 
     @Override

@@ -53,10 +53,11 @@ public class TabGroups implements ConfigValidator {
             "&7[%server%] &f%prefix%%username%",
             new Nametag("&f%prefix%", "&f%suffix%"),
             Set.of("lobby", "survival", "creative", "minigames", "skyblock", "prison", "hub"),
-            Set.of("%role_weight%", "%username_lower%"),
+            List.of("%role_weight%", "%username_lower%"),
             false,
             1000,
-            1000
+            1000,
+            false
     );
 
     public List<Group> groups = List.of(DEFAULT_GROUP);
@@ -77,9 +78,20 @@ public class TabGroups implements ConfigValidator {
     }
 
     @NotNull
-    public Group getGroupFromServer(@NotNull String server) {
+    public Group getGroupFromServer(@NotNull String server, @NotNull Velocitab plugin) {
+        final List<Group> groups = new ArrayList<>(this.groups);
+        final Optional<Group> defaultGroup = getGroup("default");
+        // Ensure the default group is always checked last
+        if (defaultGroup.isPresent()) {
+            groups.remove(defaultGroup.get());
+            groups.add(defaultGroup.get());
+        } else {
+            throw new IllegalStateException("No default group found");
+        }
         for (Group group : groups) {
-            if (group.servers().contains(server)) {
+            if (group.registeredServers(plugin)
+                    .stream()
+                    .anyMatch(s -> s.getServerInfo().getName().equalsIgnoreCase(server))) {
                 return group;
             }
         }
@@ -101,7 +113,6 @@ public class TabGroups implements ConfigValidator {
         }
 
         final Multimap<Group, String> missingKeys = getMissingKeys();
-
         if (missingKeys.isEmpty()) {
             return;
         }
@@ -148,7 +159,8 @@ public class TabGroups implements ConfigValidator {
                     group.sortingPlaceholders() == null ? DEFAULT_GROUP.sortingPlaceholders() : group.sortingPlaceholders(),
                     group.collisions(),
                     group.headerFooterUpdateRate(),
-                    group.placeholderUpdateRate()
+                    group.placeholderUpdateRate(),
+                    group.onlyListPlayersInSameServer()
             );
 
             groups.add(group);

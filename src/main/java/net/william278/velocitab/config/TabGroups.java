@@ -89,7 +89,7 @@ public class TabGroups implements ConfigValidator {
             throw new IllegalStateException("No default group found");
         }
         for (Group group : groups) {
-            if (group.registeredServers(plugin)
+            if (group.registeredServers(plugin, false)
                     .stream()
                     .anyMatch(s -> s.getServerInfo().getName().equalsIgnoreCase(server))) {
                 return group;

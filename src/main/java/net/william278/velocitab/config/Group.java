@@ -27,6 +27,7 @@ import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.tab.Nametag;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.event.Level;
 
 import java.util.List;
@@ -65,7 +66,13 @@ public record Group(
 
     @NotNull
     public Set<RegisteredServer> registeredServers(@NotNull Velocitab plugin) {
-        if (isDefault(plugin) && plugin.getSettings().isFallbackEnabled()) {
+        return registeredServers(plugin, true);
+    }
+
+    @NotNull
+    public Set<RegisteredServer> registeredServers(@NotNull Velocitab plugin, boolean includeAllPlayers) {
+        if ((includeAllPlayers && plugin.getSettings().isShowAllPlayersFromAllGroups()) ||
+                (isDefault(plugin) && plugin.getSettings().isFallbackEnabled())) {
             return Sets.newHashSet(plugin.getServer().getAllServers());
         }
         return getRegexServers(plugin);
@@ -103,6 +110,9 @@ public record Group(
 
     @NotNull
     public Set<Player> getPlayers(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {
+        if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
+            return Sets.newHashSet(plugin.getServer().getAllPlayers());
+        }
         if (onlyListPlayersInSameServer) {
             return tabPlayer.getPlayer().getCurrentServer()
                     .map(s -> Sets.newHashSet(s.getServer().getPlayersConnected()))
@@ -111,8 +121,18 @@ public record Group(
         return getPlayers(plugin);
     }
 
+    /**
+     * Retrieves the set of TabPlayers associated with the given Velocitab plugin instance.
+     * If the plugin is configured to show all players from all groups, all players will be returned.
+     *
+     * @param plugin The Velocitab plugin instance.
+     * @return A set of TabPlayers.
+     */
     @NotNull
     public Set<TabPlayer> getTabPlayers(@NotNull Velocitab plugin) {
+        if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
+            return Sets.newHashSet(plugin.getTabList().getPlayers().values());
+        }
         return plugin.getTabList().getPlayers()
                 .values()
                 .stream()
@@ -122,6 +142,9 @@ public record Group(
 
     @NotNull
     public Set<TabPlayer> getTabPlayers(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {
+        if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
+            return Sets.newHashSet(plugin.getTabList().getPlayers().values());
+        }
         if (onlyListPlayersInSameServer) {
             return plugin.getTabList().getPlayers()
                     .values()
@@ -133,7 +156,7 @@ public record Group(
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (!(obj instanceof Group group)) {
             return false;
         }

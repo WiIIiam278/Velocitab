@@ -24,17 +24,18 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.event.Level;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class SortingManager {
 
     private final Velocitab plugin;
     private static final String DELIMITER = ":::";
+    private static final Pattern NUMBER_PATTERN = Pattern.compile("^-?[0-9]\\d*(\\.\\d+)?$");
 
     public SortingManager(@NotNull Velocitab plugin) {
         this.plugin = plugin;
@@ -71,7 +72,7 @@ public class SortingManager {
             return "";
         }
 
-        if (value.matches("^-?[0-9]\\d*(\\.\\d+)?$")) {
+        if (NUMBER_PATTERN.matcher(value).matches()) {
             double parsed = Double.parseDouble(value);
             parsed = Math.max(0, parsed);
             return compressNumber(Integer.MAX_VALUE / 4d - parsed);

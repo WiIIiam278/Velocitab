@@ -26,6 +26,8 @@ formatter: MINEDOWN
 fallback_enabled: true
 # The formats to use for the fallback group.
 fallback_group: default
+# Whether to show all players from all groups in the TAB list.
+show_all_players_from_all_groups: false
 # Define custom names to be shown in the TAB list for specific server names.
 # If no custom display name is provided for a server, its original name will be used.
 server_display_names:

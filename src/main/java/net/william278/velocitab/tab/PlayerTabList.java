@@ -25,7 +25,6 @@ import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.player.TabList;
 import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
-import com.velocitypowered.api.proxy.server.ServerInfo;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -36,7 +35,6 @@ import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
-import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.event.Level;
@@ -54,15 +52,13 @@ public class PlayerTabList {
     private final VanishTabList vanishTabList;
     @Getter(value = AccessLevel.PUBLIC)
     private final Map<UUID, TabPlayer> players;
-    private final Map<Group, ScheduledTask> placeholderTasks;
-    private final Map<Group, ScheduledTask> headerFooterTasks;
+    private final Map<Group, GroupTasks> groupTasks;
 
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
         this.vanishTabList = new VanishTabList(plugin, this);
         this.players = Maps.newConcurrentMap();
-        this.placeholderTasks = Maps.newConcurrentMap();
-        this.headerFooterTasks = Maps.newConcurrentMap();
+        this.groupTasks = Maps.newConcurrentMap();
         this.reloadUpdate();
         this.registerListener();
     }
@@ -104,7 +100,9 @@ public class PlayerTabList {
 
             final String serverName = server.get().getServerInfo().getName();
             final Group group = getGroup(serverName);
-            final boolean isDefault = group.registeredServers(plugin).stream().noneMatch(s -> s.getServerInfo().getName().equals(serverName));
+            final boolean isDefault = group.registeredServers(plugin)
+                    .stream()
+                    .noneMatch(s -> s.getServerInfo().getName().equals(serverName));
 
             if (isDefault && !plugin.getSettings().isFallbackEnabled()) {
                 return;
@@ -119,10 +117,7 @@ public class PlayerTabList {
      * Removes the player's entry from the tab list of all other players on the same group servers.
      */
     public void close() {
-        placeholderTasks.values().forEach(ScheduledTask::cancel);
-        placeholderTasks.clear();
-        headerFooterTasks.values().forEach(ScheduledTask::cancel);
-        headerFooterTasks.clear();
+        groupTasks.values().forEach(GroupTasks::cancel);
         plugin.getServer().getAllPlayers().forEach(p -> {
             final Optional<ServerConnection> server = p.getCurrentServer();
             if (server.isEmpty()) return;
@@ -345,10 +340,7 @@ public class PlayerTabList {
 
                 player.getPlayer().getTabList().getEntries().stream()
                         .filter(e -> e.getProfile().getId().equals(tabPlayer.getPlayer().getUniqueId())).findFirst()
-                        .ifPresent(entry -> {
-                            entry.setDisplayName(displayName);
-                            entry.setLatency(Math.max((int) tabPlayer.getPlayer().getPing(), 0));
-                        });
+                        .ifPresent(entry -> entry.setDisplayName(displayName));
             });
         });
     }
@@ -375,26 +367,54 @@ public class PlayerTabList {
     }
 
     // Update the tab list periodically
-    private void updatePeriodically(Group group) {
+    private void updatePeriodically(@NotNull Group group) {
         cancelTasks(group);
 
+        ScheduledTask headerFooterTask = null;
+        ScheduledTask updateTask = null;
+        ScheduledTask latencyTask;
+
         if (group.headerFooterUpdateRate() > 0) {
-            final ScheduledTask headerFooterTask = plugin.getServer().getScheduler()
+            headerFooterTask = plugin.getServer().getScheduler()
                     .buildTask(plugin, () -> updateGroupPlayers(group, false, true))
                     .delay(1, TimeUnit.SECONDS)
                     .repeat(Math.max(200, group.headerFooterUpdateRate()), TimeUnit.MILLISECONDS)
                     .schedule();
-            headerFooterTasks.put(group, headerFooterTask);
         }
 
         if (group.placeholderUpdateRate() > 0) {
-            final ScheduledTask updateTask = plugin.getServer().getScheduler()
+            updateTask = plugin.getServer().getScheduler()
                     .buildTask(plugin, () -> updateGroupPlayers(group, true, false))
                     .delay(1, TimeUnit.SECONDS)
                     .repeat(Math.max(200, group.placeholderUpdateRate()), TimeUnit.MILLISECONDS)
                     .schedule();
-            placeholderTasks.put(group, updateTask);
         }
+
+        latencyTask = plugin.getServer().getScheduler()
+                .buildTask(plugin, () -> updateLatency(group))
+                .delay(1, TimeUnit.SECONDS)
+                .repeat(3, TimeUnit.SECONDS)
+                .schedule();
+
+        groupTasks.put(group, new GroupTasks(headerFooterTask, updateTask, latencyTask));
+    }
+
+    private void updateLatency(@NotNull Group group) {
+        final Set<TabPlayer> groupPlayers = group.getTabPlayers(plugin);
+        if (groupPlayers.isEmpty()) {
+            return;
+        }
+        groupPlayers.stream()
+                .filter(player -> player.getPlayer().isActive())
+                .forEach(player -> {
+                    final int latency = (int) player.getPlayer().getPing();
+                    final Set<TabPlayer> players = group.getTabPlayers(plugin, player);
+                    players.forEach(p -> {
+                        p.getPlayer().getTabList().getEntries().stream()
+                                .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
+                                .ifPresent(entry -> entry.setLatency(Math.max(latency, 0)));
+                    });
+                });
     }
 
     /**
@@ -425,25 +445,11 @@ public class PlayerTabList {
         }
     }
 
-    private void cancelTasks(Group group) {
-        ScheduledTask task = placeholderTasks.entrySet().stream()
-                .filter(entry -> entry.getKey().equals(group))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .orElse(null);
-        if (task != null) {
-            task.cancel();
-            placeholderTasks.remove(group);
-        }
-
-        task = headerFooterTasks.entrySet().stream()
-                .filter(entry -> entry.getKey().equals(group))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .orElse(null);
-        if (task != null) {
-            task.cancel();
-            headerFooterTasks.remove(group);
+    private void cancelTasks(@NotNull Group group) {
+        final GroupTasks tasks = groupTasks.get(group);
+        if (tasks != null) {
+            tasks.cancel();
+            groupTasks.remove(group);
         }
     }
 
@@ -451,8 +457,6 @@ public class PlayerTabList {
      * Update the TAB list for all players when a plugin or proxy reload is performed
      */
     public void reloadUpdate() {
-        placeholderTasks.values().forEach(ScheduledTask::cancel);
-        placeholderTasks.clear();
         plugin.getTabGroups().getGroups().forEach(this::updatePeriodically);
 
         if (players.isEmpty()) {

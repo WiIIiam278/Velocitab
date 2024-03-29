@@ -63,6 +63,9 @@ public class Settings implements ConfigValidator {
     @Comment("The formats to use for the fallback group.")
     private String fallbackGroup = "default";
 
+    @Comment("Whether to show all players from all groups in the TAB list.")
+    private boolean showAllPlayersFromAllGroups = false;
+
     @Comment("Define custom names to be shown in the TAB list for specific server names."
             + "\nIf no custom display name is provided for a server, its original name will be used.")
     private Map<String, String> serverDisplayNames = Map.of("very-long-server-name", "VLSN");

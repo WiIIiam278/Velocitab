@@ -36,7 +36,7 @@ dependencies {
     compileOnly "com.velocitypowered:velocity-proxy:${velocity_api_version}-SNAPSHOT"
 
     compileOnly 'io.netty:netty-codec-http:4.1.108.Final'
-    compileOnly 'org.projectlombok:lombok:1.18.30'
+    compileOnly 'org.projectlombok:lombok:1.18.32'
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.0.0'
     compileOnly 'net.william278:PAPIProxyBridge:1.5'
@@ -49,7 +49,7 @@ dependencies {
     implementation 'org.bstats:bstats-velocity:3.0.2'
     implementation 'de.exlll:configlib-yaml:4.5.0'
 
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
 }
 
 processResources {

@@ -35,7 +35,10 @@ import net.william278.velocitab.tab.Nametag;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import static com.velocitypowered.api.network.ProtocolVersion.*;
 
@@ -281,7 +284,8 @@ public class ScoreboardManager {
                     .mapping(0x56, MINECRAFT_1_19_3, true)
                     .mapping(0x5A, MINECRAFT_1_19_4, true)
                     .mapping(0x5C, MINECRAFT_1_20_2, true)
-                    .mapping(0x5E, MINECRAFT_1_20_3, true);
+                    .mapping(0x5E, MINECRAFT_1_20_3, true)
+                    .mapping(0x60, MINECRAFT_1_20_5, true);
             packetRegistration.register();
         } catch (Throwable e) {
             plugin.log(Level.ERROR, "Failed to register UpdateTeamsPacket", e);

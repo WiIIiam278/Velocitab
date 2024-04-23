@@ -37,7 +37,7 @@ import java.util.function.Function;
 public enum Formatter {
     MINEDOWN(
             (text, player, plugin) -> new MineDown(text).toComponent(),
-            (text) -> text.replace("__", "_\\_"),
+            MineDown::escape,
             "MineDown",
             (text) -> new MineDown(text).toComponent()
     ),

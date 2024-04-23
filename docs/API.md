@@ -155,3 +155,4 @@ public class VelocitabAPIHook {
 ### 6. Next steps
 Now that you've got everything ready, you can start doing stuff with the Velocitab API!
 - [[API Examples]]
+- See also: [[Plugin Message API]]

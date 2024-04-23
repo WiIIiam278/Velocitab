@@ -3,9 +3,10 @@
   "name": "Velocitab",
   "version": "${version}",
   "description": "${description}",
-  "url": "https://william278.net",
+  "url": "https://william278.net/project/velocitab",
   "authors": [
-    "William278"
+    "William278",
+    "AlexDev03"
   ],
   "dependencies": [
     {

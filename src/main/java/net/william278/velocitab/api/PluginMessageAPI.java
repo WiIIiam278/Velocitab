@@ -29,7 +29,10 @@ import net.william278.velocitab.packet.UpdateTeamsPacket;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 
 public class PluginMessageAPI {
 

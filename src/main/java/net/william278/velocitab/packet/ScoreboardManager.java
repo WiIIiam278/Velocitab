@@ -281,7 +281,8 @@ public class ScoreboardManager {
                     .mapping(0x56, MINECRAFT_1_19_3, true)
                     .mapping(0x5A, MINECRAFT_1_19_4, true)
                     .mapping(0x5C, MINECRAFT_1_20_2, true)
-                    .mapping(0x5E, MINECRAFT_1_20_3, true);
+                    .mapping(0x5E, MINECRAFT_1_20_3, true)
+                    .mapping(0x60, MINECRAFT_1_20_5, true);
             packetRegistration.register();
         } catch (Throwable e) {
             plugin.log(Level.ERROR, "Failed to register UpdateTeamsPacket", e);

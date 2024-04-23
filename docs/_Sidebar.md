@@ -12,7 +12,7 @@
 * 🖼️ [[Custom Logos]]
 * 📦 [[API]]
     * 📝 [[API Examples]]
-    * 📝 [[Plugin Message API Examples]]
+    * 📝 [[Plugin Message API]]
 
 ## Links
 * 💻 [GitHub](https://github.com/WiIIiam278/Velocitab)

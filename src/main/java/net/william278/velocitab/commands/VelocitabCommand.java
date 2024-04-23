@@ -21,7 +21,6 @@ package net.william278.velocitab.commands;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.velocitypowered.api.command.BrigadierCommand;
@@ -47,10 +46,10 @@ public final class VelocitabCommand {
                 .title(Component.text("Velocitab"))
                 .description(Component.text(plugin.getDescription().getDescription().orElseThrow()))
                 .version(plugin.getVersion())
-                .credits("Author",
-                        AboutMenu.Credit.of("William278").description("Click to visit website").url("https://william278.net"))
+                .credits("Authors",
+                        AboutMenu.Credit.of("William278").description("Click to visit website").url("https://william278.net"),
+                        AboutMenu.Credit.of("AlexDev03").description("Click to visit GitHub").url("https://github.com/alexdev03"))
                 .credits("Contributors",
-                        AboutMenu.Credit.of("AlexDev03").description("Code"),
                         AboutMenu.Credit.of("Ironboundred").description("Code"),
                         AboutMenu.Credit.of("Emibergo02").description("Code"),
                         AboutMenu.Credit.of("FreeMonoid").description("Code"),

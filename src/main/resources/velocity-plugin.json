@@ -5,7 +5,8 @@
   "description": "${description}",
   "url": "https://william278.net",
   "authors": [
-    "William278"
+    "William278",
+    "AlexDev03"
   ],
   "dependencies": [
     {

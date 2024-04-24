@@ -4,31 +4,31 @@ Velocitab supports formatting the nametags of players (the text displayed above 
 
 > **Note:** This feature requires sending Update Teams packets. `send_scoreboard_packets` must be enabled in the [`config.yml` file](config-file) for this to work. [More details...](sorting#compatibility-issues)
 
-## Setting name tags
-You can configure nametags per-group using the `nametags` section of the config file. Each group should have one nametag format associated with it, which will be applied to all players on servers in that group.
+## Customizing nametags
+You can configure nametags per-group using the `nametag` field in `tab_groups.yml`. Each group must have a nametag format associated with it, which will be applied to all players on servers in that group. Nametags are comprised of a prefix and suffix; the player's username will be displayed in-between.
 
 <details>
 <summary>Editing nametags (tab_groups.yml)</summary>
 
 ```yaml
-# Nametag(s) to display above players' heads for each server group. Set to empty to disable.
-# Nametag formats must contain a %username%. Docs: https://william278.net/docs/velocitab/nametags
- nametag:
-   prefix: '&f%prefix%'
-   suffix: '&f%suffix%'
-
-# (...)
-
-# Whether to send scoreboard teams packets. Required for player list sorting and nametag formatting.
-# Turn this off if you're using scoreboard teams on backend servers.
-send_scoreboard_packets: true
+nametag:
+  prefix: '&f%prefix%'
+  suffix: '&f%suffix%'
 ```
 </details>
 
 Only players on servers which are part of groups that specify nametag formats will have their nametag formatted. To disable nametag formatting, remove all groups from the `nametags` section of the config file (leaving it empty).
 
-## Removing name tags
-In order to remove nametags, you must set `prefix` and `suffix` to empty. After that be sure to set `remove_nametags` to `true` in the [`config.yml` file](config-file).
+## Disabling nametags
+If you don't want Velocitab to format player nametags, set `prefix` and `suffix` to an empty string in each tab group (e.g., `prefix: ''`). You should also set `remove_nametags` to `true` in the [`config.yml` file](config-file).
+
+<details>
+<summary>Remove nametags option (config.yml)</summary>
+
+```yaml
+remove_nametags: true
+```
+</details>
 
 ## Formatting limitations
 Nametags must adhere to the following restrictions:

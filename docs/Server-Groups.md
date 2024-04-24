@@ -80,6 +80,18 @@ Player nametags may only utilize one line.
 </details>
 
 You can define a list of servers to include in each group.
+The use of regex patterns is also valid since v1.6.4
+
+<details>
+<summary>Example regex pattern</summary>
+
+```yaml
+servers:
+  - ^lobby-\d+$
+```
+This will include all servers starting with `lobby-` and ending with any integer
+
+</details>
 
 ## Sorting placeholders
 

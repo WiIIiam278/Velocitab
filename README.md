@@ -76,4 +76,4 @@ Velocitab is licensed under the Apache 2.0 license.
 * **[Discord](https://discord.com/invite/tVYhJfyDWG)** — Get support, ask questions!
 
 ---
-&copy; [William278](https://william278.net/), 2023. Licensed under the Apache-2.0 License.
+&copy; [William278](https://william278.net/), 2024. Licensed under the Apache-2.0 License.

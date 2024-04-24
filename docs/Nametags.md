@@ -32,5 +32,7 @@ In order to remove nametags, you must set `prefix` and `suffix` to empty. After 
 
 ## Formatting limitations
 Nametags must adhere to the following restrictions:
-* Only legacy colors can be used in username formats. If RGB colors are specified, they will automatically be downsampled to the nearest legacy color. This is a limitation of the scoreboard team system.
+* Nametag prefixes and suffixes can contain full RGB formatting, but the color used in the player's name between the two (effectively, their "Scoreboard Team" color) is limited to the set of legacy color codes.
+  * Velocitab determines which color to use here based on the last color format used in the configured prefix (displayed before their name), downsampled from RGB if necessary.
+  * To control this, simply set the prefix format to end with a valid [team color](https://wiki.vg/Text_formatting#Colors) you want to use (e.g. `&4` for dark_red in Minedown formatting).
 * Nametags cannot contain newlines (must be on a single line).

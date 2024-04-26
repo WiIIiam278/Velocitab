@@ -30,6 +30,11 @@ remove_nametags: true
 ```
 </details>
 
+## Named pets
+A feature of the game since Minecraft 1.9 is that pets given a nametag inherit their owner's team prefix/suffix/color. This is an intentional game feature, and not a bug. Since Velocitab uses team prefixes/colors for name tag formatting, pets will have their name formatted using their owner's prefix/suffix. A side effect of this, however, is that setting `remove_nametags` to `true` hides nametags on pets.
+
+You can install the [PetNameFix](https://www.spigotmc.org/resources/petnamefix.109466/) plugin if you don't like this bit of Vanilla behaviour.
+
 ## Formatting limitations
 Nametags must adhere to the following restrictions:
 * Nametag prefixes and suffixes can contain full RGB formatting, but the color used in the player's name between the two (effectively, their "Scoreboard Team" color) is limited to the set of legacy color codes.

@@ -39,6 +39,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.event.Level;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -212,6 +213,8 @@ public class PlayerTabList {
                             tabPlayer.getTeamName(plugin).thenAccept(t -> s.updateRole(tabPlayer, t, false));
                         });
 
+                        fixDuplicateEntries(joined);
+
                         // Fire event without listening for result
                         plugin.getServer().getEventManager().fireAndForget(new PlayerAddedToTabEvent(tabPlayer, group));
                     })
@@ -229,6 +232,22 @@ public class PlayerTabList {
         return player.getCurrentServer()
                 .map(serverConnection -> serverConnection.getServerInfo().getName())
                 .orElse("");
+    }
+
+    @SuppressWarnings("unchecked")
+    private void fixDuplicateEntries(@NotNull Player target) {
+        try {
+            final Field entriesField = target.getTabList().getClass().getDeclaredField("entries");
+            entriesField.setAccessible(true);
+            final Map<UUID, TabListEntry> entries = (Map<UUID, TabListEntry>) entriesField.get(target.getTabList());
+            entries.entrySet().stream()
+                    .filter(entry -> entry.getValue().getProfile() != null)
+                    .filter(entry -> entry.getValue().getProfile().getId().equals(target.getUniqueId()))
+                    .filter(entry -> !entry.getKey().equals(target.getUniqueId()))
+                    .forEach(entry -> target.getTabList().removeEntry(entry.getKey()));
+        } catch (Throwable error) {
+            plugin.log(Level.ERROR, "Failed to fix duplicate entries", error);
+        }
     }
 
     protected void removePlayer(@NotNull Player target) {
@@ -409,11 +428,9 @@ public class PlayerTabList {
                 .forEach(player -> {
                     final int latency = (int) player.getPlayer().getPing();
                     final Set<TabPlayer> players = group.getTabPlayers(plugin, player);
-                    players.forEach(p -> {
-                        p.getPlayer().getTabList().getEntries().stream()
-                                .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
-                                .ifPresent(entry -> entry.setLatency(Math.max(latency, 0)));
-                    });
+                    players.forEach(p -> p.getPlayer().getTabList().getEntries().stream()
+                            .filter(e -> e.getProfile().getId().equals(player.getPlayer().getUniqueId())).findFirst()
+                            .ifPresent(entry -> entry.setLatency(Math.max(latency, 0))));
                 });
     }
 

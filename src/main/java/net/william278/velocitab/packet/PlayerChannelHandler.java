@@ -56,6 +56,13 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
             forceGameMode(minecraftPacket.getEntries());
         }
 
+        //fix for duplicate entries
+        if (minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.ADD_PLAYER)) {
+            minecraftPacket.getEntries().stream()
+                    .filter(entry -> entry.getProfile() != null && !entry.getProfile().getId().equals(entry.getProfileId()))
+                    .forEach(entry -> entry.setListed(false));
+        }
+
         if (!minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.ADD_PLAYER) && !minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.UPDATE_LISTED)) {
             super.write(ctx, msg, promise);
             return;

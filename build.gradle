@@ -1,7 +1,7 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
-    id 'xyz.jpenilla.run-velocity' version '2.2.4'
+    id 'xyz.jpenilla.run-velocity' version '2.3.0'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'org.cadixdev.licenser' version '0.6.1'
     id 'org.ajoberstar.grgit' version '5.2.2'

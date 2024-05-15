@@ -37,6 +37,6 @@ There are a few compatibility caveats to bear in mind with sorting players in th
 
 * If you're using scoreboard teams on your server, then this will interfere with Velocitab's fake team packets and cause sorting to break. Most modern Minecraft proxy network servers probably won't use this feature, since there are better and more powerful plugin alternatives for teaming players, but it's still important to bear in mind.
 * Some mods can interfere with scoreboard team packets, particularly if they internally deal with managing packets or scoreboard teams.
-* Sending fake scoreboard team packets might not work correctly on some Minecraft server implementations such as [Quilt](https://quiltmc.org/).
+* If you're using Fabric/Quilt servers on the backend: [Polymer by Patbox](https://github.com/Patbox/polymer) is incompatible. Polymer does a fair bit of networking stuff which seems to break our packet handling.  
 
 In these cases, you may need to disable the use of scoreboard packets through the `send_scoreboard_packets` option detailed earlier.

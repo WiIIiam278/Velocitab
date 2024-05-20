@@ -27,6 +27,7 @@ import net.william278.velocitab.tab.Nametag;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.event.Level;
 
 import java.time.LocalDateTime;
@@ -77,8 +78,10 @@ public enum Placeholder {
     private final TriFunction<String, Velocitab, TabPlayer, String> replacer;
     private final boolean parameterised;
     private final Pattern pattern;
-    private final static Pattern CHECK_PLACEHOLDERS = Pattern.compile("%.*?%");
+    private final static Pattern checkVelocitabRelationalPlaceholders = Pattern.compile("<velocitab_.*?>");
+    private final static Pattern checkPlaceholders = Pattern.compile("%.*?%");
     private final static String DELIMITER = ":::";
+    private final static String REL_SUBSTITUTE = "---REL---";
 
     Placeholder(@NotNull BiFunction<Velocitab, TabPlayer, String> replacer) {
         this.parameterised = false;
@@ -107,10 +110,20 @@ public enum Placeholder {
         return "";
     }
 
-    public static CompletableFuture<String> replace(@NotNull String format, @NotNull Velocitab plugin,
-                                                    @NotNull TabPlayer player) {
-        if (format.equals(DELIMITER)) {
-            return CompletableFuture.completedFuture("");
+    @NotNull
+    public static String replaceInternal(@NotNull String format, @NotNull Velocitab plugin,
+                                         @Nullable TabPlayer player) {
+
+        boolean foundRelational = false;
+        if(format.contains("<vel")) {
+            final Matcher velocitabRelationalMatcher = checkVelocitabRelationalPlaceholders.matcher(format);
+            while (velocitabRelationalMatcher.find()) {
+                foundRelational = true;
+                final String relationalPlaceholder = velocitabRelationalMatcher.group();
+                final String fixedString = relationalPlaceholder.replace("%", REL_SUBSTITUTE);
+                format = format.replace(relationalPlaceholder, fixedString);
+            }
+
         }
 
         for (Placeholder placeholder : values()) {
@@ -118,11 +131,10 @@ public enum Placeholder {
             if (placeholder.parameterised) {
                 // Replace the placeholder with the result of the replacer function with the parameter
                 format = matcher.replaceAll(matchResult ->
-                        Matcher.quoteReplacement(placeholder.replacer.apply(
-                                StringUtils.chop(matchResult.group().replace(
-                                        "%" + placeholder.name().toLowerCase(), ""
-                                )), plugin, player
-                        )));
+                        Matcher.quoteReplacement(
+                                placeholder.replacer.apply(StringUtils.chop(matchResult.group().replace("%" + placeholder.name().toLowerCase(), ""))
+                                        , plugin, player)
+                        ));
             } else {
                 // Replace the placeholder with the result of the replacer function
                 format = matcher.replaceAll(matchResult -> Matcher.quoteReplacement(placeholder.replacer.apply(null, plugin, player)));
@@ -130,8 +142,23 @@ public enum Placeholder {
 
         }
 
-        final String replaced = format;
-        if (!CHECK_PLACEHOLDERS.matcher(replaced).find()) {
+        if (foundRelational) {
+            format = format.replace(REL_SUBSTITUTE, "%");
+        }
+
+        return format;
+    }
+
+    public static CompletableFuture<String> replace(@NotNull String format, @NotNull Velocitab plugin,
+                                                    @NotNull TabPlayer player) {
+
+        if (format.equals(DELIMITER)) {
+            return CompletableFuture.completedFuture("");
+        }
+
+        final String replaced = replaceInternal(format, plugin, player);
+
+        if (!checkPlaceholders.matcher(replaced).find()) {
             return CompletableFuture.completedFuture(replaced);
         }
 

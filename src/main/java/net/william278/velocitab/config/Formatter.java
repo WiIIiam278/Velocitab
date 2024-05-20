@@ -25,8 +25,9 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
-import org.apache.commons.lang3.function.TriFunction;
+import net.william278.velocitab.util.QuadFunction;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
@@ -36,21 +37,22 @@ import java.util.function.Function;
 @SuppressWarnings("unused")
 public enum Formatter {
     MINEDOWN(
-            (text, player, plugin) -> new MineDown(text).toComponent(),
+            (text, player, viewer, plugin) -> new MineDown(text).toComponent(),
             MineDown::escape,
             "MineDown",
             (text) -> new MineDown(text).toComponent()
     ),
     MINIMESSAGE(
-            (text, player, plugin) -> plugin.getMiniPlaceholdersHook()
-                    .map(hook -> hook.format(text, player.getPlayer()))
+            (text, player, viewer, plugin) -> plugin.getMiniPlaceholdersHook()
+                    .filter(hook -> viewer != null)
+                    .map(hook -> hook.format(text, player.getPlayer(), viewer.getPlayer()))
                     .orElse(MiniMessage.miniMessage().deserialize(text)),
             (text) -> MiniMessage.miniMessage().escapeTags(text),
             "MiniMessage",
             (text) -> MiniMessage.miniMessage().deserialize(text)
     ),
     LEGACY(
-            (text, player, plugin) -> LegacyComponentSerializer.legacyAmpersand().deserialize(text),
+            (text, player, viewer, plugin) -> LegacyComponentSerializer.legacyAmpersand().deserialize(text),
             Function.identity(),
             "Legacy Text",
             (text) -> LegacyComponentSerializer.legacyAmpersand().deserialize(text)
@@ -64,14 +66,14 @@ public enum Formatter {
     /**
      * Function to apply formatting to a string
      */
-    private final TriFunction<String, TabPlayer, Velocitab, Component> formatter;
+    private final QuadFunction<String, TabPlayer, TabPlayer, Velocitab, Component> formatter;
     /**
      * Function to escape formatting characters in a string
      */
     private final Function<String, String> escaper;
     private final Function<String, Component> emptyFormatter;
 
-    Formatter(@NotNull TriFunction<String, TabPlayer, Velocitab, Component> formatter, @NotNull Function<String, String> escaper,
+    Formatter(@NotNull QuadFunction<String, TabPlayer, TabPlayer, Velocitab, Component> formatter, @NotNull Function<String, String> escaper,
               @NotNull String name, @NotNull Function<String, Component> emptyFormatter) {
         this.formatter = formatter;
         this.escaper = escaper;
@@ -79,15 +81,25 @@ public enum Formatter {
         this.emptyFormatter = emptyFormatter;
     }
 
+    /**
+     * Formats the given text using a specific formatter.
+     *
+     * @param text      The text to format
+     * @param player    The TabPlayer object representing the player
+     * @param tabPlayer The TabPlayer object representing the viewer (can be null)
+     * @param plugin    The Velocitab plugin instance
+     * @return The formatted Component object
+     * @throws NullPointerException if any of the parameters (text, player, plugin) is null
+     */
     @NotNull
-    public Component format(@NotNull String text, @NotNull TabPlayer player, @NotNull Velocitab plugin) {
-        return formatter.apply(text, player, plugin);
+    public Component format(@NotNull String text, @NotNull TabPlayer player, @Nullable TabPlayer tabPlayer, @NotNull Velocitab plugin) {
+        return formatter.apply(text, player, tabPlayer, plugin);
     }
 
     @NotNull
     public String formatLegacySymbols(@NotNull String text, @NotNull TabPlayer player, @NotNull Velocitab plugin) {
         return LegacyComponentSerializer.legacySection()
-                .serialize(format(text, player, plugin));
+                .serialize(format(text, player, null, plugin));
     }
 
     @NotNull

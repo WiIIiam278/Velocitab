@@ -30,7 +30,10 @@ import com.velocitypowered.proxy.network.Connections;
 import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket;
 import com.velocitypowered.proxy.protocol.packet.chat.ComponentHolder;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.DefaultChannelPipeline;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
@@ -87,32 +90,15 @@ public class PacketEventManager {
     public void removePlayer(@NotNull Player player) {
         final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
         final Channel channel = connectedPlayer.getConnection().getChannel();
-        if (channel.pipeline().get(KEY) != null) {
-            channel.pipeline().remove(KEY);
-        }
-    }
-
-    protected void handleEntry(@NotNull UpsertPlayerInfoPacket packet, @NotNull Player player) {
-        final List<TabPlayer> toUpdate = packet.getEntries().stream()
-                .filter(entry -> entry.getProfile() != null)
-                .filter(entry -> !entry.getProfile().getName().startsWith(CITIZENS_PREFIX))
-                .filter(entry -> velocitabEntries.stream().noneMatch(uuid -> uuid.equals(entry.getProfile().getId())))
-                .map(entry -> entry.getProfile().getId())
-                .map(id -> plugin.getTabList().getTabPlayer(id))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .filter(TabPlayer::isLoaded)
-                .toList();
-
-        if (toUpdate.isEmpty()) {
+        final ChannelHandler handler = channel.pipeline().get(KEY);
+        if (handler == null) {
             return;
         }
-
-        toUpdate.forEach(tabPlayer -> packet.getEntries().stream()
-                .filter(entry -> entry.getProfileId().equals(tabPlayer.getPlayer().getUniqueId()))
-                .findFirst()
-                .ifPresent(entry -> entry.setDisplayName(
-                        new ComponentHolder(player.getProtocolVersion(), tabPlayer.getLastDisplayName()))));
+        if (channel.pipeline() instanceof DefaultChannelPipeline defaultChannelPipeline) {
+            defaultChannelPipeline.removeIfExists(KEY);
+        } else {
+            plugin.getLogger().warn("Failed to remove player {} from Velocitab packet handler {}", player.getUsername(), channel.pipeline().getClass().getName());
+        }
     }
 
 }

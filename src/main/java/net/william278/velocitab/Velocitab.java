@@ -43,6 +43,7 @@ import net.william278.velocitab.config.Settings;
 import net.william278.velocitab.config.TabGroups;
 import net.william278.velocitab.hook.Hook;
 import net.william278.velocitab.hook.LuckPermsHook;
+import net.william278.velocitab.hook.MiniPlaceholdersHook;
 import net.william278.velocitab.packet.PacketEventManager;
 import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.providers.HookProvider;
@@ -116,6 +117,7 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
         server.getScheduler().tasksByPlugin(this).forEach(ScheduledTask::cancel);
         disableScoreboardManager();
         getLuckPermsHook().ifPresent(LuckPermsHook::closeEvent);
+        getMiniPlaceholdersHook().ifPresent(MiniPlaceholdersHook::unregisterExpansion);
         unregisterAPI();
         logger.info("Successfully disabled Velocitab");
     }

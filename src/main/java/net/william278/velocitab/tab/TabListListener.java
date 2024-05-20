@@ -68,8 +68,12 @@ public class TabListListener {
             tabList.removePlayer(event.getPlayer());
         } else if (event.getResult() instanceof KickedFromServerEvent.RedirectPlayer redirectPlayer) {
             tabList.removePlayer(event.getPlayer(), redirectPlayer.getServer());
+        } else if (event.getResult() instanceof KickedFromServerEvent.Notify notify) {
+            return;
         }
 
+        event.getPlayer().getTabList().removeEntry(event.getPlayer().getUniqueId());
+        event.getPlayer().getTabList().clearHeaderAndFooter();
         justQuit.add(event.getPlayer().getUniqueId());
 
         plugin.getServer().getScheduler().buildTask(plugin,
@@ -87,15 +91,17 @@ public class TabListListener {
                 .map(ServerInfo::getName)
                 .orElse("");
 
-        // Get the group the player should now be in
-        final Group group = tabList.getGroup(serverName);
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined, group));
-        final boolean isDefault = group.registeredServers(plugin).stream()
-                .noneMatch(server -> server.getServerInfo().getName().equalsIgnoreCase(serverName));
+        // Get the group the player should now be in
+        final @NotNull Optional<Group> groupOptional = tabList.getGroup(serverName);
+        final boolean isDefault = groupOptional.map(g -> g.isDefault(plugin)).orElse(false);
+
+        // Removes cached relational data of the joined player from all other players
+        plugin.getTabList().clearCachedData(joined);
 
         // If the server is not in a group, use fallback.
         // If fallback is disabled, permit the player to switch excluded servers without a header or footer override
-        if (isDefault && !plugin.getSettings().isFallbackEnabled()) {
+        if (isDefault && !plugin.getSettings().isFallbackEnabled() && !groupOptional.map(g -> g.containsServer(plugin, serverName)).orElse(false)) {
             final Optional<TabPlayer> tabPlayer = tabList.getTabPlayer(joined);
             if (tabPlayer.isEmpty()) {
                 return;
@@ -107,7 +113,6 @@ public class TabListListener {
 
             final Component header = tabPlayer.get().getLastHeader();
             final Component footer = tabPlayer.get().getLastFooter();
-            final Component displayName = tabPlayer.get().getLastDisplayName();
 
             plugin.getServer().getScheduler().buildTask(plugin, () -> {
                 final Component currentHeader = joined.getPlayerListHeader();
@@ -126,6 +131,12 @@ public class TabListListener {
             return;
         }
 
+        if (groupOptional.isEmpty()) {
+            return;
+        }
+
+        final Group group = groupOptional.get();
+        plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined, group));
         if (justQuit.contains(joined.getUniqueId())) {
             plugin.getServer().getScheduler().buildTask(plugin,
                             () -> tabList.joinPlayer(joined, group))
@@ -159,7 +170,6 @@ public class TabListListener {
                 return;
             }
             tabList.removePlayer(player);
-            plugin.log("Player " + player.getUsername() + " was not removed from the tab list, removing now.");
         }).delay(500, TimeUnit.MILLISECONDS).schedule();
     }
 

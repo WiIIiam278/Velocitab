@@ -46,35 +46,39 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
             return;
         }
 
-        final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
-        if (tabPlayer.isEmpty()) {
+        try {
+            final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
+            if (tabPlayer.isEmpty()) {
+                super.write(ctx, msg, promise);
+                return;
+            }
+
+            if (plugin.getSettings().isRemoveSpectatorEffect() && minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.UPDATE_GAME_MODE)) {
+                forceGameMode(minecraftPacket.getEntries());
+            }
+
+            //fix for duplicate entries
+            if (minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.ADD_PLAYER)) {
+                minecraftPacket.getEntries().stream()
+                        .filter(entry -> entry.getProfile() != null && !entry.getProfile().getId().equals(entry.getProfileId()))
+                        .forEach(entry -> entry.setListed(false));
+            }
+
+            if (!minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.ADD_PLAYER) && !minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.UPDATE_LISTED)) {
+                super.write(ctx, msg, promise);
+                return;
+            }
+
+            if (minecraftPacket.getEntries().stream().allMatch(entry -> entry.getProfile() != null && entry.getProfile().getName().startsWith("CIT"))) {
+                super.write(ctx, msg, promise);
+                return;
+            }
+
             super.write(ctx, msg, promise);
-            return;
-        }
-
-        if (plugin.getSettings().isRemoveSpectatorEffect() && minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.UPDATE_GAME_MODE)) {
-            forceGameMode(minecraftPacket.getEntries());
-        }
-
-        //fix for duplicate entries
-        if (minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.ADD_PLAYER)) {
-            minecraftPacket.getEntries().stream()
-                    .filter(entry -> entry.getProfile() != null && !entry.getProfile().getId().equals(entry.getProfileId()))
-                    .forEach(entry -> entry.setListed(false));
-        }
-
-        if (!minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.ADD_PLAYER) && !minecraftPacket.containsAction(UpsertPlayerInfoPacket.Action.UPDATE_LISTED)) {
+        } catch (Exception e) {
+            plugin.getLogger().error("An error occurred while handling a packet", e);
             super.write(ctx, msg, promise);
-            return;
         }
-
-        if (minecraftPacket.getEntries().stream().allMatch(entry -> entry.getProfile() != null && entry.getProfile().getName().startsWith("CIT"))) {
-            super.write(ctx, msg, promise);
-            return;
-        }
-
-        plugin.getPacketEventManager().handleEntry(minecraftPacket, player);
-        super.write(ctx, msg, promise);
     }
 
     private void forceGameMode(@NotNull List<UpsertPlayerInfoPacket.Entry> entries) {

@@ -19,11 +19,13 @@
 
 package net.william278.velocitab.player;
 
+import com.google.common.collect.Maps;
 import com.velocitypowered.api.proxy.Player;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
@@ -34,7 +36,9 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Getter
@@ -47,7 +51,10 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private Role role;
     private int headerIndex = 0;
     private int footerIndex = 0;
-    private Component lastDisplayName;
+    // Each TabPlayer contains the components for each TabPlayer it's currently viewing this player
+    private final Map<UUID, Component> relationalDisplayNames;
+    private final Map<UUID, Component[]> relationalNametags;
+    private String lastDisplayName;
     private Component lastHeader;
     private Component lastFooter;
     private String teamName;
@@ -72,6 +79,8 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         this.player = player;
         this.role = role;
         this.group = group;
+        this.relationalDisplayNames = Maps.newConcurrentMap();
+        this.relationalNametags = Maps.newConcurrentMap();
     }
 
     @NotNull
@@ -115,10 +124,9 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     @NotNull
-    public CompletableFuture<Component> getDisplayName(@NotNull Velocitab plugin) {
+    public CompletableFuture<String> getDisplayName(@NotNull Velocitab plugin) {
         return Placeholder.replace(group.format(), plugin, this)
-                .thenApply(formatted -> plugin.getFormatter().format(formatted, this, plugin))
-                .thenApply(c -> this.lastDisplayName = c);
+                .thenApply(displayName -> this.lastDisplayName = displayName);
     }
 
     @NotNull
@@ -140,18 +148,23 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         return tabList.getHeader(this).thenCompose(header -> tabList.getFooter(this).thenAccept(footer -> {
             final boolean disabled = plugin.getSettings().isDisableHeaderFooterIfEmpty();
             if (disabled) {
-                if (!Component.empty().equals(header)) {
+                if (!Component.empty().equals(header) && !header.equals(lastHeader)) {
                     lastHeader = header;
                     player.sendPlayerListHeader(header);
                 }
-                if (!Component.empty().equals(footer)) {
+                if (!Component.empty().equals(footer) && !footer.equals(lastFooter)) {
                     lastFooter = footer;
                     player.sendPlayerListFooter(footer);
                 }
             } else {
-                lastHeader = header;
-                lastFooter = footer;
-                player.sendPlayerListHeaderAndFooter(header, footer);
+                if (!header.equals(lastHeader)) {
+                    lastHeader = header;
+                    player.sendPlayerListHeader(header);
+                }
+                if (!footer.equals(lastFooter)) {
+                    lastFooter = footer;
+                    player.sendPlayerListFooter(footer);
+                }
             }
         }));
     }
@@ -173,6 +186,39 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         if (footerIndex >= group.footers().size()) {
             footerIndex = 0;
         }
+    }
+
+    public void setRelationalDisplayName(@NotNull UUID target, @NotNull Component displayName) {
+        relationalDisplayNames.put(target, displayName);
+    }
+
+    public void unsetRelationalDisplayName(@NotNull UUID target) {
+        relationalDisplayNames.remove(target);
+    }
+
+    public Optional<Component> getRelationalDisplayName(@NotNull UUID target) {
+        return Optional.ofNullable(relationalDisplayNames.get(target));
+    }
+
+    public void setRelationalNametag(@NotNull UUID target, @NotNull Component prefix, @NotNull Component suffix) {
+        relationalNametags.put(target, new Component[]{prefix, suffix});
+    }
+
+    public void unsetRelationalNametag(@NotNull UUID target) {
+        relationalNametags.remove(target);
+    }
+
+    public Optional<Component[]> getRelationalNametag(@NotNull UUID target) {
+        return Optional.ofNullable(relationalNametags.get(target));
+    }
+
+    public void clearCachedData() {
+        loaded = false;
+        relationalDisplayNames.clear();
+        relationalNametags.clear();
+        lastHeader = null;
+        lastFooter = null;
+        role = Role.DEFAULT_ROLE;
     }
 
     /**

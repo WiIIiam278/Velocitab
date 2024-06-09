@@ -31,10 +31,8 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 
-import java.lang.reflect.Field;
 import java.time.LocalTime;
 import java.util.Optional;
-import java.util.Set;
 
 @RequiredArgsConstructor
 public class VelocitabMiniExpansion {
@@ -102,15 +100,7 @@ public class VelocitabMiniExpansion {
         expansion.register();
     }
 
-    @SuppressWarnings("unchecked")
     public void unregisterExpansion() {
-        // Waiting for a fix in MiniPlaceholders
-        try {
-            final Field field = MiniPlaceholders.class.getDeclaredField("expansions");
-            field.setAccessible(true);
-            ((Set<Expansion>) field.get(null)).remove(expansion);
-        } catch (Exception e) {
-            plugin.getLogger().error("Failed to unregister Velocitab Mini expansion", e);
-        }
+        expansion.unregister();
     }
 }

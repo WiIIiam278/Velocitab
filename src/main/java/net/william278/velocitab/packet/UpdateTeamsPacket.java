@@ -68,13 +68,17 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         return mode == UpdateMode.REMOVE_TEAM;
     }
 
+    public boolean hasEntities() {
+        return entities != null && !entities.isEmpty();
+    }
+
     @NotNull
     protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer,
                                               @NotNull String teamName, @NotNull Nametag nametag,
                                               @NotNull TabPlayer viewer,
                                               @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
-                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .teamName(teamName)
                 .mode(UpdateMode.CREATE_TEAM)
                 .displayName(Component.empty())
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
@@ -99,7 +103,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                                                      @NotNull String teamName, @NotNull TabPlayer viewer,
                                                      @NotNull Nametag nametag) {
         return new UpdateTeamsPacket(plugin)
-                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .teamName(teamName)
                 .mode(UpdateMode.UPDATE_INFO)
                 .displayName(Component.empty())
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
@@ -114,7 +118,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     protected static UpdateTeamsPacket addToTeam(@NotNull Velocitab plugin, @NotNull String teamName,
                                                  @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
-                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .teamName(teamName)
                 .mode(UpdateMode.ADD_PLAYERS)
                 .entities(Arrays.asList(teamMembers));
     }
@@ -123,7 +127,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     protected static UpdateTeamsPacket removeFromTeam(@NotNull Velocitab plugin, @NotNull String teamName,
                                                       @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
-                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .teamName(teamName)
                 .mode(UpdateMode.REMOVE_PLAYERS)
                 .entities(Arrays.asList(teamMembers));
     }
@@ -131,7 +135,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     @NotNull
     protected static UpdateTeamsPacket removeTeam(@NotNull Velocitab plugin, @NotNull String teamName) {
         return new UpdateTeamsPacket(plugin)
-                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .teamName(teamName)
                 .mode(UpdateMode.REMOVE_TEAM);
     }
 
@@ -204,16 +208,21 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @Override
     public void decode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
-        throw new UnsupportedOperationException("Operation not supported");
+        final Optional<ScoreboardManager> optionalManager = plugin.getScoreboardManager();
+        if (optionalManager.isEmpty()) {
+            return;
+        }
+
+        optionalManager.get().getPacketAdapter(protocolVersion).decode(byteBuf, this, protocolVersion);
     }
 
     @Override
     public void encode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
         final Optional<ScoreboardManager> optionalManager = plugin.getScoreboardManager();
-
         if (optionalManager.isEmpty()) {
             return;
         }
+
         optionalManager.get().getPacketAdapter(protocolVersion).encode(byteBuf, this, protocolVersion);
     }
 

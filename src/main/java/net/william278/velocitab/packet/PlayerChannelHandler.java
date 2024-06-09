@@ -41,6 +41,41 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        if (msg instanceof final UpdateTeamsPacket updateTeamsPacket) {
+            final Optional<ScoreboardManager> scoreboardManager = plugin.getScoreboardManager();
+            if (scoreboardManager.isEmpty()) {
+                super.write(ctx, msg, promise);
+                return;
+            }
+
+            if (updateTeamsPacket.isRemoveTeam()) {
+                super.write(ctx, msg, promise);
+                return;
+            }
+
+            if (scoreboardManager.get().isInternalTeam(updateTeamsPacket.teamName())) {
+                super.write(ctx, msg, promise);
+                return;
+            }
+
+            if (!updateTeamsPacket.hasEntities()) {
+                super.write(ctx, msg, promise);
+                return;
+            }
+
+            if (updateTeamsPacket.entities().stream().noneMatch(entity -> plugin.getServer().getPlayer(entity).isPresent())) {
+                super.write(ctx, msg, promise);
+                return;
+            }
+
+            // Cancel packet if the backend is trying to send a team packet with an online player.
+            // This is to prevent conflicts with Velocitab teams.
+            plugin.getLogger().warn("Cancelled team \"{}\" packet from backend for player {}. " +
+                    "We suggest disabling \"send_scoreboard_packets\" in Velocitab's config.yml file, " +
+                    "but note this will disable TAB sorting"
+                    , updateTeamsPacket.teamName(), player.getUsername());
+            return;
+        }
         if (!(msg instanceof final UpsertPlayerInfoPacket minecraftPacket)) {
             super.write(ctx, msg, promise);
             return;

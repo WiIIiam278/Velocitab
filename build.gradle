@@ -40,10 +40,11 @@ dependencies {
     implementation 'net.william278:minedown:1.8.2'
     implementation 'org.bstats:bstats-velocity:3.0.2'
     implementation 'de.exlll:configlib-yaml:4.5.0'
+    implementation 'org.apache.commons:commons-jexl3:3.4.0'
 
     compileOnly 'io.netty:netty-codec-http:4.1.111.Final'
     compileOnly 'net.luckperms:api:5.4'
-    compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.0.0'
+    compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.2.3'
     compileOnly 'net.william278:PAPIProxyBridge:1.5'
     compileOnly 'it.unimi.dsi:fastutil:8.5.13'
     compileOnly 'net.kyori:adventure-nbt:4.17.0'
@@ -93,6 +94,9 @@ shadowJar {
     relocate 'org.bstats', 'net.william278.velocitab.libraries.bstats'
     relocate 'de.exlll.configlib', 'net.william278.velocitab.libraries.configlib'
     relocate 'org.snakeyaml', 'net.william278.velocitab.libraries.snakeyaml'
+    relocate 'org.snakeyaml', 'net.william278.velocitab.libraries.snakeyaml'
+    relocate 'org.apache.commons.jexl3', 'net.william278.velocitab.libraries.commons.jexl3'
+    relocate 'org.apache.commons.logging', 'net.william278.velocitab.libraries.commons.logging'
 
     dependencies {
         exclude dependency(':slf4j-api')
@@ -102,7 +106,9 @@ shadowJar {
     destinationDirectory.set(file("$rootDir/target"))
     archiveClassifier.set('')
 
-    minimize()
+    minimize() {
+        exclude dependency('commons-logging:commons-logging')
+    }
 }
 jar.dependsOn shadowJar
 clean.delete "$rootDir/target"

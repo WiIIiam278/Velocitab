@@ -86,7 +86,7 @@ public interface ScoreboardProvider {
      */
     default void prepareScoreboard() {
         if (getPlugin().getSettings().isSendScoreboardPackets()) {
-            ScoreboardManager scoreboardManager = new ScoreboardManager(getPlugin());
+            final ScoreboardManager scoreboardManager = new ScoreboardManager(getPlugin());
             setScoreboardManager(scoreboardManager);
             scoreboardManager.registerPacket();
         }

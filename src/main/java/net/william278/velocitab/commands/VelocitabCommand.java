@@ -36,11 +36,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public final class VelocitabCommand {
+
     private static final TextColor MAIN_COLOR = TextColor.color(0x00FB9A);
+    private static final TextColor ERROR_COLOR = TextColor.color(0xFF7E5E);
+
     private final AboutMenu aboutMenu;
     private final Velocitab plugin;
 
-    public VelocitabCommand(final @NotNull Velocitab plugin) {
+    public VelocitabCommand(@NotNull Velocitab plugin) {
         this.plugin = plugin;
         this.aboutMenu = AboutMenu.builder()
                 .title(Component.text("Velocitab"))
@@ -76,46 +79,42 @@ public final class VelocitabCommand {
                         })
                 )
                 .then(LiteralArgumentBuilder.<CommandSource>literal("name")
-                        .requires(src -> src.hasPermission("velocitab.command.name"))
+                        .requires(src -> hasPermission(src, "name"))
                         .then(RequiredArgumentBuilder.<CommandSource, String>argument("name", StringArgumentType.greedyString())
+                                .requires(src -> src instanceof Player)
                                 .executes(ctx -> {
-                                    if (!(ctx.getSource() instanceof Player player)) {
-                                        ctx.getSource().sendMessage(Component.text("You must be a player to use this command!", MAIN_COLOR));
-                                        return Command.SINGLE_SUCCESS;
-                                    }
-
-                                    String name = StringArgumentType.getString(ctx, "name");
-                                    Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
-
+                                    final Player player = (Player) ctx.getSource();
+                                    final String name = StringArgumentType.getString(ctx, "name");
+                                    final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
                                     if (tabPlayer.isEmpty()) {
-                                        ctx.getSource().sendMessage(Component.text("You must in a correct server!", MAIN_COLOR));
+                                        ctx.getSource().sendMessage(Component
+                                                .text("You can't update your TAB name from an untracked server!", ERROR_COLOR));
                                         return Command.SINGLE_SUCCESS;
                                     }
 
                                     tabPlayer.get().setCustomName(name);
                                     plugin.getTabList().updatePlayerDisplayName(tabPlayer.get());
 
-                                    ctx.getSource().sendMessage(Component.text("Your name has been updated!", MAIN_COLOR));
-
+                                    ctx.getSource().sendMessage(Component
+                                            .text("Your TAB name has been updated!", MAIN_COLOR));
                                     return Command.SINGLE_SUCCESS;
                                 })
-                        ).executes(ctx -> {
-                            if (!(ctx.getSource() instanceof Player player)) {
-                                ctx.getSource().sendMessage(Component.text("You must be a player to use this command!", MAIN_COLOR));
-                                return Command.SINGLE_SUCCESS;
-                            }
-
-                            Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
-
+                        )
+                        .requires(src -> src instanceof Player)
+                        .executes(ctx -> {
+                            final Player player = (Player) ctx.getSource();
+                            final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
                             if (tabPlayer.isEmpty()) {
-                                ctx.getSource().sendMessage(Component.text("You must in a correct server!", MAIN_COLOR));
+                                ctx.getSource().sendMessage(Component
+                                        .text("You can't reset your TAB name from an untracked server!", ERROR_COLOR));
                                 return Command.SINGLE_SUCCESS;
                             }
 
                             // If no custom name is applied, ask for argument
                             String customName = tabPlayer.get().getCustomName().orElse("");
                             if (customName.isEmpty() || customName.equals(player.getUsername())) {
-                                ctx.getSource().sendMessage(Component.text("You must specify a name!", MAIN_COLOR));
+                                ctx.getSource().sendMessage(Component
+                                        .text("You aren't using a custom name in TAB!", ERROR_COLOR));
                                 return Command.SINGLE_SUCCESS;
                             }
 
@@ -126,28 +125,27 @@ public final class VelocitabCommand {
                         })
                 )
                 .then(LiteralArgumentBuilder.<CommandSource>literal("reload")
-                        .requires(src -> src.hasPermission("velocitab.command.reload"))
+                        .requires(src -> hasPermission(src, "reload"))
                         .executes(ctx -> {
                             plugin.loadConfigs();
                             plugin.getTabList().reloadUpdate();
-                            ctx.getSource().sendMessage(Component.text(
-                                    "Velocitab has been reloaded!",
+                            ctx.getSource().sendMessage(Component.text("Velocitab has been reloaded!",
                                     MAIN_COLOR));
                             return Command.SINGLE_SUCCESS;
                         })
                 )
                 .then(LiteralArgumentBuilder.<CommandSource>literal("update")
-                        .requires(src -> src.hasPermission("velocitab.command.update"))
+                        .requires(src -> hasPermission(src, "update"))
                         .executes(ctx -> {
                             plugin.getUpdateChecker().check().thenAccept(checked -> {
                                 if (checked.isUpToDate()) {
-                                    ctx.getSource().sendMessage(Component
-                                            .text("Velocitab is up to date! (Running v" + plugin.getVersion() + ")", MAIN_COLOR));
+                                    ctx.getSource().sendMessage(Component.text("Velocitab is up to date! (Running v%s)"
+                                            .formatted(plugin.getVersion()), MAIN_COLOR));
                                     return;
                                 }
                                 ctx.getSource().sendMessage(Component
-                                        .text("An update for velocitab is available. " +
-                                                "Please update to " + checked.getLatestVersion(), MAIN_COLOR));
+                                        .text("An update for Velocitab is available. Please update to %s"
+                                                .formatted(checked.getLatestVersion()), MAIN_COLOR));
                             });
                             return Command.SINGLE_SUCCESS;
                         })
@@ -156,7 +154,12 @@ public final class VelocitabCommand {
         return new BrigadierCommand(builder);
     }
 
+    private boolean hasPermission(@NotNull CommandSource source, @NotNull String command) {
+        return source.hasPermission(String.join("velocitab", "command", command));
+    }
+
     private void sendAboutInfo(@NotNull CommandSource source) {
         source.sendMessage(aboutMenu.toComponent());
     }
+
 }

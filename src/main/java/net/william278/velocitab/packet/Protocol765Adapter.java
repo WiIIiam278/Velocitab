@@ -39,7 +39,8 @@ public class Protocol765Adapter extends Protocol404Adapter {
     public Protocol765Adapter(@NotNull Velocitab plugin) {
         super(plugin, Set.of(
                 ProtocolVersion.MINECRAFT_1_20_3,
-                ProtocolVersion.MINECRAFT_1_20_5
+                ProtocolVersion.MINECRAFT_1_20_5,
+                ProtocolVersion.MINECRAFT_1_21
         ));
     }
 

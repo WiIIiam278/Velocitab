@@ -31,7 +31,6 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 
-import java.time.LocalTime;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -42,58 +41,58 @@ public class VelocitabMiniExpansion {
 
     public void registerExpansion() {
         final Expansion.Builder builder = Expansion.builder("velocitab");
-        builder.relationalPlaceholder("who-is-seeing", ((audience, otherAudience, queue, ctx) -> {
-            if (!(otherAudience instanceof Player target)) {
+        builder.relationalPlaceholder("who-is-seeing", ((a1, a2, queue, ctx) -> {
+            if (!(a2 instanceof Player target)) {
                 return TagsUtils.EMPTY_TAG;
             }
-            if (!(audience instanceof Player)) {
+            if (!(a1 instanceof Player)) {
                 return TagsUtils.EMPTY_TAG;
             }
 
-            return Tag.selfClosingInserting(Component.text(target.getUsername() + "-" + LocalTime.now().getSecond()));
+            return Tag.selfClosingInserting(Component.text(target.getUsername()));
         }));
-        builder.relationalPlaceholder("perm", ((audience, otherAudience, queue, ctx) -> {
-            if (!(otherAudience instanceof Player target)) {
+        builder.relationalPlaceholder("perm", ((a1, a2, queue, ctx) -> {
+            if (!(a2 instanceof Player target)) {
                 return TagsUtils.EMPTY_TAG;
             }
-            if (!(audience instanceof Player player)) {
+            if (!(a1 instanceof Player audience)) {
                 return TagsUtils.EMPTY_TAG;
             }
 
-            final Optional<TabPlayer> targetOptional = plugin.getTabList().getTabPlayer(player);
+            final Optional<TabPlayer> targetOptional = plugin.getTabList().getTabPlayer(audience);
             if (targetOptional.isEmpty()) {
                 return TagsUtils.EMPTY_TAG;
             }
 
             final TabPlayer targetPlayer = targetOptional.get();
 
-            if(!queue.hasNext()) {
+            if (!queue.hasNext()) {
                 return TagsUtils.EMPTY_TAG;
             }
 
             final String permission = queue.pop().value();
 
-            if(!queue.hasNext()) {
+            if (!queue.hasNext()) {
                 return TagsUtils.EMPTY_TAG;
             }
 
-            if(!target.hasPermission(permission)) {
+            if (!target.hasPermission(permission)) {
                 return TagsUtils.EMPTY_TAG;
             }
 
             final String value = queue.pop().value();
             final String replaced = Placeholder.replaceInternal(value, plugin, targetPlayer);
-            return Tag.selfClosingInserting(MiniMessage.miniMessage().deserialize(replaced, MiniPlaceholders.getAudienceGlobalPlaceholders(player)));
+            return Tag.selfClosingInserting(MiniMessage.miniMessage().deserialize(replaced, MiniPlaceholders.getAudienceGlobalPlaceholders(audience)));
         }));
-        builder.relationalPlaceholder("vanish", ((audience, otherAudience, queue, ctx) -> {
+        builder.relationalPlaceholder("vanish", ((a1, otherAudience, queue, ctx) -> {
             if (!(otherAudience instanceof Player target)) {
                 return TagsUtils.EMPTY_TAG;
             }
-            if (!(audience instanceof Player player)) {
+            if (!(a1 instanceof Player audience)) {
                 return TagsUtils.EMPTY_TAG;
             }
 
-            return Tag.selfClosingInserting(Component.text(plugin.getVanishManager().getIntegration().canSee(player.getUsername(), target.getUsername())));
+            return Tag.selfClosingInserting(Component.text(plugin.getVanishManager().getIntegration().canSee(audience.getUsername(), target.getUsername())));
         }));
         plugin.getLogger().info("Registered Velocitab MiniExpansion");
         expansion = builder.build();
@@ -103,4 +102,5 @@ public class VelocitabMiniExpansion {
     public void unregisterExpansion() {
         expansion.unregister();
     }
+
 }

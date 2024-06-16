@@ -67,7 +67,6 @@ public class MiniConditionManager {
             parameters.add(queue.pop().value());
         }
 
-
         if (parameters.size() < 3) {
             return Component.empty();
         }

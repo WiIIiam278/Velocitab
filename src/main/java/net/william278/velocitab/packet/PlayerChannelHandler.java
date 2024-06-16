@@ -71,9 +71,9 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
             // Cancel packet if the backend is trying to send a team packet with an online player.
             // This is to prevent conflicts with Velocitab teams.
             plugin.getLogger().warn("Cancelled team \"{}\" packet from backend for player {}. " +
-                    "We suggest disabling \"send_scoreboard_packets\" in Velocitab's config.yml file, " +
-                    "but note this will disable TAB sorting"
-                    , updateTeamsPacket.teamName(), player.getUsername());
+                            "We suggest disabling \"send_scoreboard_packets\" in Velocitab's config.yml file, " +
+                            "but note this will disable TAB sorting",
+                    updateTeamsPacket.teamName(), player.getUsername());
             return;
         }
         if (!(msg instanceof final UpsertPlayerInfoPacket minecraftPacket)) {

@@ -56,7 +56,7 @@ public class VanishManager {
     public void vanishPlayer(@NotNull Player player) {
         final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
         if (tabPlayer.isEmpty()) {
-            plugin.log("Failed to vanish player " + player.getUsername() + " as he is not in the tab list");
+            plugin.log("Failed to vanish player " + player.getUsername() + " as they are not in the tab list");
             return;
         }
 
@@ -67,7 +67,7 @@ public class VanishManager {
     public void unVanishPlayer(@NotNull Player player) {
         final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
         if (tabPlayer.isEmpty()) {
-            plugin.log("Failed to un-vanish player " + player.getUsername() + " as he is not in the tab list");
+            plugin.log("Failed to un-vanish player " + player.getUsername() + " as they are not in the tab list");
             return;
         }
 

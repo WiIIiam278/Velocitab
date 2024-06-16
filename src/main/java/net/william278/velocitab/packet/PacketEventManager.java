@@ -81,9 +81,11 @@ public class PacketEventManager {
         }
         if (channel.pipeline() instanceof DefaultChannelPipeline defaultChannelPipeline) {
             defaultChannelPipeline.removeIfExists(KEY);
-        } else {
-            plugin.getLogger().warn("Failed to remove player {} from Velocitab packet handler {}", player.getUsername(), channel.pipeline().getClass().getName());
+            return;
         }
+
+        plugin.getLogger().warn("Failed to remove player {} from Velocitab packet handler {}",
+                player.getUsername(), channel.pipeline().getClass().getName());
     }
 
 }

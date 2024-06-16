@@ -113,7 +113,7 @@ public enum Placeholder {
 
     private final static Pattern VELOCITAB_PATTERN = Pattern.compile("<velocitab_.*?>");
     private final static Pattern PLACEHOLDER_PATTERN = Pattern.compile("%.*?%");
-    private final static Pattern CONDITIONAL_PATTERN = Pattern.compile("<velocitab_rel_condition:[^>]*[<>][^>]*>");
+    private final static Pattern CONDITIONAL_PATTERN = Pattern.compile("<velocitab_rel_condition:[^<>]*?[<>][^<>]*?>");
     private final static String DELIMITER = ":::";
     private final static String REL_SUBSTITUTE = "-REL-";
     public final static Map<String, String> CONDITIONAL_SUBSTITUTES = Map.of(

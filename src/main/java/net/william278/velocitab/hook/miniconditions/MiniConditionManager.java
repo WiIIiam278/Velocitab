@@ -73,12 +73,22 @@ public class MiniConditionManager {
         }
 
         String condition = parameters.get(0);
+
+        // adventure string quote fix
+        final int countQuotes = condition.length() - condition.replace("\"", "").length();
+        final int countApostrophes = condition.length() - condition.replace("'", "").length();
+        if (countQuotes % 2 != 0) {
+            condition = "\"" + condition;
+        } else if (countApostrophes % 2 != 0) {
+            condition = "'" + condition;
+        }
+
         for (final String key : Placeholder.CONDITIONAL_SUBSTITUTES.keySet()) {
             condition = condition.replace(Placeholder.CONDITIONAL_SUBSTITUTES.get(key), key);
         }
         final String trueValue = parameters.get(1);
         final String falseValue = parameters.get(2);
-        final String expression = condition.replace("&&", "and").replace("||", "or");
+        final String expression = condition.replace("and", "&&").replace("or", "||");
         final Object result = jexlEngine.createExpression(expression).evaluate(jexlContext);
 
         if (result instanceof Boolean) {

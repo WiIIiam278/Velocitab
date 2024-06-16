@@ -122,5 +122,39 @@ Velocitab supports basic header and footer animations by adding multiple frames 
 ### Placeholders
 You can use various placeholders that will be replaced with values (for example, `%username%`) in your config. Support for PlaceholderAPI is also available through [a bridge library plugin](https://modrinth.com/plugin/papiproxybridge), as is the component-based MiniPlaceholders for users of that plugin with the MiniMessage formatter. See [[Placeholders]] for more information.
 
+### YAML MultiLine Syntax
+
+In order to have a multi-line string in YAML, you can use the `|-` or `|` syntax. The `|-` syntax will remove last newline character, while the `|` syntax will keep it.
+You can also use `\n` to add a newline character in a string.
+
+# Example 1
+```yaml
+foo: |-
+  bar 1
+  bar 2
+  bar 3
+```
+
+is equivalent to
+
+```yaml
+foo: "bar 1\nbar 2\nbar 3"
+```
+
+# Example 2
+
+```yaml
+foo: |
+  bar 1
+  bar 2
+  bar 3
+```
+
+is equivalent to
+
+```yaml
+foo: "bar 1\nbar 2\nbar 3\n"
+```
+
 ### Server Links
 For Minecraft 1.21+ clients, Velocitab supports specifying a list of URLs that will be sent to display in the player pause menu. See [[Server Links]] for more information.

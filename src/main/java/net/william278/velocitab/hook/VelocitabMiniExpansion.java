@@ -23,24 +23,39 @@ import com.velocitypowered.api.proxy.Player;
 import io.github.miniplaceholders.api.Expansion;
 import io.github.miniplaceholders.api.MiniPlaceholders;
 import io.github.miniplaceholders.api.utils.TagsUtils;
-import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
+import net.william278.velocitab.hook.miniconditions.MiniConditionManager;
 import net.william278.velocitab.player.TabPlayer;
 
 import java.util.Optional;
 
-@RequiredArgsConstructor
 public class VelocitabMiniExpansion {
 
     private final Velocitab plugin;
+    private final MiniConditionManager miniConditionManager;
     private Expansion expansion;
+
+    public VelocitabMiniExpansion(Velocitab plugin) {
+        this.plugin = plugin;
+        this.miniConditionManager = new MiniConditionManager(plugin);
+    }
 
     public void registerExpansion() {
         final Expansion.Builder builder = Expansion.builder("velocitab");
+        builder.relationalPlaceholder("condition", ((a1, a2, queue, ctx) -> {
+            if (!(a2 instanceof Player target)) {
+                return TagsUtils.EMPTY_TAG;
+            }
+            if (!(a1 instanceof Player audience)) {
+                return TagsUtils.EMPTY_TAG;
+            }
+
+            return Tag.selfClosingInserting(miniConditionManager.checkConditions(target, audience, queue));
+        }));
         builder.relationalPlaceholder("who-is-seeing", ((a1, a2, queue, ctx) -> {
             if (!(a2 instanceof Player target)) {
                 return TagsUtils.EMPTY_TAG;

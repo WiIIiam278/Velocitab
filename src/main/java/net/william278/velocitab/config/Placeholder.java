@@ -35,6 +35,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
@@ -112,8 +113,13 @@ public enum Placeholder {
 
     private final static Pattern VELOCITAB_PATTERN = Pattern.compile("<velocitab_.*?>");
     private final static Pattern PLACEHOLDER_PATTERN = Pattern.compile("%.*?%");
+    private final static Pattern CONDITIONAL_PATTERN = Pattern.compile("<velocitab_rel_condition:[^>]*[<>][^>]*>");
     private final static String DELIMITER = ":::";
-    private final static String REL_SUBSTITUTE = "---REL---";
+    private final static String REL_SUBSTITUTE = "-REL-";
+    public final static Map<String, String> CONDITIONAL_SUBSTITUTES = Map.of(
+            "<", "-COND-1",
+            ">", "-COND-2"
+    );
 
     /**
      * Function to replace placeholders with a real value
@@ -163,6 +169,17 @@ public enum Placeholder {
                 format = format.replace(relationalPlaceholder, fixedString);
             }
 
+        }
+
+        final Matcher conditionalMatcher = CONDITIONAL_PATTERN.matcher(format);
+        while (conditionalMatcher.find()) {
+            String conditionalPlaceholder = conditionalMatcher.group();
+            conditionalPlaceholder = conditionalPlaceholder.substring(1, conditionalPlaceholder.length() - 2);
+            String fixedString = conditionalPlaceholder;
+            for (Map.Entry<String, String> entry : CONDITIONAL_SUBSTITUTES.entrySet()) {
+                fixedString = fixedString.replace(entry.getKey(), entry.getValue());
+            }
+            format = format.replace(conditionalPlaceholder, fixedString);
         }
 
         for (Placeholder placeholder : values()) {

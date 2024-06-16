@@ -24,8 +24,8 @@ ext {
 
 repositories {
     mavenCentral()
-    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
     maven { url = 'https://repo.william278.net/velocity/' }
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
     maven { url = 'https://repo.william278.net/releases/' }
     maven { url = 'https://jitpack.io/' }
     maven { url = 'https://repo.minebench.de/' }
@@ -35,20 +35,20 @@ dependencies {
     compileOnly "com.velocitypowered:velocity-api:${velocity_api_version}-SNAPSHOT"
     compileOnly "com.velocitypowered:velocity-proxy:${velocity_api_version}-SNAPSHOT"
 
+    compileOnly 'io.netty:netty-codec-http:4.1.110.Final'
+    compileOnly 'org.projectlombok:lombok:1.18.32'
+    compileOnly 'net.luckperms:api:5.4'
+    compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.2.3'
+    compileOnly 'net.william278:PAPIProxyBridge:1.5'
+    compileOnly 'it.unimi.dsi:fastutil:8.5.13'
+    compileOnly 'net.kyori:adventure-nbt:4.17.0'
+
     implementation 'org.apache.commons:commons-text:1.12.0'
     implementation 'net.william278:DesertWell:2.0.4'
     implementation 'net.william278:minedown:1.8.2'
     implementation 'org.bstats:bstats-velocity:3.0.2'
     implementation 'de.exlll:configlib-yaml:4.5.0'
     implementation 'org.apache.commons:commons-jexl3:3.4.0'
-
-    compileOnly 'io.netty:netty-codec-http:4.1.111.Final'
-    compileOnly 'net.luckperms:api:5.4'
-    compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.2.3'
-    compileOnly 'net.william278:PAPIProxyBridge:1.5'
-    compileOnly 'it.unimi.dsi:fastutil:8.5.13'
-    compileOnly 'net.kyori:adventure-nbt:4.17.0'
-    compileOnly 'org.projectlombok:lombok:1.18.32'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
 }
@@ -93,7 +93,6 @@ shadowJar {
     relocate 'net.william278.desertwell', 'net.william278.velocitab.libraries.desertwell'
     relocate 'org.bstats', 'net.william278.velocitab.libraries.bstats'
     relocate 'de.exlll.configlib', 'net.william278.velocitab.libraries.configlib'
-    relocate 'org.snakeyaml', 'net.william278.velocitab.libraries.snakeyaml'
     relocate 'org.snakeyaml', 'net.william278.velocitab.libraries.snakeyaml'
     relocate 'org.apache.commons.jexl3', 'net.william278.velocitab.libraries.commons.jexl3'
     relocate 'org.apache.commons.logging', 'net.william278.velocitab.libraries.commons.logging'

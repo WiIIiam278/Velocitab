@@ -84,7 +84,8 @@ public class MiniConditionManager {
 
         final String trueValue = parameters.get(1);
         final String falseValue = parameters.get(2);
-        final String expression = condition.replace("and", "&&").replace("or", "||");
+        final String expression = condition.replace("and", "&&").replace("or", "||")
+                .replace("AND", "&&").replace("OR", "||");
         final Object result = jexlEngine.createExpression(expression).evaluate(jexlContext);
 
         if (result instanceof Boolean) {

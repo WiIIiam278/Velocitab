@@ -27,7 +27,14 @@ import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+
 public class MiniPlaceholdersHook extends Hook {
+
+    public final static Map<String, String> REPLACE = Map.of(
+            "\"", "--quote--",
+            "'", "--apos--"
+    );
 
     private final VelocitabMiniExpansion expansion;
 
@@ -39,6 +46,9 @@ public class MiniPlaceholdersHook extends Hook {
 
     @NotNull
     public Component format(@NotNull String text, @NotNull Audience player, @Nullable Audience viewer) {
+        for (Map.Entry<String, String> entry : REPLACE.entrySet()) {
+            text = text.replace(entry.getKey(), entry.getValue());
+        }
         if (viewer == null) {
             return MiniMessage.miniMessage().deserialize(text, MiniPlaceholders.getAudienceGlobalPlaceholders(player));
         }

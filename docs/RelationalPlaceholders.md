@@ -24,3 +24,5 @@ My username is `William278` and I can see in tablist an audience player named `P
 | `<velocitab_rel_perm:check.server:Target is on %server%!>` | Checks if the target player has the permission 'check.server' and displays the server of the audience player. | `Target is on survival!` |
 | `<velocitab_rel_perm:clientcheck:<player_client>>`         | Checks if the target player has the permission 'clientcheck' and displays the client of the audience player.  | `LunarClient`            |
 | `<velocitab_rel_perm:pingcheck:<player_ping>>`             | Checks if the target player has the permission 'pingcheck' and displays the ping of the audience player.      | `23`                     |
+
+

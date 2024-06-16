@@ -25,6 +25,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
+import net.william278.velocitab.hook.MiniPlaceholdersHook;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
@@ -32,6 +33,7 @@ import org.apache.commons.jexl3.MapContext;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Map;
 
 public class MiniConditionManager {
 
@@ -72,19 +74,14 @@ public class MiniConditionManager {
         }
 
         String condition = parameters.get(0);
-
-        // adventure string quote fix
-        final int countQuotes = condition.length() - condition.replace("\"", "").length();
-        final int countApostrophes = condition.length() - condition.replace("'", "").length();
-        if (countQuotes % 2 != 0) {
-            condition = "\"" + condition;
-        } else if (countApostrophes % 2 != 0) {
-            condition = "'" + condition;
+        for (final Map.Entry<String, String> entry : MiniPlaceholdersHook.REPLACE.entrySet()) {
+            condition = condition.replace(entry.getValue(), entry.getKey());
         }
 
-        for (final String key : Placeholder.CONDITIONAL_SUBSTITUTES.keySet()) {
-            condition = condition.replace(Placeholder.CONDITIONAL_SUBSTITUTES.get(key), key);
+        for (final Map.Entry<String, String> entry : Placeholder.CONDITIONAL_SUBSTITUTES.entrySet()) {
+            condition = condition.replace(entry.getValue(), entry.getKey());
         }
+
         final String trueValue = parameters.get(1);
         final String falseValue = parameters.get(2);
         final String expression = condition.replace("and", "&&").replace("or", "||");

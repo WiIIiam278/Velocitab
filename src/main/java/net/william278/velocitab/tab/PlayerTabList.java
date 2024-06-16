@@ -340,8 +340,6 @@ public class PlayerTabList {
     protected void updateDisplayName(@NotNull TabPlayer player, @NotNull TabPlayer viewer) {
         final Component displayName = getRelationalPlaceholder(player, viewer, player.getLastDisplayName());
         updateDisplayName(player, viewer, displayName);
-
-        System.out.println("Player: " + player.getPlayer().getUsername() + " Viewer: " + viewer.getPlayer().getUsername() + " Display Name: " + PlainTextComponentSerializer.plainText().serialize(displayName));
     }
 
     protected void updateDisplayName(@NotNull TabPlayer player, @NotNull TabPlayer viewer, @NotNull Component displayName) {

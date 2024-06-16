@@ -28,6 +28,7 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.api.PlayerAddedToTabEvent;
 import net.william278.velocitab.config.Group;
@@ -42,6 +43,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * The main class for tracking the server TAB list
@@ -194,6 +196,12 @@ public class PlayerTabList {
                                      @NotNull Set<TabPlayer> tabPlayers, boolean isJoinedVanished) {
         final Player joined = tabPlayer.getPlayer();
         final String serverName = getServerName(joined);
+        final Set<UUID> uuids = tabPlayers.stream().map(p -> p.getPlayer().getUniqueId()).collect(Collectors.toSet());
+        List.copyOf(tabPlayer.getPlayer().getTabList().getEntries()).forEach(entry -> {
+            if (!uuids.contains(entry.getProfile().getId())) {
+                tabPlayer.getPlayer().getTabList().removeEntry(entry.getProfile().getId());
+            }
+        });
         for (final TabPlayer iteratedPlayer : tabPlayers) {
             final Player player = iteratedPlayer.getPlayer();
             final String username = player.getUsername();
@@ -206,7 +214,9 @@ public class PlayerTabList {
             // Update lists regarding the joined player
             checkVisibilityAndUpdateName(iteratedPlayer, tabPlayer, isJoinedVanished);
             // Update lists regarding the iterated player
-            checkVisibilityAndUpdateName(iteratedPlayer, tabPlayer, isPlayerVanished);
+            if (iteratedPlayer != tabPlayer) {
+                checkVisibilityAndUpdateName(tabPlayer, iteratedPlayer, isPlayerVanished);
+            }
             iteratedPlayer.sendHeaderAndFooter(this);
         }
         plugin.getScoreboardManager().ifPresent(s -> {
@@ -330,6 +340,8 @@ public class PlayerTabList {
     protected void updateDisplayName(@NotNull TabPlayer player, @NotNull TabPlayer viewer) {
         final Component displayName = getRelationalPlaceholder(player, viewer, player.getLastDisplayName());
         updateDisplayName(player, viewer, displayName);
+
+        System.out.println("Player: " + player.getPlayer().getUsername() + " Viewer: " + viewer.getPlayer().getUsername() + " Display Name: " + PlainTextComponentSerializer.plainText().serialize(displayName));
     }
 
     protected void updateDisplayName(@NotNull TabPlayer player, @NotNull TabPlayer viewer, @NotNull Component displayName) {

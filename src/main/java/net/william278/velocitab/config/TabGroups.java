@@ -86,9 +86,7 @@ public class TabGroups implements ConfigValidator {
         }
         // Ensure the default group is always checked last
         groups.remove(defaultGroup.get());
-        if (plugin.getSettings().isFallbackEnabled()) {
-            groups.add(defaultGroup.get());
-        }
+        groups.add(defaultGroup.get());
         for (Group group : groups) {
             if (group.registeredServers(plugin, false)
                     .stream()

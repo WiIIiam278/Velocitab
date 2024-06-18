@@ -91,7 +91,6 @@ public class TabListListener {
                 .map(ServerInfo::getName)
                 .orElse("");
 
-        plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined, group));
         // Get the group the player should now be in
         final @NotNull Optional<Group> groupOptional = tabList.getGroup(serverName);
         final boolean isDefault = groupOptional.map(g -> g.isDefault(plugin)).orElse(false);

@@ -20,6 +20,7 @@
 package net.william278.velocitab.tab;
 
 import com.google.common.collect.Maps;
+import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.player.TabList;
@@ -32,6 +33,7 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.api.PlayerAddedToTabEvent;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
+import net.william278.velocitab.config.ServerUrl;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;

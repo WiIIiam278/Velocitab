@@ -32,6 +32,7 @@ import com.velocitypowered.api.proxy.server.ServerInfo;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
+import net.william278.velocitab.config.ServerUrl;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -82,11 +83,12 @@ public class TabListListener {
     @Subscribe
     public void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
         final Player joined = event.getPlayer();
-
         final String serverName = joined.getCurrentServer()
                 .map(ServerConnection::getServerInfo)
                 .map(ServerInfo::getName)
                 .orElse("");
+
+        // Get the group the player should now be in
         final Group group = tabList.getGroup(serverName);
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined, group));
         final boolean isDefault = group.registeredServers(plugin).stream()

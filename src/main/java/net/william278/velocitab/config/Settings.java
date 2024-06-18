@@ -97,14 +97,14 @@ public class Settings implements ConfigValidator {
     @Comment("Whether to enable the Plugin Message API (allows backend plugins to perform certain operations)")
     private boolean enablePluginMessageApi = true;
 
-    @Comment({"A list of URLs that will be sent to display on player pause menus (Minecraft 1.21+ clients only).\n",
-            "Labels can be fully custom or built-in (one of 'bug_report', 'community_guidelines', 'support', 'status',",
-            "'feedback', 'community', 'website', 'forums', 'news', or 'announcements').\n",
-            "If you supply a url with a 'bug_report' label, it will be shown if the player is disconnected.",
-            "Specify a set of server groups each URL should be sent on. Use '*' to show a URL to all groups."})
-    private List<ServerUrl> serverUrls = List.of(
+    @Comment({"A list of links that will be sent to display on player pause menus (Minecraft 1.21+ clients only).",
+            "• Labels can be fully custom or built-in (one of 'bug_report', 'community_guidelines', 'support', 'status',"
+                    + " 'feedback', 'community', 'website', 'forums', 'news', or 'announcements').",
+            "• If you supply a url with a 'bug_report' label, it will be shown if the player is disconnected.",
+            "• Specify a set of server groups each URL should be sent on. Use '*' to show a URL to all groups."})
+    private List<ServerUrl> serverLinks = List.of(
             new ServerUrl(
-                    "&rainbow&Velocitab Website",
+                    "&#00fb9a&About Velocitab",
                     "https://william278.net/project/velocitab"
             )
     );
@@ -122,7 +122,7 @@ public class Settings implements ConfigValidator {
 
     @NotNull
     public List<ServerUrl> getUrlsForGroup(@NotNull Group group) {
-        return serverUrls.stream()
+        return serverLinks.stream()
                 .filter(link -> link.groups().contains("*") || link.groups().contains(group.name()))
                 .toList();
     }

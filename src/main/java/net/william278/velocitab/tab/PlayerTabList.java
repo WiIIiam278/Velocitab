@@ -153,10 +153,7 @@ public class PlayerTabList {
         tabPlayer.setLastServer(serverName);
 
         // Send server URLs (1.21 clients)
-        if (!joined.getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_21)) {
-            final List<ServerUrl> urls = plugin.getSettings().getUrlsForGroup(group);
-            ServerUrl.resolve(plugin, tabPlayer, urls).thenAccept(joined::setServerLinks);
-        }
+        sendPlayerServerLinks(tabPlayer);
 
         // Determine display name, update TAB for player
         tabPlayer.getDisplayName(plugin).thenAccept(d -> {
@@ -347,6 +344,13 @@ public class PlayerTabList {
         });
     }
 
+    public void sendPlayerServerLinks(@NotNull TabPlayer player) {
+        if (!player.getPlayer().getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_21)) {
+            final List<ServerUrl> urls = plugin.getSettings().getUrlsForGroup(player.getGroup());
+            ServerUrl.resolve(plugin, player, urls).thenAccept(player.getPlayer()::setServerLinks);
+        }
+    }
+
     public void updatePlayerDisplayName(@NotNull TabPlayer tabPlayer) {
         final Component lastDisplayName = tabPlayer.getLastDisplayName();
         tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
@@ -493,6 +497,7 @@ public class PlayerTabList {
             final String serverName = server.get().getServerInfo().getName();
             final Group group = getGroup(serverName);
             player.setGroup(group);
+            this.sendPlayerServerLinks(player);
             this.updatePlayer(player, true);
             player.sendHeaderAndFooter(this);
         });

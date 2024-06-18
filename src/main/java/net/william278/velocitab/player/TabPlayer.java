@@ -26,6 +26,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
@@ -156,14 +158,15 @@ public final class TabPlayer implements Comparable<TabPlayer> {
             final String placeholder = keyArray[i];
             final String value = placeholderArray[i];
             cachedPlaceholders.put(placeholder, value);
-            // Fixes an issue where the server placeholder is replaced with the server name before the display name is formatted
-            if (placeholder.equalsIgnoreCase("%server%")) {
-                continue;
-            }
             displayName = displayName.replace(placeholder, value);
         }
 
         displayName = displayName.replace("\n", "");
+        displayName = LegacyComponentSerializer.legacySection().serialize(MiniMessage.miniMessage().deserialize(displayName));
+        displayName = Placeholder.replaceInternal(displayName, plugin, this);
+        displayName = MiniMessage.miniMessage().serialize(LegacyComponentSerializer.legacySection().deserialize(displayName))
+                .replace("\\<", "<")
+        ;
         return lastDisplayName = displayName;
     }
 

@@ -21,6 +21,8 @@ package net.william278.velocitab.config;
 
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.tab.Nametag;
@@ -113,7 +115,7 @@ public enum Placeholder {
 
     private final static Pattern VELOCITAB_PATTERN = Pattern.compile("<velocitab_.*?>");
     private final static Pattern PLACEHOLDER_PATTERN = Pattern.compile("%.*?%");
-    private final static Pattern CONDITIONAL_PATTERN = Pattern.compile("<velocitab_rel_condition:[^<>]*?[<>][^<>]*?>");
+    private final static Pattern CONDITIONAL_PATTERN = Pattern.compile("\\<velocitab_rel_condition:[^:]*:[^:]*\\:[^\\:]*\\>");
     private final static String DELIMITER = ":::";
     private final static String REL_SUBSTITUTE = "-REL-";
     public final static Map<String, String> CONDITIONAL_SUBSTITUTES = Map.of(
@@ -174,11 +176,13 @@ public enum Placeholder {
         final Matcher conditionalMatcher = CONDITIONAL_PATTERN.matcher(format);
         while (conditionalMatcher.find()) {
             String conditionalPlaceholder = conditionalMatcher.group();
-            conditionalPlaceholder = conditionalPlaceholder.substring(1, conditionalPlaceholder.length() - 2);
+            conditionalPlaceholder = conditionalPlaceholder.substring(1, conditionalPlaceholder.length() - 1);
             String fixedString = conditionalPlaceholder;
             for (Map.Entry<String, String> entry : CONDITIONAL_SUBSTITUTES.entrySet()) {
                 fixedString = fixedString.replace(entry.getKey(), entry.getValue());
             }
+            fixedString = MiniMessage.miniMessage().serialize(LegacyComponentSerializer.legacySection().deserialize(fixedString));
+            fixedString = fixedString.replace("<", "?lt;").replace(">", "?gt;");
             format = format.replace(conditionalPlaceholder, fixedString);
         }
 

@@ -36,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MiniConditionManager {
@@ -44,6 +45,7 @@ public class MiniConditionManager {
     private final JexlEngine jexlEngine;
     private final JexlContext jexlContext;
     private final Pattern targetPlaceholderPattern = Pattern.compile("%target_(\\w+)?%");
+    private final Pattern miniEscapeEndTags = Pattern.compile("</(\\w+)>");
 
     public MiniConditionManager(@NotNull Velocitab plugin) {
         this.plugin = plugin;
@@ -73,11 +75,13 @@ public class MiniConditionManager {
             parameters.add(queue.pop().value());
         }
 
-        if (parameters.size() < 3) {
+        if (parameters.isEmpty()) {
+            plugin.getLogger().warn("Empty condition");
             return Component.empty();
         }
 
         String condition = parameters.get(0);
+        condition = condition.replace("?lt;", "<").replace("?gt;", ">");
         for (final Map.Entry<String, String> entry : MiniPlaceholdersHook.REPLACE.entrySet()) {
             condition = condition.replace(entry.getValue(), entry.getKey());
             condition = condition.replace(entry.getKey()+entry.getKey(), entry.getKey());
@@ -87,6 +91,11 @@ public class MiniConditionManager {
             condition = condition.replace(entry.getValue(), entry.getKey());
         }
 
+        if (parameters.size() < 3) {
+            plugin.getLogger().warn("Invalid condition: Missing true/false values for condition: {}", condition);
+            return Component.empty();
+        }
+
         final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(target);
         if (tabPlayer.isEmpty()) {
             return Component.empty();
@@ -94,8 +103,16 @@ public class MiniConditionManager {
 
         condition = Placeholder.replaceInternal(condition, plugin, tabPlayer.get());
 
-        final String trueValue = parameters.get(1);
-        final String falseValue = parameters.get(2);
+        final String trueValue = parameters.get(1).replace("?lt;", "<").replace("?gt;", ">");
+        String falseValue = parameters.get(2).replace("?lt;", "<").replace("?gt;", ">");
+        final Matcher matcher = miniEscapeEndTags.matcher(falseValue);
+        if (matcher.find()) {
+            final String tag = matcher.group(1);
+            //remove the tag from the start of the string if it is at the start
+            if (falseValue.startsWith("</" + tag + ">")) {
+                falseValue = falseValue.substring(tag.length() + 3);
+            }
+        }
         final String expression = condition.replace("and", "&&").replace("or", "||")
                 .replace("AND", "&&").replace("OR", "||");
         final String targetString = parseTargetPlaceholders(expression, target);

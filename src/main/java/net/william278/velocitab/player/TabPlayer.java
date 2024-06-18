@@ -20,12 +20,12 @@
 package net.william278.velocitab.player;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.velocitypowered.api.proxy.Player;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
@@ -36,14 +36,17 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Getter
 @ToString
 public final class TabPlayer implements Comparable<TabPlayer> {
+
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%(\\w+)%");
+    private static final String PLACEHOLDER_DELIMITER = "<-DELIMITER->";
 
     private final Velocitab plugin;
     private final Player player;
@@ -54,6 +57,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     // Each TabPlayer contains the components for each TabPlayer it's currently viewing this player
     private final Map<UUID, Component> relationalDisplayNames;
     private final Map<UUID, Component[]> relationalNametags;
+    private final Map<String, String> cachedPlaceholders;
     private String lastDisplayName;
     private Component lastHeader;
     private Component lastFooter;
@@ -81,6 +85,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         this.group = group;
         this.relationalDisplayNames = Maps.newConcurrentMap();
         this.relationalNametags = Maps.newConcurrentMap();
+        this.cachedPlaceholders = Maps.newConcurrentMap();
     }
 
     @NotNull
@@ -125,8 +130,41 @@ public final class TabPlayer implements Comparable<TabPlayer> {
 
     @NotNull
     public CompletableFuture<String> getDisplayName(@NotNull Velocitab plugin) {
-        return Placeholder.replace(group.format(), plugin, this)
-                .thenApply(displayName -> this.lastDisplayName = displayName);
+        final String format = formatGroup();
+        return Placeholder.replace(format, plugin, this)
+                .thenApply(d -> cacheDisplayName(d, format));
+    }
+
+    @NotNull
+    private String formatGroup() {
+        final Set<String> placeholders = Sets.newHashSet();
+        final Matcher matcher = PLACEHOLDER_PATTERN.matcher(group.format());
+        while (matcher.find()) {
+            placeholders.add("%" + matcher.group(1) + "%");
+        }
+
+        return String.join(PLACEHOLDER_DELIMITER, placeholders);
+    }
+
+    @NotNull
+    private String cacheDisplayName(@NotNull String placeholders, @NotNull String keys) {
+        String displayName = group.format();
+        final String[] placeholderArray = placeholders.split(PLACEHOLDER_DELIMITER);
+        final String[] keyArray = keys.split(PLACEHOLDER_DELIMITER);
+
+        for (int i = 0; i < placeholderArray.length; i++) {
+            final String placeholder = keyArray[i];
+            final String value = placeholderArray[i];
+            cachedPlaceholders.put(placeholder, value);
+            // Fixes an issue where the server placeholder is replaced with the server name before the display name is formatted
+            if (placeholder.equalsIgnoreCase("%server%")) {
+                continue;
+            }
+            displayName = displayName.replace(placeholder, value);
+        }
+
+        displayName = displayName.replace("\n", "");
+        return lastDisplayName = displayName;
     }
 
     @NotNull
@@ -242,5 +280,9 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     @Override
     public boolean equals(Object obj) {
         return obj instanceof TabPlayer other && player.getUniqueId().equals(other.player.getUniqueId());
+    }
+
+    public Optional<String> getCachedPlaceholderValue(@NotNull String placeholder) {
+        return Optional.ofNullable(cachedPlaceholders.get(placeholder));
     }
 }

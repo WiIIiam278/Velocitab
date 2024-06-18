@@ -24,9 +24,16 @@ Currently, this system is only available for the `format` and `nametag` fields i
 | `<velocitab_rel_condition:"%player_world%" == ''nether'':In Nether:Not in Nether>`                                 | Checks if the player is in the Nether. If true, displays "In Nether", else "Not in Nether".                                         | `In Nether` or `Not in Nether`                         |
 | `<velocitab_rel_condition:"%player_biome%" == "DESERT":In Desert:Not in Desert>`                                   | Checks if the player is in a desert biome. If true, displays "In Desert", else "Not in Desert".                                     | `In Desert` or `Not in Desert`                         |
 | `<velocitab_rel_condition:''%player_gamemode%''.contains(''S''):Survival or Spectator:Not Survival or Spectator> ` | Checks if the player is in survival or spectator mode. If true, displays "Survival or Spectator", else "Not Survival or Spectator". | `Survival or Spectator` or `Not Survival or Spectator` |
+| `<velocitab_rel_condition:%player_health% == %target_player_health%:Same health:Not same health> `                 | Checks if the player's health is the same as the target player's health. If true, displays "Same health", else "Not same health".   | `Same health` or `Not same health`                     |
 
 **Note:** For string comparisons, use double quotes `" "` or single quotes `' '`. For numerical comparisons, quotes are
 not needed.
 Also if you use `'` for quotes, you need to escape them with `''`. The same applies for `"` and `""`. Example: `''%player_name%''` or `"'%player_name%'"`
+In order to use papi placeholders for target you need to use `''%target_player_name%''` in order to get `''%player_name%''` replaced with the target player's name.
+# Example
+If you want to compare audience player's health with target player's health, you can use the following configuration:
+```yaml
+format: "<velocitab_rel_condition:%player_health% == %target_player_health%:Same health:Not same health>"
+```
 
 This is system is based on [JEXL](https://commons.apache.org/proper/commons-jexl/reference/examples.html) expressions.

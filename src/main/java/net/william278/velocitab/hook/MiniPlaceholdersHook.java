@@ -32,8 +32,8 @@ import java.util.Map;
 public class MiniPlaceholdersHook extends Hook {
 
     public final static Map<String, String> REPLACE = Map.of(
-            "\"", "--quote--",
-            "'", "--apos--"
+            "\"", "-q-",
+            "'", "-a-"
     );
 
     private final VelocitabMiniExpansion expansion;

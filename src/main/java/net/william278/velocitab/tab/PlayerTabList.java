@@ -20,6 +20,7 @@
 package net.william278.velocitab.tab;
 
 import com.google.common.collect.Maps;
+import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.player.TabList;
@@ -151,9 +152,11 @@ public class PlayerTabList {
         final String serverName = getServerName(joined);
         tabPlayer.setLastServer(serverName);
 
-        // Send server URLs
-        final List<ServerUrl> urls = plugin.getSettings().getUrlsForGroup(group);
-        ServerUrl.resolve(plugin, tabPlayer, urls).thenAccept(joined::setServerLinks);
+        // Send server URLs (1.21 clients)
+        if (!joined.getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_21)) {
+            final List<ServerUrl> urls = plugin.getSettings().getUrlsForGroup(group);
+            ServerUrl.resolve(plugin, tabPlayer, urls).thenAccept(joined::setServerLinks);
+        }
 
         // Determine display name, update TAB for player
         tabPlayer.getDisplayName(plugin).thenAccept(d -> {

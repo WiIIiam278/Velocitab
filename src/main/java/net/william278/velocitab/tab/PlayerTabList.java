@@ -484,10 +484,10 @@ public class PlayerTabList {
      */
     public void reloadUpdate() {
         plugin.getTabGroups().getGroups().forEach(this::updatePeriodically);
-
         if (players.isEmpty()) {
             return;
         }
+
         // If the update time is set to 0 do not schedule the updater
         players.values().forEach(player -> {
             final Optional<ServerConnection> server = player.getPlayer().getCurrentServer();

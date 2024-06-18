@@ -61,4 +61,4 @@ PlaceholderAPI placeholders are cached to reduce plugin message traffic. By defa
 
 ## MiniPlaceholders support
 If you are using MiniMessage [[Formatting]], you can use [MiniPlaceholders](https://github.com/MiniPlaceholders/MiniPlaceholders) with Velocitab for MiniMessage-styled component placeholders provided by other proxy plugins. Install MiniPlaceholders on your Velocity proxy, set the `formatter_type` to `MINIMESSAGE` and ensure `enable_miniplaceholders_hook` is set to `true`
-You can also use [Relational Placeholders](RelationalPlaceholders.md).
+You can also use [Relational Placeholders](Relational-Placeholders).

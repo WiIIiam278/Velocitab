@@ -77,7 +77,7 @@ public enum Placeholder {
     private final TriFunction<String, Velocitab, TabPlayer, String> replacer;
     private final boolean parameterised;
     private final Pattern pattern;
-    private final static Pattern checkPlaceholders = Pattern.compile("%.*?%");
+    private final static Pattern CHECK_PLACEHOLDERS = Pattern.compile("%.*?%");
     private final static String DELIMITER = ":::";
 
     Placeholder(@NotNull BiFunction<Velocitab, TabPlayer, String> replacer) {
@@ -109,7 +109,6 @@ public enum Placeholder {
 
     public static CompletableFuture<String> replace(@NotNull String format, @NotNull Velocitab plugin,
                                                     @NotNull TabPlayer player) {
-
         if (format.equals(DELIMITER)) {
             return CompletableFuture.completedFuture("");
         }
@@ -119,19 +118,20 @@ public enum Placeholder {
             if (placeholder.parameterised) {
                 // Replace the placeholder with the result of the replacer function with the parameter
                 format = matcher.replaceAll(matchResult ->
-                        Matcher.quoteReplacement(
-                                placeholder.replacer.apply(StringUtils.chop(matchResult.group().replace("%" + placeholder.name().toLowerCase(), ""))
-                                        , plugin, player)
-                        ));
+                        Matcher.quoteReplacement(placeholder.replacer.apply(
+                                StringUtils.chop(matchResult.group().replace(
+                                        "%" + placeholder.name().toLowerCase(), ""
+                                )), plugin, player
+                        )));
             } else {
                 // Replace the placeholder with the result of the replacer function
                 format = matcher.replaceAll(matchResult -> Matcher.quoteReplacement(placeholder.replacer.apply(null, plugin, player)));
             }
 
         }
-        final String replaced = format;
 
-        if (!checkPlaceholders.matcher(replaced).find()) {
+        final String replaced = format;
+        if (!CHECK_PLACEHOLDERS.matcher(replaced).find()) {
             return CompletableFuture.completedFuture(replaced);
         }
 

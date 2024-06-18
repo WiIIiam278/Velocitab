@@ -27,6 +27,7 @@ import lombok.NoArgsConstructor;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -96,6 +97,18 @@ public class Settings implements ConfigValidator {
     @Comment("Whether to enable the Plugin Message API (allows backend plugins to perform certain operations)")
     private boolean enablePluginMessageApi = true;
 
+    @Comment({"A list of links that will be sent to display on player pause menus (Minecraft 1.21+ clients only).",
+            "• Labels can be fully custom or built-in (one of 'bug_report', 'community_guidelines', 'support', 'status',",
+            "  'feedback', 'community', 'website', 'forums', 'news', or 'announcements').",
+            "• If you supply a url with a 'bug_report' label, it will be shown if the player is disconnected.",
+            "• Specify a set of server groups each URL should be sent on. Use '*' to show a URL to all groups."})
+    private List<ServerUrl> serverLinks = List.of(
+            new ServerUrl(
+                    "&#00fb9a&About Velocitab",
+                    "https://william278.net/project/velocitab"
+            )
+    );
+
     /**
      * Get display name for the server
      *
@@ -107,10 +120,19 @@ public class Settings implements ConfigValidator {
         return serverDisplayNames.getOrDefault(serverName, serverName);
     }
 
+    @NotNull
+    public List<ServerUrl> getUrlsForGroup(@NotNull Group group) {
+        return serverLinks.stream()
+                .filter(link -> link.groups().contains("*") || link.groups().contains(group.name()))
+                .toList();
+    }
+
     @Override
     public void validateConfig(@NotNull Velocitab plugin) {
         if (papiCacheTime < 0) {
             throw new IllegalStateException("PAPI cache time must be greater than or equal to 0");
         }
+        serverLinks.forEach(ServerUrl::validate);
     }
+
 }

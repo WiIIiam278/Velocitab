@@ -50,6 +50,16 @@ sort_players: true
 remove_spectator_effect: false
 # Whether to enable the Plugin Message API (allows backend plugins to perform certain operations)
 enable_plugin_message_api: true
+# A list of URLs that will be sent to display on player pause menus (Minecraft 1.21+ clients only).
+# • Labels can be fully custom or built-in (one of 'bug_report', 'community_guidelines', 'support', 'status',
+#   'feedback', 'community', 'website', 'forums', 'news', or 'announcements').
+# • If you supply a url with a 'bug_report' label, it will be shown if the player is disconnected.
+# • Specify a set of server groups each URL should be sent on. Use '*' to show a URL to all groups.
+server_links:
+  - label: '&#00fb9a&About Velocitab'
+    url: 'https://william278.net/project/velocitab'
+    groups:
+      - '*'
 ```
 
 </details>
@@ -111,3 +121,6 @@ Velocitab supports basic header and footer animations by adding multiple frames 
 
 ### Placeholders
 You can use various placeholders that will be replaced with values (for example, `%username%`) in your config. Support for PlaceholderAPI is also available through [a bridge library plugin](https://modrinth.com/plugin/papiproxybridge), as is the component-based MiniPlaceholders for users of that plugin with the MiniMessage formatter. See [[Placeholders]] for more information.
+
+### Server Links
+For Minecraft 1.21+ clients, Velocitab supports specifying a list of URLs that will be sent to display in the player pause menu. See [[Server Links]] for more information.

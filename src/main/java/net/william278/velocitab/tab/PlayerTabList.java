@@ -20,6 +20,7 @@
 package net.william278.velocitab.tab;
 
 import com.google.common.collect.Maps;
+import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.player.TabList;
@@ -33,6 +34,7 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.api.PlayerAddedToTabEvent;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
+import net.william278.velocitab.config.ServerUrl;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
@@ -142,18 +144,19 @@ public class PlayerTabList {
     protected void joinPlayer(@NotNull Player joined, @NotNull Group group) {
         // Add the player to the tracking list if they are not already listed
         final TabPlayer tabPlayer = getTabPlayer(joined).orElseGet(() -> createTabPlayer(joined, group));
+        final boolean isVanished = plugin.getVanishManager().isVanished(joined.getUsername());
         tabPlayer.setGroup(group);
         players.putIfAbsent(joined.getUniqueId(), tabPlayer);
 
+        // Store the player's last server, so it's possible to have the last server on disconnect
         final String serverName = getServerName(joined);
-
-        //store last server, so it's possible to have the last server on disconnect
         tabPlayer.setLastServer(serverName);
 
-        final boolean isVanished = plugin.getVanishManager().isVanished(joined.getUsername());
+        // Send server URLs (1.21 clients)
+        sendPlayerServerLinks(tabPlayer);
 
+        // Determine display name, update TAB for player
         tabPlayer.getDisplayName(plugin).thenAccept(d -> {
-
             joined.getTabList().getEntry(joined.getUniqueId())
                     .ifPresentOrElse(e -> e.setDisplayName(d),
                             () -> joined.getTabList().addEntry(createEntry(tabPlayer, joined.getTabList(), d)));
@@ -169,7 +172,6 @@ public class PlayerTabList {
             final Set<String> serversInGroup = group.registeredServers(plugin).stream()
                     .map(server -> server.getServerInfo().getName())
                     .collect(HashSet::new, HashSet::add, HashSet::addAll);
-
             serversInGroup.remove(serverName);
 
             // Update lists
@@ -342,6 +344,14 @@ public class PlayerTabList {
         });
     }
 
+    public void sendPlayerServerLinks(@NotNull TabPlayer player) {
+        if (player.getPlayer().getProtocolVersion().lessThan(ProtocolVersion.MINECRAFT_1_21)) {
+            return;
+        }
+        final List<ServerUrl> urls = plugin.getSettings().getUrlsForGroup(player.getGroup());
+        ServerUrl.resolve(plugin, player, urls).thenAccept(player.getPlayer()::setServerLinks);
+    }
+
     public void updatePlayerDisplayName(@NotNull TabPlayer tabPlayer) {
         final Component lastDisplayName = tabPlayer.getLastDisplayName();
         tabPlayer.getDisplayName(plugin).thenAccept(displayName -> {
@@ -475,10 +485,10 @@ public class PlayerTabList {
      */
     public void reloadUpdate() {
         plugin.getTabGroups().getGroups().forEach(this::updatePeriodically);
-
         if (players.isEmpty()) {
             return;
         }
+
         // If the update time is set to 0 do not schedule the updater
         players.values().forEach(player -> {
             final Optional<ServerConnection> server = player.getPlayer().getCurrentServer();
@@ -488,6 +498,7 @@ public class PlayerTabList {
             final String serverName = server.get().getServerInfo().getName();
             final Group group = getGroup(serverName);
             player.setGroup(group);
+            this.sendPlayerServerLinks(player);
             this.updatePlayer(player, true);
             player.sendHeaderAndFooter(this);
         });

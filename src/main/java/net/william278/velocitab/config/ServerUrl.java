@@ -25,6 +25,7 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -75,5 +76,23 @@ public record ServerUrl(
         return Arrays.stream(ServerLink.Type.values()).filter(type -> type.name().equals(label)).findFirst();
     }
 
+    // Validate a ServerUrl
+    void validate() throws IllegalStateException {
+        if (label().isEmpty()) {
+            throw new IllegalStateException("Server URL label cannot be empty");
+        }
+        if (url().isEmpty()) {
+            throw new IllegalStateException("Server URL cannot be empty");
+        }
+        if (groups().isEmpty()) {
+            throw new IllegalStateException("Server URL must have at least one group, or '*' to show on all groups");
+        }
+        try {
+            //noinspection ResultOfMethodCallIgnored
+            URI.create(url());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Server URL is not a valid URI");
+        }
+    }
 
 }

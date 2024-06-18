@@ -98,8 +98,8 @@ public class Settings implements ConfigValidator {
     private boolean enablePluginMessageApi = true;
 
     @Comment({"A list of links that will be sent to display on player pause menus (Minecraft 1.21+ clients only).",
-            "• Labels can be fully custom or built-in (one of 'bug_report', 'community_guidelines', 'support', 'status',"
-                    + " 'feedback', 'community', 'website', 'forums', 'news', or 'announcements').",
+            "• Labels can be fully custom or built-in (one of 'bug_report', 'community_guidelines', 'support', 'status',",
+            "  'feedback', 'community', 'website', 'forums', 'news', or 'announcements').",
             "• If you supply a url with a 'bug_report' label, it will be shown if the player is disconnected.",
             "• Specify a set of server groups each URL should be sent on. Use '*' to show a URL to all groups."})
     private List<ServerUrl> serverLinks = List.of(
@@ -132,6 +132,7 @@ public class Settings implements ConfigValidator {
         if (papiCacheTime < 0) {
             throw new IllegalStateException("PAPI cache time must be greater than or equal to 0");
         }
+        serverLinks.forEach(ServerUrl::validate);
     }
 
 }

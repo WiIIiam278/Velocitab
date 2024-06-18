@@ -345,10 +345,11 @@ public class PlayerTabList {
     }
 
     public void sendPlayerServerLinks(@NotNull TabPlayer player) {
-        if (!player.getPlayer().getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_21)) {
-            final List<ServerUrl> urls = plugin.getSettings().getUrlsForGroup(player.getGroup());
-            ServerUrl.resolve(plugin, player, urls).thenAccept(player.getPlayer()::setServerLinks);
+        if (player.getPlayer().getProtocolVersion().lessThan(ProtocolVersion.MINECRAFT_1_21)) {
+            return;
         }
+        final List<ServerUrl> urls = plugin.getSettings().getUrlsForGroup(player.getGroup());
+        ServerUrl.resolve(plugin, player, urls).thenAccept(player.getPlayer()::setServerLinks);
     }
 
     public void updatePlayerDisplayName(@NotNull TabPlayer tabPlayer) {

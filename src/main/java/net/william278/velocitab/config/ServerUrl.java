@@ -54,21 +54,13 @@ public record ServerUrl(
     @NotNull
     public static CompletableFuture<List<ServerLink>> resolve(@NotNull Velocitab plugin, @NotNull TabPlayer player,
                                                               @NotNull List<ServerUrl> urls) {
-        return resolve(plugin, player, Lists.newArrayList(), Lists.newArrayList(urls));
-    }
-
-    // Recursively resolves the ServerLinks for each ServerUrl
-    @NotNull
-    private static CompletableFuture<List<ServerLink>> resolve(@NotNull Velocitab plugin, @NotNull TabPlayer player,
-                                                               @NotNull List<ServerLink> done,
-                                                               @NotNull List<ServerUrl> next) {
-        if (!next.isEmpty()) {
-            return next.get(0).getServerLink(plugin, player).thenCompose(link -> {
-                done.add(link);
-                return resolve(plugin, player, done, next.subList(1, next.size()));
-            });
+        final List<CompletableFuture<ServerLink>> futures = new ArrayList<>();
+        for (ServerUrl url : urls) {
+            futures.add(url.getServerLink(plugin, player));
         }
-        return CompletableFuture.completedFuture(done);
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenApply(v -> futures.stream()
+                        .map(CompletableFuture::join).toList());
     }
 
     private Optional<ServerLink.Type> getBuiltInLabel() {

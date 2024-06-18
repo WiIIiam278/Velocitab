@@ -24,8 +24,8 @@ ext {
 
 repositories {
     mavenCentral()
-    maven { url = 'https://repo.william278.net/velocity/' }
     maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url = 'https://repo.william278.net/velocity/' }
     maven { url = 'https://repo.william278.net/releases/' }
     maven { url = 'https://jitpack.io/' }
     maven { url = 'https://repo.minebench.de/' }

@@ -129,17 +129,15 @@ public class ScoreboardManager {
         final Set<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
 
         final Optional<Nametag> cachedTag = Optional.ofNullable(nametags.getOrDefault(teamName, null));
-        cachedTag.ifPresent(nametag -> {
-            siblings.forEach(server -> server.getPlayersConnected().stream().filter(p -> p != player)
-                    .forEach(connected -> {
-                        if (vanish && !plugin.getVanishManager().canSee(connected.getUsername(), player.getUsername())) {
-                            dispatchPacket(UpdateTeamsPacket.removeTeam(plugin, teamName), connected);
-                            trackedTeams.remove(connected.getUniqueId(), teamName);
-                        } else {
-                            dispatchGroupCreatePacket(plugin, tabPlayer, teamName, nametag, player.getUsername());
-                        }
-                    }));
-        });
+        cachedTag.ifPresent(nametag -> siblings.forEach(server -> server.getPlayersConnected().stream().filter(p -> p != player)
+                .forEach(connected -> {
+                    if (vanish && !plugin.getVanishManager().canSee(connected.getUsername(), player.getUsername())) {
+                        dispatchPacket(UpdateTeamsPacket.removeTeam(plugin, teamName), connected);
+                        trackedTeams.remove(connected.getUniqueId(), teamName);
+                    } else {
+                        dispatchGroupCreatePacket(plugin, tabPlayer, teamName, nametag, player.getUsername());
+                    }
+                })));
     }
 
     /**

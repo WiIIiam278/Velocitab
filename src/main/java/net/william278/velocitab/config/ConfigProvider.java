@@ -156,7 +156,7 @@ public interface ConfigProvider {
 
     /**
      * Saves the tab groups to the "tab_groups.yml" config file.
-     * Uses the YamlConfigurations.save method to write the tab groups object to the specified config file path.
+     * Uses the YamlConfigurations#save method to write the tab groups object to the specified config file path.
      * This method assumes that the getConfigDirectory method returns a valid directory path.
      *
      * @throws IllegalStateException if the getConfigDirectory method returns null

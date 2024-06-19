@@ -3,6 +3,7 @@
 * 📄 [[Config File]]
 
 ## Documentation
+* 🖥️ [[Commands]]
 * 👥 [[Server Groups]]
 * 🎨 [[Formatting]]
 * 📛 [[Nametags]]
@@ -10,6 +11,7 @@
 * ✍️ [[Placeholders]]
 * ✨ [[Animations]]
 * 🖼️ [[Custom Logos]]
+* 🔗 [[Server Links]]
 * 📦 [[API]]
     * 📝 [[API Examples]]
     * 📝 [[Plugin Message API]]

@@ -155,7 +155,7 @@ public final class VelocitabCommand {
     }
 
     private boolean hasPermission(@NotNull CommandSource source, @NotNull String command) {
-        return source.hasPermission(String.join("velocitab", "command", command));
+        return source.hasPermission(String.join(".", "velocitab", "command", command));
     }
 
     private void sendAboutInfo(@NotNull CommandSource source) {

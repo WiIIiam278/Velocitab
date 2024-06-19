@@ -115,7 +115,7 @@ public enum Placeholder {
 
     private final static Pattern VELOCITAB_PATTERN = Pattern.compile("<velocitab_.*?>");
     private final static Pattern PLACEHOLDER_PATTERN = Pattern.compile("%.*?%");
-    private final static Pattern CONDITIONAL_PATTERN = Pattern.compile("\\<velocitab_rel_condition:[^:]*:[^:]*\\:[^\\:]*\\>");
+    private final static Pattern CONDITIONAL_PATTERN = Pattern.compile("<velocitab_rel_condition:[^:]*:[^:]*:[^:]*>");
     private final static String DELIMITER = ":::";
     private final static String REL_SUBSTITUTE = "-REL-";
     public final static Map<String, String> CONDITIONAL_SUBSTITUTES = Map.of(
@@ -162,7 +162,7 @@ public enum Placeholder {
                                          @Nullable TabPlayer player) {
 
         boolean foundRelational = false;
-        if (format.contains("<vel")) {
+        if (format.contains("<vel") && plugin.getFormatter().equals(Formatter.MINIMESSAGE)) {
             final Matcher velocitabRelationalMatcher = VELOCITAB_PATTERN.matcher(format);
             while (velocitabRelationalMatcher.find()) {
                 foundRelational = true;
@@ -171,19 +171,19 @@ public enum Placeholder {
                 format = format.replace(relationalPlaceholder, fixedString);
             }
 
-        }
-
-        final Matcher conditionalMatcher = CONDITIONAL_PATTERN.matcher(format);
-        while (conditionalMatcher.find()) {
-            String conditionalPlaceholder = conditionalMatcher.group();
-            conditionalPlaceholder = conditionalPlaceholder.substring(1, conditionalPlaceholder.length() - 1);
-            String fixedString = conditionalPlaceholder;
-            for (Map.Entry<String, String> entry : CONDITIONAL_SUBSTITUTES.entrySet()) {
-                fixedString = fixedString.replace(entry.getKey(), entry.getValue());
+            final Matcher conditionalMatcher = CONDITIONAL_PATTERN.matcher(format);
+            while (conditionalMatcher.find()) {
+                String conditionalPlaceholder = conditionalMatcher.group();
+                conditionalPlaceholder = conditionalPlaceholder.substring(1, conditionalPlaceholder.length() - 1);
+                String fixedString = conditionalPlaceholder;
+                for (Map.Entry<String, String> entry : CONDITIONAL_SUBSTITUTES.entrySet()) {
+                    fixedString = fixedString.replace(entry.getKey(), entry.getValue());
+                }
+                fixedString = MiniMessage.miniMessage().serialize(LegacyComponentSerializer.legacySection().deserialize(fixedString));
+                fixedString = fixedString.replace("<", "?lt;").replace(">", "?gt;");
+                format = format.replace(conditionalPlaceholder, fixedString);
             }
-            fixedString = MiniMessage.miniMessage().serialize(LegacyComponentSerializer.legacySection().deserialize(fixedString));
-            fixedString = fixedString.replace("<", "?lt;").replace(">", "?gt;");
-            format = format.replace(conditionalPlaceholder, fixedString);
+
         }
 
         for (Placeholder placeholder : values()) {

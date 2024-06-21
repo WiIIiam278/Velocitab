@@ -303,8 +303,9 @@ public class PlayerTabList {
                         .forEach(player -> {
                             player.getPlayer().getTabList().removeEntry(uuid);
                             player.sendHeaderAndFooter(this);
+                            updatePlayerDisplayName(player);
                         }))
-                .delay(500, TimeUnit.MILLISECONDS)
+                .delay(250, TimeUnit.MILLISECONDS)
                 .schedule();
         // Delete player team
         plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(target));

@@ -26,6 +26,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.util.QuadFunction;
+import net.william278.velocitab.util.SerializerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,7 +41,10 @@ public enum Formatter {
             (text, player, viewer, plugin) -> new MineDown(text).toComponent(),
             MineDown::escape,
             "MineDown",
-            (text) -> new MineDown(text).toComponent()
+            (text) -> new MineDown(text).toComponent(),
+            (text) -> {
+                throw new UnsupportedOperationException("MineDown does not support serialization");
+            }
     ),
     MINIMESSAGE(
             (text, player, viewer, plugin) -> plugin.getMiniPlaceholdersHook()
@@ -49,14 +53,18 @@ public enum Formatter {
                     .orElse(MiniMessage.miniMessage().deserialize(text)),
             (text) -> MiniMessage.miniMessage().escapeTags(text),
             "MiniMessage",
-            (text) -> MiniMessage.miniMessage().deserialize(text)
+            (text) -> MiniMessage.miniMessage().deserialize(text),
+            MiniMessage.miniMessage()::serialize
     ),
     LEGACY(
-            (text, player, viewer, plugin) -> LegacyComponentSerializer.legacyAmpersand().deserialize(text),
+            (text, player, viewer, plugin) -> SerializerUtil.LEGACY_SERIALIZER.deserialize(text),
             Function.identity(),
             "Legacy Text",
-            (text) -> LegacyComponentSerializer.legacyAmpersand().deserialize(text)
+            SerializerUtil.LEGACY_SERIALIZER::deserialize,
+            SerializerUtil.LEGACY_SERIALIZER::serialize
     );
+
+
 
     /**
      * Name of the formatter
@@ -72,13 +80,15 @@ public enum Formatter {
      */
     private final Function<String, String> escaper;
     private final Function<String, Component> emptyFormatter;
+    private final Function<Component, String> serializer;
 
     Formatter(@NotNull QuadFunction<String, TabPlayer, TabPlayer, Velocitab, Component> formatter, @NotNull Function<String, String> escaper,
-              @NotNull String name, @NotNull Function<String, Component> emptyFormatter) {
+              @NotNull String name, @NotNull Function<String, Component> emptyFormatter, @NotNull Function<Component, String> serializer) {
         this.formatter = formatter;
         this.escaper = escaper;
         this.name = name;
         this.emptyFormatter = emptyFormatter;
+        this.serializer = serializer;
     }
 
     /**
@@ -103,7 +113,7 @@ public enum Formatter {
     }
 
     @NotNull
-    public Component emptyFormat(@NotNull String text) {
+    public Component deserialize(@NotNull String text) {
         return emptyFormatter.apply(text);
     }
 
@@ -115,6 +125,11 @@ public enum Formatter {
     @NotNull
     public String getName() {
         return name;
+    }
+
+    @NotNull
+    public String serialize(@NotNull Component component) {
+        return serializer.apply(component);
     }
 
 }

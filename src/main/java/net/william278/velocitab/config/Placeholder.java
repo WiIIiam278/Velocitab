@@ -22,7 +22,6 @@ package net.william278.velocitab.config;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.tab.Nametag;
@@ -179,7 +178,7 @@ public enum Placeholder {
                 for (Map.Entry<String, String> entry : CONDITIONAL_SUBSTITUTES.entrySet()) {
                     fixedString = fixedString.replace(entry.getKey(), entry.getValue());
                 }
-                fixedString = MiniMessage.miniMessage().serialize(LegacyComponentSerializer.legacySection().deserialize(fixedString));
+                fixedString = MiniMessage.miniMessage().serialize(Formatter.LEGACY.deserialize(fixedString));
                 fixedString = fixedString.replace("<", "?lt;").replace(">", "?gt;");
                 format = format.replace(conditionalPlaceholder, fixedString);
             }

@@ -152,7 +152,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         text = text + "z";
 
         //serialize & deserialize to downsample rgb to legacy
-        final Component component = plugin.getFormatter().emptyFormat(text);
+        final Component component = plugin.getFormatter().deserialize(text);
         text = LegacyComponentSerializer.legacyAmpersand().serialize(component);
 
         final int lastFormatIndex = text.lastIndexOf("&");

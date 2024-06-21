@@ -30,6 +30,9 @@ Currently, this system is only available for the `format` and `nametag` fields i
 not needed.
 Also if you use `'` for quotes, you need to escape them with `''`. The same applies for `"` and `""`. Example: `''%player_name%''` or `"'%player_name%'"`
 In order to use papi placeholders for target you need to use `''%target_player_name%''` in order to get `''%player_name%''` replaced with the target player's name.
+
+If you want to use `:` as a character in the condition or in the true/false value, you need to replace it with `?dp?`. Example: `<velocitab_rel_condition:%player_health% == %target_player_health%:Value?dp?True:Value?dp?False>`.
+
 # Example
 If you want to compare audience player's health with target player's health, you can use the following configuration:
 ```yaml

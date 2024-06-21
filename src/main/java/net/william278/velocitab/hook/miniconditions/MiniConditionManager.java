@@ -103,8 +103,8 @@ public class MiniConditionManager {
 
         condition = Placeholder.replaceInternal(condition, plugin, tabPlayer.get());
 
-        final String trueValue = parameters.get(1).replace("?lt;", "<").replace("?gt;", ">");
-        String falseValue = parameters.get(2).replace("?lt;", "<").replace("?gt;", ">");
+        final String trueValue = replaceString(parameters.get(1));
+        String falseValue = replaceString(parameters.get(2));
         final Matcher matcher = miniEscapeEndTags.matcher(falseValue);
         if (matcher.find()) {
             final String tag = matcher.group(1);
@@ -148,6 +148,12 @@ public class MiniConditionManager {
             final Optional<String> placeholderValue = tabPlayer.get().getCachedPlaceholderValue(text);
             return placeholderValue.orElse(text);
         });
+    }
+
+    @NotNull
+    private String replaceString(@NotNull String string) {
+        return string.replace("?lt;", "<").replace("?gt;", ">")
+                .replace("?dp?", ":");
     }
 
     @SuppressWarnings("unused")

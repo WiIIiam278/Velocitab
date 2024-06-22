@@ -117,7 +117,7 @@ public enum Placeholder {
     private final static Pattern CONDITIONAL_PATTERN = Pattern.compile("<velocitab_rel_condition:[^:]*:[^:]*:[^:]*>");
     private final static String DELIMITER = ":::";
     private final static String REL_SUBSTITUTE = "-REL-";
-    public final static Map<String, String> CONDITIONAL_SUBSTITUTES = Map.of(
+    public final static Map<String, String> SYMBOL_SUBSTITUTES = Map.of(
             "<", "-COND-1",
             ">", "-COND-2"
     );
@@ -164,9 +164,16 @@ public enum Placeholder {
         if (format.contains("<vel") && plugin.getFormatter().equals(Formatter.MINIMESSAGE)) {
             final Matcher velocitabRelationalMatcher = VELOCITAB_PATTERN.matcher(format);
             while (velocitabRelationalMatcher.find()) {
+                if (velocitabRelationalMatcher.group().contains("rel_condition")) {
+                    continue;
+                }
                 foundRelational = true;
-                final String relationalPlaceholder = velocitabRelationalMatcher.group();
-                final String fixedString = relationalPlaceholder.replace("%", REL_SUBSTITUTE);
+                final String relationalPlaceholder = velocitabRelationalMatcher.group().substring(1, velocitabRelationalMatcher.group().length() - 1);
+                String fixedString = relationalPlaceholder.replace("%", REL_SUBSTITUTE);
+                fixedString = MiniMessage.miniMessage().serialize(Formatter.LEGACY.deserialize(fixedString));
+                for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES.entrySet()) {
+                    fixedString = fixedString.replace(entry.getKey(), entry.getValue());
+                }
                 format = format.replace(relationalPlaceholder, fixedString);
             }
 
@@ -175,7 +182,7 @@ public enum Placeholder {
                 String conditionalPlaceholder = conditionalMatcher.group();
                 conditionalPlaceholder = conditionalPlaceholder.substring(1, conditionalPlaceholder.length() - 1);
                 String fixedString = conditionalPlaceholder;
-                for (Map.Entry<String, String> entry : CONDITIONAL_SUBSTITUTES.entrySet()) {
+                for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES.entrySet()) {
                     fixedString = fixedString.replace(entry.getKey(), entry.getValue());
                 }
                 fixedString = MiniMessage.miniMessage().serialize(Formatter.LEGACY.deserialize(fixedString));

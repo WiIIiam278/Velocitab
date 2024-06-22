@@ -87,7 +87,7 @@ public class MiniConditionManager {
             condition = condition.replace(entry.getKey()+entry.getKey(), entry.getKey());
         }
 
-        for (final Map.Entry<String, String> entry : Placeholder.CONDITIONAL_SUBSTITUTES.entrySet()) {
+        for (final Map.Entry<String, String> entry : Placeholder.SYMBOL_SUBSTITUTES.entrySet()) {
             condition = condition.replace(entry.getValue(), entry.getKey());
         }
 

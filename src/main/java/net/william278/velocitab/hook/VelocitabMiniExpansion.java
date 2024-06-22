@@ -31,6 +31,7 @@ import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.hook.miniconditions.MiniConditionManager;
 import net.william278.velocitab.player.TabPlayer;
 
+import java.util.Map;
 import java.util.Optional;
 
 public class VelocitabMiniExpansion {
@@ -96,7 +97,10 @@ public class VelocitabMiniExpansion {
             }
 
             final String value = queue.pop().value();
-            final String replaced = Placeholder.replaceInternal(value, plugin, targetPlayer);
+            String replaced = Placeholder.replaceInternal(value, plugin, targetPlayer);
+            for (final Map.Entry<String, String> entry : Placeholder.SYMBOL_SUBSTITUTES.entrySet()) {
+                replaced = replaced.replace(entry.getValue(), entry.getKey());
+            }
             return Tag.selfClosingInserting(MiniMessage.miniMessage().deserialize(replaced, MiniPlaceholders.getAudienceGlobalPlaceholders(audience)));
         }));
         builder.relationalPlaceholder("vanish", ((a1, otherAudience, queue, ctx) -> {

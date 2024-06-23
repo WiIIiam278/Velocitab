@@ -157,6 +157,11 @@ publishing {
 tasks {
     runVelocity {
         velocityVersion("${velocity_api_version}-SNAPSHOT")
+
+        downloadPlugins {
+            modrinth ("papiproxybridge", "1.6.1")
+            modrinth ("miniplaceholders", "2.2.4")
+        }
     }
 }
 

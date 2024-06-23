@@ -193,22 +193,17 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         return tabList.getHeader(this).thenCompose(header -> tabList.getFooter(this).thenAccept(footer -> {
             final boolean disabled = plugin.getSettings().isDisableHeaderFooterIfEmpty();
             if (disabled) {
-                if (!Component.empty().equals(header) && !header.equals(lastHeader)) {
+                if ((!Component.empty().equals(header) && !header.equals(lastHeader)) ||
+                        (!Component.empty().equals(footer) && !footer.equals(lastFooter))) {
                     lastHeader = header;
-                    player.sendPlayerListHeader(header);
-                }
-                if (!Component.empty().equals(footer) && !footer.equals(lastFooter)) {
                     lastFooter = footer;
-                    player.sendPlayerListFooter(footer);
+                    player.sendPlayerListHeaderAndFooter(header, footer);
                 }
             } else {
-                if (!header.equals(lastHeader)) {
+                if (!header.equals(lastHeader) || !footer.equals(lastFooter)) {
                     lastHeader = header;
-                    player.sendPlayerListHeader(header);
-                }
-                if (!footer.equals(lastFooter)) {
                     lastFooter = footer;
-                    player.sendPlayerListFooter(footer);
+                    player.sendPlayerListHeaderAndFooter(header, footer);
                 }
             }
         }));

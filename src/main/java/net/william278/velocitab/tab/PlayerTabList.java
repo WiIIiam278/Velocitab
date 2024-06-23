@@ -278,7 +278,7 @@ public class PlayerTabList {
                     .filter(entry -> !entry.getKey().equals(target.getUniqueId()))
                     .forEach(entry -> target.getTabList().removeEntry(entry.getKey()));
         } catch (Throwable error) {
-            plugin.log(Level.ERROR, "Failed to fix duplicate entries", error);
+            plugin.log(Level.ERROR, "Failed to fix duplicate entries for class " + target.getTabList().getClass().getName() , error);
         }
     }
 

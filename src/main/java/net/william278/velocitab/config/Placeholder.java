@@ -21,6 +21,7 @@ package net.william278.velocitab.config;
 
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+import it.unimi.dsi.fastutil.Pair;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
@@ -157,9 +158,19 @@ public enum Placeholder {
     }
 
     @NotNull
-    public static String replaceInternal(@NotNull String format, @NotNull Velocitab plugin,
-                                         @Nullable TabPlayer player) {
+    public static String replaceInternal(@NotNull String format, @NotNull Velocitab plugin, @Nullable TabPlayer player) {
+        final Pair<Boolean, String> result = processRelationalPlaceholders(format, plugin);
+        format = result.right();
+        format = replacePlaceholders(format, plugin, player);
 
+        if (result.left()) {
+            format = format.replace(REL_SUBSTITUTE, "%");
+        }
+
+        return format;
+    }
+
+    private static Pair<Boolean, String> processRelationalPlaceholders(@NotNull String format, @NotNull Velocitab plugin) {
         boolean foundRelational = false;
         if (format.contains("<vel") && plugin.getFormatter().equals(Formatter.MINIMESSAGE)) {
             final Matcher velocitabRelationalMatcher = VELOCITAB_PATTERN.matcher(format);
@@ -169,33 +180,32 @@ public enum Placeholder {
                 }
                 foundRelational = true;
                 final String relationalPlaceholder = velocitabRelationalMatcher.group().substring(1, velocitabRelationalMatcher.group().length() - 1);
-                String fixedString = relationalPlaceholder.replace("%", REL_SUBSTITUTE);
-                fixedString = MiniMessage.miniMessage().serialize(Formatter.LEGACY.deserialize(fixedString));
-                for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES.entrySet()) {
-                    fixedString = fixedString.replace(entry.getKey(), entry.getValue());
-                }
+                final String fixedString = replaceSymbols(relationalPlaceholder);
                 format = format.replace(relationalPlaceholder, fixedString);
             }
 
-            final Matcher conditionalMatcher = CONDITIONAL_PATTERN.matcher(format);
-            while (conditionalMatcher.find()) {
-                String conditionalPlaceholder = conditionalMatcher.group();
-                conditionalPlaceholder = conditionalPlaceholder.substring(1, conditionalPlaceholder.length() - 1);
-                String fixedString = conditionalPlaceholder;
-                for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES.entrySet()) {
-                    fixedString = fixedString.replace(entry.getKey(), entry.getValue());
-                }
-                fixedString = MiniMessage.miniMessage().serialize(Formatter.LEGACY.deserialize(fixedString));
-                fixedString = fixedString.replace("<", "?lt;").replace(">", "?gt;");
-                format = format.replace(conditionalPlaceholder, fixedString);
-            }
-
+            format = processConditionalPlaceholders(format);
         }
+        return Pair.of(foundRelational, format);
+    }
 
+    @NotNull
+    private static String processConditionalPlaceholders(@NotNull String format) {
+        final Matcher conditionalMatcher = CONDITIONAL_PATTERN.matcher(format);
+        while (conditionalMatcher.find()) {
+            String conditionalPlaceholder = conditionalMatcher.group();
+            conditionalPlaceholder = conditionalPlaceholder.substring(1, conditionalPlaceholder.length() - 1);
+            final String fixedString = replaceSymbols(conditionalPlaceholder);
+            format = format.replace(conditionalPlaceholder, fixedString);
+        }
+        return format;
+    }
+
+    @NotNull
+    private static String replacePlaceholders(@NotNull String format, @NotNull Velocitab plugin, @Nullable TabPlayer player) {
         for (Placeholder placeholder : values()) {
             Matcher matcher = placeholder.pattern.matcher(format);
             if (placeholder.parameterised) {
-                // Replace the placeholder with the result of the replacer function with the parameter
                 format = matcher.replaceAll(matchResult ->
                         Matcher.quoteReplacement(
                                 placeholder.replacer.apply(StringUtils.chop(matchResult.group().replace("%" + placeholder.name().toLowerCase(), "")
@@ -203,17 +213,20 @@ public enum Placeholder {
                                         , plugin, player)
                         ));
             } else {
-                // Replace the placeholder with the result of the replacer function
                 format = matcher.replaceAll(matchResult -> Matcher.quoteReplacement(placeholder.replacer.apply(null, plugin, player)));
             }
-
         }
-
-        if (foundRelational) {
-            format = format.replace(REL_SUBSTITUTE, "%");
-        }
-
         return format;
+    }
+
+    @NotNull
+    private static String replaceSymbols(@NotNull String input) {
+        String fixedString = input.replace("%", REL_SUBSTITUTE);
+        fixedString = MiniMessage.miniMessage().serialize(Formatter.LEGACY.deserialize(fixedString));
+        for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES.entrySet()) {
+            fixedString = fixedString.replace(entry.getKey(), entry.getValue());
+        }
+        return fixedString;
     }
 
     public static CompletableFuture<String> replace(@NotNull String format, @NotNull Velocitab plugin,

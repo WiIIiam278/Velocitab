@@ -9,6 +9,8 @@
 * 📛 [[Nametags]]
 * 📊 [[Sorting]]
 * ✍️ [[Placeholders]]
+* 🔗 [[Relational Placeholders]]
+* 🔀 [[Conditional Placeholders]]
 * ✨ [[Animations]]
 * 🖼️ [[Custom Logos]]
 * 🔗 [[Server Links]]

@@ -21,6 +21,7 @@ package net.william278.velocitab.hook.miniconditions;
 
 import com.google.common.collect.Lists;
 import com.velocitypowered.api.proxy.Player;
+import net.jodah.expiringmap.ExpiringMap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.william278.velocitab.Velocitab;
@@ -36,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,19 +46,24 @@ public class MiniConditionManager {
     private final Velocitab plugin;
     private final JexlEngine jexlEngine;
     private final JexlContext jexlContext;
-    private final Pattern targetPlaceholderPattern = Pattern.compile("%target_(\\w+)?%");
-    private final Pattern miniEscapeEndTags = Pattern.compile("</(\\w+)>");
+    private final Pattern targetPlaceholderPattern;
+    private final Pattern miniEscapeEndTags;
+    private final Map<String, Object> cachedExpressions;
 
     public MiniConditionManager(@NotNull Velocitab plugin) {
         this.plugin = plugin;
         this.jexlEngine = createJexlEngine();
         this.jexlContext = createJexlContext();
+        this.targetPlaceholderPattern = Pattern.compile("%target_(\\w+)?%");
+        this.miniEscapeEndTags = Pattern.compile("</(\\w+)>");
+        this.cachedExpressions = ExpiringMap.builder()
+                .expiration(5, TimeUnit.MINUTES)
+                .build();
     }
 
     @NotNull
     private JexlEngine createJexlEngine() {
-        return new JexlBuilder()
-                .create();
+        return new JexlBuilder().create();
     }
 
     @NotNull
@@ -67,30 +74,15 @@ public class MiniConditionManager {
         return jexlContext;
     }
 
-
     @NotNull
     public Component checkConditions(@NotNull Player target, @NotNull Player audience, @NotNull ArgumentQueue queue) {
-        final List<String> parameters = Lists.newArrayList();
-        while (queue.hasNext()) {
-            parameters.add(queue.pop().value());
-        }
-
+        final List<String> parameters = collectParameters(queue);
         if (parameters.isEmpty()) {
             plugin.getLogger().warn("Empty condition");
             return Component.empty();
         }
 
-        String condition = parameters.get(0);
-        condition = condition.replace("?lt;", "<").replace("?gt;", ">");
-        for (final Map.Entry<String, String> entry : MiniPlaceholdersHook.REPLACE.entrySet()) {
-            condition = condition.replace(entry.getValue(), entry.getKey());
-            condition = condition.replace(entry.getKey()+entry.getKey(), entry.getKey());
-        }
-
-        for (final Map.Entry<String, String> entry : Placeholder.SYMBOL_SUBSTITUTES.entrySet()) {
-            condition = condition.replace(entry.getValue(), entry.getKey());
-        }
-
+        String condition = decodeCondition(parameters.get(0));
         if (parameters.size() < 3) {
             plugin.getLogger().warn("Invalid condition: Missing true/false values for condition: {}", condition);
             return Component.empty();
@@ -102,23 +94,56 @@ public class MiniConditionManager {
         }
 
         condition = Placeholder.replaceInternal(condition, plugin, tabPlayer.get());
+        String falseValue = processFalseValue(parameters.get(2));
+        final String expression = buildExpression(condition);
+        return evaluateAndFormatCondition(expression, target, audience, parameters.get(1), falseValue);
+    }
 
-        final String trueValue = replaceString(parameters.get(1));
-        String falseValue = replaceString(parameters.get(2));
+    @NotNull
+    private List<String> collectParameters(@NotNull ArgumentQueue queue) {
+        final List<String> parameters = Lists.newArrayList();
+        while (queue.hasNext()) {
+            parameters.add(queue.pop().value());
+        }
+        return parameters;
+    }
+
+    @NotNull
+    private String decodeCondition(@NotNull String condition) {
+        condition = condition.replace("?lt;", "<").replace("?gt;", ">");
+        for (Map.Entry<String, String> entry : MiniPlaceholdersHook.REPLACE.entrySet()) {
+            condition = condition.replace(entry.getValue(), entry.getKey());
+            condition = condition.replace(entry.getKey() + entry.getKey(), entry.getKey());
+        }
+        for (Map.Entry<String, String> entry : Placeholder.SYMBOL_SUBSTITUTES.entrySet()) {
+            condition = condition.replace(entry.getValue(), entry.getKey());
+        }
+        return condition;
+    }
+
+    @NotNull
+    private String processFalseValue(@NotNull String falseValue) {
         final Matcher matcher = miniEscapeEndTags.matcher(falseValue);
         if (matcher.find()) {
             final String tag = matcher.group(1);
-            //remove the tag from the start of the string if it is at the start
             if (falseValue.startsWith("</" + tag + ">")) {
                 falseValue = falseValue.substring(tag.length() + 3);
             }
         }
-        final String expression = condition.replace("and", "&&").replace("or", "||")
+        return falseValue;
+    }
+
+    @NotNull
+    private String buildExpression(@NotNull String condition) {
+        return condition.replace("and", "&&").replace("or", "||")
                 .replace("AND", "&&").replace("OR", "||");
+    }
+
+    @NotNull
+    private Component evaluateAndFormatCondition(@NotNull String expression, @NotNull Player target, @NotNull Player audience, @NotNull String trueValue, @NotNull String falseValue) {
         final String targetString = parseTargetPlaceholders(expression, target);
         try {
-            final Object result = jexlEngine.createExpression(targetString).evaluate(jexlContext);
-
+            final Object result = evaluateExpression(targetString);
             if (result instanceof Boolean) {
                 final boolean boolResult = (Boolean) result;
                 final String value = boolResult ? trueValue : falseValue;
@@ -127,8 +152,12 @@ public class MiniConditionManager {
         } catch (Exception e) {
             plugin.getLogger().warn("Failed to evaluate condition: {} error: {}", expression, e.getMessage());
         }
-
         return Component.empty();
+    }
+
+    @NotNull
+    private Object evaluateExpression(@NotNull String expression) {
+        return cachedExpressions.computeIfAbsent(expression, key -> jexlEngine.createExpression(key).evaluate(jexlContext));
     }
 
     @NotNull
@@ -148,12 +177,6 @@ public class MiniConditionManager {
             final Optional<String> placeholderValue = tabPlayer.get().getCachedPlaceholderValue(text);
             return placeholderValue.orElse(text);
         });
-    }
-
-    @NotNull
-    private String replaceString(@NotNull String string) {
-        return string.replace("?lt;", "<").replace("?gt;", ">")
-                .replace("?dp?", ":");
     }
 
     @SuppressWarnings("unused")

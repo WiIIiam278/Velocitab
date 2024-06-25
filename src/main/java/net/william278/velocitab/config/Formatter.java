@@ -65,7 +65,6 @@ public enum Formatter {
     );
 
 
-
     /**
      * Name of the formatter
      */
@@ -106,10 +105,24 @@ public enum Formatter {
         return formatter.apply(text, player, tabPlayer, plugin);
     }
 
+    /**
+     * Formats the given text using a specific formatter.
+     *
+     * @param text   The text to format
+     * @param player The TabPlayer object representing the player
+     * @param plugin The Velocitab plugin instance
+     * @return The formatted Component object
+     * @throws NullPointerException if any of the parameters (text, player, plugin) is null
+     */
+    @NotNull
+    public Component format(@NotNull String text, @NotNull TabPlayer player, @NotNull Velocitab plugin) {
+        return formatter.apply(text, player, null, plugin);
+    }
+
     @NotNull
     public String formatLegacySymbols(@NotNull String text, @NotNull TabPlayer player, @NotNull Velocitab plugin) {
         return LegacyComponentSerializer.legacySection()
-                .serialize(format(text, player, null, plugin));
+                .serialize(format(text, player, plugin));
     }
 
     @NotNull

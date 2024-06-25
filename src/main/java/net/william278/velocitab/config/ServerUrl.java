@@ -46,7 +46,7 @@ public record ServerUrl(
                 (type) -> CompletableFuture.completedFuture(ServerLink.serverLink(type, url()))
         ).orElseGet(
                 () -> Placeholder.replace(label(), plugin, player)
-                        .thenApply(replaced -> plugin.getFormatter().format(replaced, player, null, plugin))
+                        .thenApply(replaced -> plugin.getFormatter().format(replaced, player,  plugin))
                         .thenApply(formatted -> ServerLink.serverLink(formatted, url()))
         );
     }

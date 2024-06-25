@@ -403,7 +403,7 @@ public class PlayerTabList {
                 plugin.log(Level.ERROR, "Failed to get display name for " + tabPlayer.getPlayer().getUsername());
                 return;
             }
-            final Component single = plugin.getFormatter().format(displayName, tabPlayer, null, plugin);
+            final Component single = plugin.getFormatter().format(displayName, tabPlayer, plugin);
 
             final boolean isVanished = plugin.getVanishManager().isVanished(tabPlayer.getPlayer().getUsername());
             final Set<TabPlayer> players = tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer);
@@ -463,7 +463,7 @@ public class PlayerTabList {
         final String header = player.getGroup().getHeader(player.getHeaderIndex());
 
         return Placeholder.replace(header, plugin, player)
-                .thenApply(replaced -> plugin.getFormatter().format(replaced, player, null, plugin));
+                .thenApply(replaced -> plugin.getFormatter().format(replaced, player, plugin));
     }
 
     // Get the component for the TAB list footer
@@ -471,7 +471,7 @@ public class PlayerTabList {
         final String footer = player.getGroup().getFooter(player.getFooterIndex());
 
         return Placeholder.replace(footer, plugin, player)
-                .thenApply(replaced -> plugin.getFormatter().format(replaced, player, null, plugin));
+                .thenApply(replaced -> plugin.getFormatter().format(replaced, player, plugin));
     }
 
     /**

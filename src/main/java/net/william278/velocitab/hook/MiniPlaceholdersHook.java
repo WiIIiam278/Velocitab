@@ -25,16 +25,38 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
 
 public class MiniPlaceholdersHook extends Hook {
 
+    public final static Map<String, String> REPLACE = Map.of(
+            "\"", "-q-",
+            "'", "-a-"
+    );
+
+    private final VelocitabMiniExpansion expansion;
+
     public MiniPlaceholdersHook(@NotNull Velocitab plugin) {
         super(plugin);
+        this.expansion = new VelocitabMiniExpansion(plugin);
+        expansion.registerExpansion();
     }
 
     @NotNull
-    public Component format(@NotNull String text, @NotNull Audience player) {
-        return MiniMessage.miniMessage().deserialize(text, MiniPlaceholders.getAudienceGlobalPlaceholders(player));
+    public Component format(@NotNull String text, @NotNull Audience player, @Nullable Audience viewer) {
+        for (Map.Entry<String, String> entry : REPLACE.entrySet()) {
+            text = text.replace(entry.getKey(), entry.getValue());
+        }
+        if (viewer == null) {
+            return MiniMessage.miniMessage().deserialize(text, MiniPlaceholders.getAudienceGlobalPlaceholders(player));
+        }
+        return MiniMessage.miniMessage().deserialize(text, MiniPlaceholders.getRelationalGlobalPlaceholders(player, viewer));
+    }
+
+    public void unregisterExpansion() {
+        expansion.unregisterExpansion();
     }
 
 }

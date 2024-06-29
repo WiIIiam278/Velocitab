@@ -70,32 +70,34 @@ public class TabGroups implements ConfigValidator {
                 .orElseThrow(() -> new IllegalStateException("No group with name " + name + " found"));
     }
 
-    @NotNull
     public Optional<Group> getGroup(@NotNull String name) {
         return groups.stream()
                 .filter(group -> group.name().equals(name))
                 .findFirst();
     }
 
-    @NotNull
-    public Group getGroupFromServer(@NotNull String server, @NotNull Velocitab plugin) {
+    public Optional<Group> getGroupFromServer(@NotNull String server, @NotNull Velocitab plugin) {
         final List<Group> groups = new ArrayList<>(this.groups);
         final Optional<Group> defaultGroup = getGroup("default");
-        // Ensure the default group is always checked last
-        if (defaultGroup.isPresent()) {
-            groups.remove(defaultGroup.get());
-            groups.add(defaultGroup.get());
-        } else {
+        if (defaultGroup.isEmpty()) {
             throw new IllegalStateException("No default group found");
         }
+        // Ensure the default group is always checked last
+        groups.remove(defaultGroup.get());
+        groups.add(defaultGroup.get());
         for (Group group : groups) {
             if (group.registeredServers(plugin, false)
                     .stream()
                     .anyMatch(s -> s.getServerInfo().getName().equalsIgnoreCase(server))) {
-                return group;
+                return Optional.of(group);
             }
         }
-        return getGroupFromName("default");
+
+        if (!plugin.getSettings().isFallbackEnabled()) {
+            return Optional.empty();
+        }
+
+        return defaultGroup;
     }
 
     public int getPosition(@NotNull Group group) {

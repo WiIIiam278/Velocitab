@@ -30,10 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Supplier;
 
 // Based on VPacketEvents PacketRegistration API
@@ -105,7 +102,7 @@ public final class PacketRegistration<P extends MinecraftPacket> {
                 try {
                     IntObjectMap<Supplier<?>> packetIdToSupplier = (IntObjectMap<Supplier<?>>) PACKET_REGISTRY$packetIdToSupplier.invoke(protocolRegistry);
                     Object2IntMap<Class<?>> packetClassToId = (Object2IntMap<Class<?>>) PACKET_REGISTRY$packetClassToId.invoke(protocolRegistry);
-                    packetIdToSupplier.keySet().stream()
+                    Set.copyOf(packetIdToSupplier.keySet()).stream()
                             .filter(supplier -> packetIdToSupplier.get(supplier).get().getClass().equals(packetClass))
                             .forEach(packetIdToSupplier::remove);
                     packetClassToId.values().intStream()

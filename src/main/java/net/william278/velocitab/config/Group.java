@@ -64,6 +64,11 @@ public record Group(
                 .get(Math.max(0, Math.min(index, footers.size() - 1))));
     }
 
+    public boolean containsServer(@NotNull Velocitab plugin, @NotNull String serverName) {
+        return registeredServers(plugin).stream()
+                .anyMatch(registeredServer -> registeredServer.getServerInfo().getName().equalsIgnoreCase(serverName));
+    }
+
     @NotNull
     public Set<RegisteredServer> registeredServers(@NotNull Velocitab plugin) {
         return registeredServers(plugin, true);

@@ -55,7 +55,34 @@ public class Protocol404Adapter extends TeamsPacketAdapter {
 
     public Protocol404Adapter(@NotNull Velocitab plugin, Set<ProtocolVersion> protocolVersions) {
         super(plugin, protocolVersions);
-        serializer = null;
+        serializer = GsonComponentSerializer.colorDownsamplingGson();
+    }
+
+    @Override
+    public void decode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet, @NotNull ProtocolVersion protocolVersion) {
+        packet.teamName(ProtocolUtils.readString(byteBuf));
+        UpdateTeamsPacket.UpdateMode mode = UpdateTeamsPacket.UpdateMode.byId(byteBuf.readByte());
+        packet.mode(mode);
+        if (mode == UpdateTeamsPacket.UpdateMode.REMOVE_TEAM) {
+            return;
+        }
+        if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.UPDATE_INFO) {
+            packet.displayName(readComponent(byteBuf));
+            packet.friendlyFlags(UpdateTeamsPacket.FriendlyFlag.fromBitMask(byteBuf.readByte()));
+            packet.nametagVisibility(UpdateTeamsPacket.NametagVisibility.byId(ProtocolUtils.readString(byteBuf)));
+            packet.collisionRule(UpdateTeamsPacket.CollisionRule.byId(ProtocolUtils.readString(byteBuf)));
+            packet.color(byteBuf.readByte());
+            packet.prefix(readComponent(byteBuf));
+            packet.suffix(readComponent(byteBuf));
+        }
+        if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.ADD_PLAYERS || mode == UpdateTeamsPacket.UpdateMode.REMOVE_PLAYERS) {
+            int count = ProtocolUtils.readVarInt(byteBuf);
+            List<String> entities = new ArrayList<>();
+            for (int i = 0; i < count; i++) {
+                entities.add(ProtocolUtils.readString(byteBuf));
+            }
+            packet.entities(entities);
+        }
     }
 
     @Override
@@ -84,8 +111,13 @@ public class Protocol404Adapter extends TeamsPacketAdapter {
         }
     }
 
-    protected void writeComponent(ByteBuf buf, Component component) {
+    protected void writeComponent(@NotNull ByteBuf buf, @NotNull Component component) {
         ProtocolUtils.writeString(buf, serializer.serialize(component));
+    }
+
+    @NotNull
+    protected Component readComponent(@NotNull ByteBuf buf) {
+        return serializer.deserialize(ProtocolUtils.readString(buf));
     }
 
 }

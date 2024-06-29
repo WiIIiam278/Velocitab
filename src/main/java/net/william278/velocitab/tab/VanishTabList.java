@@ -20,6 +20,8 @@
 package net.william278.velocitab.tab;
 
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.player.TabListEntry;
+import lombok.RequiredArgsConstructor;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
@@ -30,16 +32,11 @@ import java.util.UUID;
 /**
  * The VanishTabList handles the tab list for vanished players
  */
+@RequiredArgsConstructor
 public class VanishTabList {
 
     private final Velocitab plugin;
     private final PlayerTabList tabList;
-
-    public VanishTabList(Velocitab plugin, PlayerTabList tabList) {
-        this.plugin = plugin;
-        this.tabList = tabList;
-    }
-
 
     public void vanishPlayer(@NotNull TabPlayer tabPlayer) {
         tabList.getPlayers().values().forEach(p -> {
@@ -56,17 +53,17 @@ public class VanishTabList {
     public void unVanishPlayer(@NotNull TabPlayer tabPlayer) {
         final UUID uuid = tabPlayer.getPlayer().getUniqueId();
 
-        tabPlayer.getDisplayName(plugin).thenAccept(c -> tabList.getPlayers().values().forEach(p -> {
+        tabList.getPlayers().values().forEach(p -> {
             if (p.getPlayer().equals(tabPlayer.getPlayer())) {
                 return;
             }
 
             if (!p.getPlayer().getTabList().containsEntry(uuid)) {
-                p.getPlayer().getTabList().addEntry(tabList.createEntry(tabPlayer, p.getPlayer().getTabList(), c));
+                tabList.createEntry(tabPlayer, p.getPlayer().getTabList(), p);
             } else {
-                p.getPlayer().getTabList().getEntry(uuid).ifPresent(entry -> entry.setDisplayName(c));
+                tabList.updateDisplayName(tabPlayer, p);
             }
-        }));
+        });
 
     }
 
@@ -104,10 +101,9 @@ public class VanishTabList {
                 plugin.getScoreboardManager().ifPresent(s -> s.recalculateVanishForPlayer(tabPlayer, target, false));
             } else {
                 if (!player.getTabList().containsEntry(p.getUniqueId())) {
-                    tabList.createEntry(target, player.getTabList()).thenAccept(e -> {
-                        player.getTabList().addEntry(e);
-                        plugin.getScoreboardManager().ifPresent(s -> s.recalculateVanishForPlayer(tabPlayer, target, true));
-                    });
+                    final TabListEntry tabListEntry = tabList.createEntry(target, player.getTabList(), tabPlayer);
+                    player.getTabList().addEntry(tabListEntry);
+                    plugin.getScoreboardManager().ifPresent(s -> s.recalculateVanishForPlayer(tabPlayer, target, true));
                 }
             }
         });

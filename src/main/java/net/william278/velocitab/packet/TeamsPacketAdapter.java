@@ -38,6 +38,11 @@ public abstract class TeamsPacketAdapter {
 
     public abstract void encode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet, @NotNull ProtocolVersion protocolVersion);
 
-    protected abstract void writeComponent(ByteBuf buf, Component component);
+    public abstract void decode(@NotNull ByteBuf byteBuf, @NotNull UpdateTeamsPacket packet, @NotNull ProtocolVersion protocolVersion);
+
+    protected abstract void writeComponent(@NotNull ByteBuf buf, @NotNull Component component);
+
+    @NotNull
+    protected abstract Component readComponent(@NotNull ByteBuf buf);
 
 }

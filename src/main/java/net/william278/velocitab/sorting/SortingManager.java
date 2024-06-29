@@ -20,6 +20,7 @@
 package net.william278.velocitab.sorting;
 
 import com.google.common.collect.Lists;
+import com.velocitypowered.api.network.ProtocolVersion;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
@@ -49,7 +50,7 @@ public class SortingManager {
 
         return Placeholder.replace(String.join(DELIMITER, player.getGroup().sortingPlaceholders()), plugin, player)
                 .thenApply(s -> Arrays.asList(s.split(DELIMITER)))
-                .thenApply(v -> v.stream().map(this::adaptValue).collect(Collectors.toList()))
+                .thenApply(v -> v.stream().map(s -> adaptValue(s, player)).collect(Collectors.toList()))
                 .thenApply(v -> handleList(player, v));
     }
 
@@ -57,7 +58,7 @@ public class SortingManager {
     private String handleList(@NotNull TabPlayer player, @NotNull List<String> values) {
         String result = String.join("", values);
 
-        if (result.length() > 12) {
+        if (result.length() > 12 && isLongTeamNotAllowed(player)) {
             result = result.substring(0, 12);
         }
 
@@ -66,8 +67,13 @@ public class SortingManager {
         return result;
     }
 
+    private boolean isLongTeamNotAllowed(@NotNull TabPlayer player) {
+        return !player.getGroup().getPlayers(plugin, player).stream()
+                .allMatch(t -> t.getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_18));
+    }
+
     @NotNull
-    private String adaptValue(@NotNull String value) {
+    private String adaptValue(@NotNull String value, @NotNull TabPlayer player) {
         if (value.isEmpty()) {
             return "";
         }
@@ -78,7 +84,7 @@ public class SortingManager {
             return compressNumber(Integer.MAX_VALUE / 4d - parsed);
         }
 
-        if (value.length() > 6) {
+        if (value.length() > 6 && isLongTeamNotAllowed(player)) {
             return value.substring(0, 4);
         }
 

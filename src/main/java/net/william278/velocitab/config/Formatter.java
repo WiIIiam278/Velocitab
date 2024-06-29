@@ -25,8 +25,10 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
-import org.apache.commons.lang3.function.TriFunction;
+import net.william278.velocitab.util.QuadFunction;
+import net.william278.velocitab.util.SerializerUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
@@ -36,25 +38,32 @@ import java.util.function.Function;
 @SuppressWarnings("unused")
 public enum Formatter {
     MINEDOWN(
-            (text, player, plugin) -> new MineDown(text).toComponent(),
+            (text, player, viewer, plugin) -> new MineDown(text).toComponent(),
             MineDown::escape,
             "MineDown",
-            (text) -> new MineDown(text).toComponent()
+            (text) -> new MineDown(text).toComponent(),
+            (text) -> {
+                throw new UnsupportedOperationException("MineDown does not support serialization");
+            }
     ),
     MINIMESSAGE(
-            (text, player, plugin) -> plugin.getMiniPlaceholdersHook()
-                    .map(hook -> hook.format(text, player.getPlayer()))
+            (text, player, viewer, plugin) -> plugin.getMiniPlaceholdersHook()
+                    .filter(hook -> viewer != null)
+                    .map(hook -> hook.format(text, player.getPlayer(), viewer.getPlayer()))
                     .orElse(MiniMessage.miniMessage().deserialize(text)),
             (text) -> MiniMessage.miniMessage().escapeTags(text),
             "MiniMessage",
-            (text) -> MiniMessage.miniMessage().deserialize(text)
+            (text) -> MiniMessage.miniMessage().deserialize(text),
+            MiniMessage.miniMessage()::serialize
     ),
     LEGACY(
-            (text, player, plugin) -> LegacyComponentSerializer.legacyAmpersand().deserialize(text),
+            (text, player, viewer, plugin) -> SerializerUtil.LEGACY_SERIALIZER.deserialize(text),
             Function.identity(),
             "Legacy Text",
-            (text) -> LegacyComponentSerializer.legacyAmpersand().deserialize(text)
+            SerializerUtil.LEGACY_SERIALIZER::deserialize,
+            SerializerUtil.LEGACY_SERIALIZER::serialize
     );
+
 
     /**
      * Name of the formatter
@@ -64,24 +73,50 @@ public enum Formatter {
     /**
      * Function to apply formatting to a string
      */
-    private final TriFunction<String, TabPlayer, Velocitab, Component> formatter;
+    private final QuadFunction<String, TabPlayer, TabPlayer, Velocitab, Component> formatter;
     /**
      * Function to escape formatting characters in a string
      */
     private final Function<String, String> escaper;
     private final Function<String, Component> emptyFormatter;
+    private final Function<Component, String> serializer;
 
-    Formatter(@NotNull TriFunction<String, TabPlayer, Velocitab, Component> formatter, @NotNull Function<String, String> escaper,
-              @NotNull String name, @NotNull Function<String, Component> emptyFormatter) {
+    Formatter(@NotNull QuadFunction<String, TabPlayer, TabPlayer, Velocitab, Component> formatter, @NotNull Function<String, String> escaper,
+              @NotNull String name, @NotNull Function<String, Component> emptyFormatter, @NotNull Function<Component, String> serializer) {
         this.formatter = formatter;
         this.escaper = escaper;
         this.name = name;
         this.emptyFormatter = emptyFormatter;
+        this.serializer = serializer;
     }
 
+    /**
+     * Formats the given text using a specific formatter.
+     *
+     * @param text      The text to format
+     * @param player    The TabPlayer object representing the player
+     * @param tabPlayer The TabPlayer object representing the viewer (can be null)
+     * @param plugin    The Velocitab plugin instance
+     * @return The formatted Component object
+     * @throws NullPointerException if any of the parameters (text, player, plugin) is null
+     */
+    @NotNull
+    public Component format(@NotNull String text, @NotNull TabPlayer player, @Nullable TabPlayer tabPlayer, @NotNull Velocitab plugin) {
+        return formatter.apply(text, player, tabPlayer, plugin);
+    }
+
+    /**
+     * Formats the given text using a specific formatter.
+     *
+     * @param text   The text to format
+     * @param player The TabPlayer object representing the player
+     * @param plugin The Velocitab plugin instance
+     * @return The formatted Component object
+     * @throws NullPointerException if any of the parameters (text, player, plugin) is null
+     */
     @NotNull
     public Component format(@NotNull String text, @NotNull TabPlayer player, @NotNull Velocitab plugin) {
-        return formatter.apply(text, player, plugin);
+        return formatter.apply(text, player, null, plugin);
     }
 
     @NotNull
@@ -91,7 +126,7 @@ public enum Formatter {
     }
 
     @NotNull
-    public Component emptyFormat(@NotNull String text) {
+    public Component deserialize(@NotNull String text) {
         return emptyFormatter.apply(text);
     }
 
@@ -103,6 +138,11 @@ public enum Formatter {
     @NotNull
     public String getName() {
         return name;
+    }
+
+    @NotNull
+    public String serialize(@NotNull Component component) {
+        return serializer.apply(component);
     }
 
 }

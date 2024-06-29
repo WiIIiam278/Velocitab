@@ -20,6 +20,8 @@
 package net.william278.velocitab.packet;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.Player;
@@ -28,6 +30,7 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import com.velocitypowered.proxy.protocol.StateRegistry;
+import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
@@ -49,12 +52,14 @@ public class ScoreboardManager {
     private final Set<TeamsPacketAdapter> versions;
     private final Map<UUID, String> createdTeams;
     private final Map<String, Nametag> nametags;
+    private final Multimap<UUID, String> trackedTeams;
 
     public ScoreboardManager(@NotNull Velocitab velocitab) {
         this.plugin = velocitab;
         this.createdTeams = Maps.newConcurrentMap();
         this.nametags = Maps.newConcurrentMap();
         this.versions = Sets.newHashSet();
+        this.trackedTeams = Multimaps.synchronizedMultimap(Multimaps.newSetMultimap(Maps.newConcurrentMap(), Sets::newConcurrentHashSet));
         this.registerVersions();
     }
 
@@ -68,6 +73,10 @@ public class ScoreboardManager {
             throw new IllegalStateException("Failed to register Scoreboard Teams packets." +
                     " Velocitab probably does not (yet) support your Proxy version.", e);
         }
+    }
+
+    public boolean isInternalTeam(@NotNull String teamName) {
+        return nametags.containsKey(teamName);
     }
 
     @NotNull
@@ -88,6 +97,7 @@ public class ScoreboardManager {
             plugin.getTabList().getTabPlayer(player).ifPresent(tabPlayer ->
                     dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, team), tabPlayer)
             );
+            trackedTeams.removeAll(player.getUniqueId());
         }
     }
 
@@ -119,13 +129,15 @@ public class ScoreboardManager {
         final Set<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
 
         final Optional<Nametag> cachedTag = Optional.ofNullable(nametags.getOrDefault(teamName, null));
-        cachedTag.ifPresent(nametag -> {
-            final UpdateTeamsPacket packet = vanish ? UpdateTeamsPacket.removeTeam(plugin, teamName) :
-                    UpdateTeamsPacket.create(plugin, tabPlayer, teamName, nametag, player.getUsername());
-            siblings.forEach(server -> server.getPlayersConnected().stream().filter(p -> p != player)
-                    .filter(p -> vanish && !plugin.getVanishManager().canSee(p.getUsername(), player.getUsername()))
-                    .forEach(connected -> dispatchPacket(packet, connected)));
-        });
+        cachedTag.ifPresent(nametag -> siblings.forEach(server -> server.getPlayersConnected().stream().filter(p -> p != player)
+                .forEach(connected -> {
+                    if (vanish && !plugin.getVanishManager().canSee(connected.getUsername(), player.getUsername())) {
+                        dispatchPacket(UpdateTeamsPacket.removeTeam(plugin, teamName), connected);
+                        trackedTeams.remove(connected.getUniqueId(), teamName);
+                    } else {
+                        dispatchGroupCreatePacket(plugin, tabPlayer, teamName, nametag, player.getUsername());
+                    }
+                })));
     }
 
     /**
@@ -154,16 +166,12 @@ public class ScoreboardManager {
 
                 createdTeams.put(player.getUniqueId(), role);
                 this.nametags.put(role, newTag);
-                dispatchGroupPacket(
-                        UpdateTeamsPacket.create(plugin, tabPlayer, role, newTag, name),
-                        tabPlayer
-                );
+                dispatchGroupCreatePacket(plugin, tabPlayer, role, newTag, name);
             } else if (force || (this.nametags.containsKey(role) && !this.nametags.get(role).equals(newTag))) {
                 this.nametags.put(role, newTag);
-                dispatchGroupPacket(
-                        UpdateTeamsPacket.changeNametag(plugin, tabPlayer, role, newTag),
-                        tabPlayer
-                );
+                dispatchGroupChangePacket(plugin, tabPlayer, role, newTag);
+            } else {
+                updatePlaceholders(tabPlayer);
             }
         }).exceptionally(e -> {
             plugin.log(Level.ERROR, "Failed to update role for " + player.getUsername(), e);
@@ -171,6 +179,17 @@ public class ScoreboardManager {
         });
     }
 
+    public void updatePlaceholders(@NotNull TabPlayer tabPlayer) {
+        final Player player = tabPlayer.getPlayer();
+
+        final String role = createdTeams.get(player.getUniqueId());
+        if (role == null) {
+            return;
+        }
+
+        final Optional<Nametag> optionalNametag = Optional.ofNullable(nametags.get(role));
+        optionalNametag.ifPresent(nametag -> dispatchGroupChangePacket(plugin, tabPlayer, role, nametag));
+    }
 
     public void resendAllTeams(@NotNull TabPlayer tabPlayer) {
         if (!plugin.getSettings().isSendScoreboardPackets()) {
@@ -196,7 +215,6 @@ public class ScoreboardManager {
             }
 
             final Optional<TabPlayer> optionalTabPlayer = plugin.getTabList().getTabPlayer(p);
-
             if (optionalTabPlayer.isEmpty()) {
                 return;
             }
@@ -212,11 +230,66 @@ public class ScoreboardManager {
             // Send packet
             final Nametag tag = nametags.get(role);
             if (tag != null) {
-                final UpdateTeamsPacket packet = UpdateTeamsPacket.create(
-                        plugin, targetTabPlayer, role, tag, p.getUsername()
-                );
-                dispatchPacket(packet, player);
+                dispatchCreatePacket(plugin, targetTabPlayer, role, tag, tabPlayer, p.getUsername());
             }
+        });
+    }
+
+    private void dispatchGroupCreatePacket(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer,
+                                           @NotNull String teamName, @NotNull Nametag nametag,
+                                           @NotNull String... teamMembers) {
+        tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer).forEach(viewer -> {
+            if (!viewer.getPlayer().isActive()) {
+                return;
+            }
+
+
+            dispatchCreatePacket(plugin, tabPlayer, teamName, nametag, viewer, teamMembers);
+        });
+    }
+
+    private void dispatchCreatePacket(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer,
+                                      @NotNull String teamName, @NotNull Nametag nametag,
+                                      @NotNull TabPlayer viewer,
+                                      @NotNull String... teamMembers) {
+        final boolean canSee = plugin.getVanishManager().canSee(viewer.getPlayer().getUsername(), tabPlayer.getPlayer().getUsername());
+        if (!canSee) {
+            return;
+        }
+
+        final UpdateTeamsPacket packet = UpdateTeamsPacket.create(plugin, tabPlayer, teamName, nametag, viewer, teamMembers);
+        trackedTeams.put(viewer.getPlayer().getUniqueId(), teamName);
+        dispatchPacket(packet, viewer.getPlayer());
+    }
+
+    private void dispatchGroupChangePacket(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer,
+                                           @NotNull String teamName,
+                                           @NotNull Nametag nametag) {
+        tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer).forEach(viewer -> {
+            if (viewer == tabPlayer || !viewer.getPlayer().isActive()) {
+                return;
+            }
+
+            final boolean canSee = plugin.getVanishManager().canSee(viewer.getPlayer().getUsername(), tabPlayer.getPlayer().getUsername());
+            if (!canSee) {
+                return;
+            }
+
+            // Prevent sending change nametag packets to players who are not tracking the team
+            if (!trackedTeams.containsEntry(viewer.getPlayer().getUniqueId(), teamName)) {
+                return;
+            }
+
+            final UpdateTeamsPacket packet = UpdateTeamsPacket.changeNametag(plugin, tabPlayer, teamName, viewer, nametag);
+            final Component prefix = packet.prefix();
+            final Component suffix = packet.suffix();
+            final Optional<Component[]> cached = tabPlayer.getRelationalNametag(viewer.getPlayer().getUniqueId());
+            // Skip if the nametag is the same as the cached one
+            if (cached.isPresent() && cached.get()[0].equals(prefix) && cached.get()[1].equals(suffix)) {
+                return;
+            }
+            tabPlayer.setRelationalNametag(viewer.getPlayer().getUniqueId(), prefix, suffix);
+            dispatchPacket(packet, viewer.getPlayer());
         });
     }
 
@@ -235,10 +308,14 @@ public class ScoreboardManager {
     }
 
     private void dispatchGroupPacket(@NotNull UpdateTeamsPacket packet, @NotNull Group group) {
+        final boolean isRemove = packet.isRemoveTeam();
         group.registeredServers(plugin).forEach(server -> server.getPlayersConnected().forEach(connected -> {
             try {
                 final ConnectedPlayer connectedPlayer = (ConnectedPlayer) connected;
                 connectedPlayer.getConnection().write(packet);
+                if (isRemove) {
+                    trackedTeams.remove(connected.getUniqueId(), packet.teamName());
+                }
             } catch (Throwable e) {
                 plugin.log(Level.ERROR, "Failed to dispatch packet (unsupported client or server version)", e);
             }
@@ -274,18 +351,18 @@ public class ScoreboardManager {
                     .direction(ProtocolUtils.Direction.CLIENTBOUND)
                     .packetSupplier(() -> new UpdateTeamsPacket(plugin))
                     .stateRegistry(StateRegistry.PLAY)
-                    .mapping(0x3E, MINECRAFT_1_8, true)
-                    .mapping(0x44, MINECRAFT_1_12_2, true)
-                    .mapping(0x47, MINECRAFT_1_13, true)
-                    .mapping(0x4B, MINECRAFT_1_14, true)
-                    .mapping(0x4C, MINECRAFT_1_15, true)
-                    .mapping(0x55, MINECRAFT_1_17, true)
-                    .mapping(0x58, MINECRAFT_1_19_1, true)
-                    .mapping(0x56, MINECRAFT_1_19_3, true)
-                    .mapping(0x5A, MINECRAFT_1_19_4, true)
-                    .mapping(0x5C, MINECRAFT_1_20_2, true)
-                    .mapping(0x5E, MINECRAFT_1_20_3, true)
-                    .mapping(0x60, MINECRAFT_1_20_5, true);
+                    .mapping(0x3E, MINECRAFT_1_8, false)
+                    .mapping(0x44, MINECRAFT_1_12_2, false)
+                    .mapping(0x47, MINECRAFT_1_13, false)
+                    .mapping(0x4B, MINECRAFT_1_14, false)
+                    .mapping(0x4C, MINECRAFT_1_15, false)
+                    .mapping(0x55, MINECRAFT_1_17, false)
+                    .mapping(0x58, MINECRAFT_1_19_1, false)
+                    .mapping(0x56, MINECRAFT_1_19_3, false)
+                    .mapping(0x5A, MINECRAFT_1_19_4, false)
+                    .mapping(0x5C, MINECRAFT_1_20_2, false)
+                    .mapping(0x5E, MINECRAFT_1_20_3, false)
+                    .mapping(0x60, MINECRAFT_1_20_5, false);
             packetRegistration.register();
         } catch (Throwable e) {
             plugin.log(Level.ERROR, "Failed to register UpdateTeamsPacket", e);
@@ -320,14 +397,12 @@ public class ScoreboardManager {
 
         final UpdateTeamsPacket removeTeam = UpdateTeamsPacket.removeTeam(plugin, team);
         dispatchPacket(removeTeam, player);
+        trackedTeams.remove(player.getUniqueId(), team);
 
         if (canSee) {
             final Nametag tag = nametags.get(team);
             if (tag != null) {
-                final UpdateTeamsPacket addTeam = UpdateTeamsPacket.create(
-                        plugin, tabPlayer, team, tag, target.getPlayer().getUsername()
-                );
-                dispatchPacket(addTeam, player);
+                dispatchCreatePacket(plugin, tabPlayer, team, tag, target, target.getPlayer().getUsername());
             }
         }
     }

@@ -15,6 +15,8 @@ Please click through to the topic you wish to read about.
 * 📛 [[Nametags]]
 * 📊 [[Sorting]]
 * ✍️ [[Placeholders]]
+* 🔗 [[Relational Placeholders]]
+* 🔀 [[Conditional Placeholders]]
 * ✨ [[Animations]]
 * 🖼️ [[Custom Logos]]
 * 🔗 [[Server Links]]

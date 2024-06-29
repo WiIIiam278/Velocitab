@@ -55,6 +55,7 @@ public interface LoggerProvider {
                     getLogger().warn(message);
                 }
             }
+            case DEBUG -> getLogger().debug(message);
             case INFO -> getLogger().info(message);
         }
     }

@@ -64,21 +64,29 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         this.plugin = plugin;
     }
 
+    public boolean isRemoveTeam() {
+        return mode == UpdateMode.REMOVE_TEAM;
+    }
+
+    public boolean hasEntities() {
+        return entities != null && !entities.isEmpty();
+    }
+
     @NotNull
     protected static UpdateTeamsPacket create(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer,
-                                              @NotNull String teamName,
-                                              @NotNull Nametag nametag,
+                                              @NotNull String teamName, @NotNull Nametag nametag,
+                                              @NotNull TabPlayer viewer,
                                               @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
-                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .teamName(teamName)
                 .mode(UpdateMode.CREATE_TEAM)
                 .displayName(Component.empty())
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(tabPlayer.getGroup().collisions() ? CollisionRule.ALWAYS : CollisionRule.NEVER)
                 .color(getLastColor(tabPlayer, nametag.prefix(), plugin))
-                .prefix(nametag.getPrefixComponent(plugin, tabPlayer))
-                .suffix(nametag.getSuffixComponent(plugin, tabPlayer))
+                .prefix(nametag.getPrefixComponent(plugin, tabPlayer, viewer))
+                .suffix(nametag.getSuffixComponent(plugin, tabPlayer, viewer))
                 .entities(Arrays.asList(teamMembers));
     }
 
@@ -92,25 +100,25 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @NotNull
     protected static UpdateTeamsPacket changeNametag(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer,
-                                                     @NotNull String teamName,
+                                                     @NotNull String teamName, @NotNull TabPlayer viewer,
                                                      @NotNull Nametag nametag) {
         return new UpdateTeamsPacket(plugin)
-                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .teamName(teamName)
                 .mode(UpdateMode.UPDATE_INFO)
                 .displayName(Component.empty())
                 .friendlyFlags(List.of(FriendlyFlag.CAN_HURT_FRIENDLY))
                 .nametagVisibility(isNametagPresent(nametag, plugin) ? NametagVisibility.ALWAYS : NametagVisibility.NEVER)
                 .collisionRule(tabPlayer.getGroup().collisions() ? CollisionRule.ALWAYS : CollisionRule.NEVER)
                 .color(getLastColor(tabPlayer, nametag.prefix(), plugin))
-                .prefix(nametag.getPrefixComponent(plugin, tabPlayer))
-                .suffix(nametag.getSuffixComponent(plugin, tabPlayer));
+                .prefix(nametag.getPrefixComponent(plugin, tabPlayer, viewer))
+                .suffix(nametag.getSuffixComponent(plugin, tabPlayer, viewer));
     }
 
     @NotNull
     protected static UpdateTeamsPacket addToTeam(@NotNull Velocitab plugin, @NotNull String teamName,
                                                  @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
-                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .teamName(teamName)
                 .mode(UpdateMode.ADD_PLAYERS)
                 .entities(Arrays.asList(teamMembers));
     }
@@ -119,7 +127,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     protected static UpdateTeamsPacket removeFromTeam(@NotNull Velocitab plugin, @NotNull String teamName,
                                                       @NotNull String... teamMembers) {
         return new UpdateTeamsPacket(plugin)
-                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .teamName(teamName)
                 .mode(UpdateMode.REMOVE_PLAYERS)
                 .entities(Arrays.asList(teamMembers));
     }
@@ -127,7 +135,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
     @NotNull
     protected static UpdateTeamsPacket removeTeam(@NotNull Velocitab plugin, @NotNull String teamName) {
         return new UpdateTeamsPacket(plugin)
-                .teamName(teamName.length() > 16 ? teamName.substring(0, 16) : teamName)
+                .teamName(teamName)
                 .mode(UpdateMode.REMOVE_TEAM);
     }
 
@@ -144,10 +152,10 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         text = text + "z";
 
         //serialize & deserialize to downsample rgb to legacy
-        Component component = plugin.getFormatter().emptyFormat(text);
+        final Component component = plugin.getFormatter().deserialize(text);
         text = LegacyComponentSerializer.legacyAmpersand().serialize(component);
 
-        int lastFormatIndex = text.lastIndexOf("&");
+        final int lastFormatIndex = text.lastIndexOf("&");
         if (lastFormatIndex == -1 || lastFormatIndex == text.length() - 1) {
             return 15;
         }
@@ -200,16 +208,21 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @Override
     public void decode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
-        throw new UnsupportedOperationException("Operation not supported");
+        final Optional<ScoreboardManager> optionalManager = plugin.getScoreboardManager();
+        if (optionalManager.isEmpty()) {
+            return;
+        }
+
+        optionalManager.get().getPacketAdapter(protocolVersion).decode(byteBuf, this, protocolVersion);
     }
 
     @Override
     public void encode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
         final Optional<ScoreboardManager> optionalManager = plugin.getScoreboardManager();
-
         if (optionalManager.isEmpty()) {
             return;
         }
+
         optionalManager.get().getPacketAdapter(protocolVersion).encode(byteBuf, this, protocolVersion);
     }
 

@@ -58,8 +58,13 @@ public class Protocol735Adapter extends Protocol404Adapter {
     }
 
     @Override
-    protected void writeComponent(ByteBuf buf, Component component) {
+    protected void writeComponent(@NotNull ByteBuf buf, @NotNull Component component) {
         ProtocolUtils.writeString(buf, serializer.serialize(component));
+    }
+
+    @NotNull
+    protected Component readComponent(@NotNull ByteBuf buf) {
+        return serializer.deserialize(ProtocolUtils.readString(buf));
     }
 
 }

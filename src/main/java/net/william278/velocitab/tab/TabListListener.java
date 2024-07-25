@@ -168,8 +168,9 @@ public class TabListListener {
             if (player.getCurrentServer().isPresent()) {
                 return;
             }
-            tabList.removePlayer(player);
-        }).delay(500, TimeUnit.MILLISECONDS).schedule();
+            System.out.println("Force removing player " + player.getUsername() + " from the tab list");
+            tabList.removeTablistUUID(event.getPlayer().getUniqueId());
+        }).delay(750, TimeUnit.MILLISECONDS).schedule();
     }
 
     @Subscribe

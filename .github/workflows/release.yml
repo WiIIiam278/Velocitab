@@ -27,6 +27,22 @@ jobs:
         env:
           RELEASES_MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           RELEASES_MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+      - name: 'Publish to William278.net 🚀'
+        uses: WiIIiam278/bones-publish-action@v1
+        with:
+          api-key: ${{ secrets.BONES_API_KEY }}
+          project: 'velocitab'
+          channel: 'release'
+          version: ${{ github.event.release.tag_name }}
+          changelog: ${{ github.event.release.body }}
+          distro-names: |
+            velocity
+          distro-groups: |
+            velocity
+          distro-descriptions: |
+            Velocity
+          files: |
+            target/Velocitab-${{ github.event.release.tag_name }}.jar
       - name: 'Publish to Modrinth & Hangar 🚰'
         uses: WiIIiam278/mc-publish@hangar
         with:
@@ -97,8 +113,3 @@ jobs:
             1.20.6
             1.21
           java: 17
-      - name: 'Upload GitHub Artifacts 📦'
-        uses: actions/upload-artifact@v4
-        with:
-          name: Velocitab
-          path: target/Velocitab-*.jar

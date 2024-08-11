@@ -59,8 +59,7 @@ processResources {
     tokenMap.merge("grgit",'',(s, s2) -> s)
     filesMatching(['**/*.json', '**/*.yml']) {
         filter ReplaceTokens as Class, beginToken: '${', endToken: '}',
-                tokens: rootProject.ext.properties
-        tokens: tokenMap
+                tokens: tokenMap
     }
 }
 

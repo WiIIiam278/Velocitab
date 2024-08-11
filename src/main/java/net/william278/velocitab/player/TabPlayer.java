@@ -161,16 +161,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
             displayName = displayName.replace(placeholder, value);
         }
 
-        displayName = displayName.replace("\n", "");
-        final boolean isMiniMessage = plugin.getFormatter().equals(Formatter.MINIMESSAGE);
-        if (isMiniMessage) {
-            displayName = Formatter.LEGACY.serialize(MiniMessage.miniMessage().deserialize(displayName));
-        }
         displayName = Placeholder.replaceInternal(displayName, plugin, this);
-        if (isMiniMessage) {
-            displayName = MiniMessage.miniMessage().serialize(Formatter.LEGACY.deserialize(displayName))
-                    .replace("\\<", "<");
-        }
         return lastDisplayName = displayName;
     }
 

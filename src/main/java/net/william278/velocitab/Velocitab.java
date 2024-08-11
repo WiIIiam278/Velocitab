@@ -114,7 +114,6 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
 
     @Subscribe
     public void onProxyShutdown(@NotNull ProxyShutdownEvent event) {
-//        server.getScheduler().tasksByPlugin(this).forEach(ScheduledTask::cancel);
         disableScoreboardManager();
         getLuckPermsHook().ifPresent(LuckPermsHook::closeEvent);
         getMiniPlaceholdersHook().ifPresent(MiniPlaceholdersHook::unregisterExpansion);

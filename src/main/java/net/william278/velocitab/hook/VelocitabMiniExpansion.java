@@ -26,12 +26,13 @@ import io.github.miniplaceholders.api.utils.TagsUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.hook.miniconditions.MiniConditionManager;
 import net.william278.velocitab.player.TabPlayer;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
 import java.util.Optional;
 
 public class VelocitabMiniExpansion {
@@ -96,11 +97,9 @@ public class VelocitabMiniExpansion {
                 return TagsUtils.EMPTY_TAG;
             }
 
-            final String value = queue.pop().value();
+            final String value = fixValue(popAll(queue));
             String replaced = Placeholder.replaceInternal(value, plugin, targetPlayer);
-            for (final Map.Entry<String, String> entry : Placeholder.SYMBOL_SUBSTITUTES.entrySet()) {
-                replaced = replaced.replace(entry.getValue(), entry.getKey());
-            }
+
             return Tag.selfClosingInserting(MiniMessage.miniMessage().deserialize(replaced, MiniPlaceholders.getAudienceGlobalPlaceholders(audience)));
         }));
         builder.relationalPlaceholder("vanish", ((a1, otherAudience, queue, ctx) -> {
@@ -120,6 +119,25 @@ public class VelocitabMiniExpansion {
 
     public void unregisterExpansion() {
         expansion.unregister();
+    }
+
+    @NotNull
+    private String popAll(@NotNull ArgumentQueue queue) {
+        final StringBuilder builder = new StringBuilder();
+        int i = 0;
+        while (queue.hasNext()) {
+            if (i > 0) {
+                builder.append(":");
+            }
+            builder.append(queue.pop().value());
+            i++;
+        }
+        return builder.toString();
+    }
+
+    @NotNull
+    private String fixValue(@NotNull String value) {
+        return value.replace("*LESS2*", "<").replace("*GREATER2*", ">");
     }
 
 }

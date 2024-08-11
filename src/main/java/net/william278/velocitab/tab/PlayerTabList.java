@@ -286,6 +286,16 @@ public class PlayerTabList {
         removePlayer(target, null);
     }
 
+    /**
+     * Remove a player from the tab list
+     * @param uuid
+     */
+    protected void removeTablistUUID(@NotNull UUID uuid) {
+        getPlayers().forEach((key, value) -> {
+            value.getPlayer().getTabList().getEntry(uuid).ifPresent(entry -> value.getPlayer().getTabList().removeEntry(uuid));
+        });
+    }
+
     protected void removePlayer(@NotNull Player target, @Nullable RegisteredServer server) {
         final UUID uuid = target.getUniqueId();
         plugin.getServer().getAllPlayers().forEach(player -> player.getTabList().removeEntry(uuid));

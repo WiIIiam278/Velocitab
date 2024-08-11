@@ -11,9 +11,9 @@ To add additional frames of animation to a header format for a [server group](se
 
 ```yaml
 headers:
-  - '&rainbow&Running Velocitab by William278'
-  - '&rainbow:10&Running Velocitab by William278'
-  - '&rainbow:20&Running Velocitab by William278'
+  - '<rainbow>Running Velocitab by William278 & AlexDev_</rainbow>'
+  - '<rainbow:10>Running Velocitab by William278 & AlexDev_</rainbow>'
+  - '<rainbow:20>Running Velocitab by William278 & AlexDev_</rainbow>'
 ```
 </details>
 
@@ -35,47 +35,47 @@ Wondering how to make something like the above example? Here's how! This example
 Please note this is not a complete tab_groups file; you will need to add the relevant sections to the correct part in your own Velocitab `tab_groups.yml`. 
 ```yaml
 headers:
-  - '&rainbow&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:2&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:4&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:6&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:8&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:10&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:12&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:14&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:16&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:18&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:20&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:22&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:24&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:26&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:28&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:30&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:32&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:34&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:36&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:38&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:40&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:42&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:44&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:46&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:48&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:50&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:52&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:54&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:56&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:58&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
-  - '&rainbow:60&Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n'
+  - '<rainbow>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:2>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:2>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:2>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:2>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:2>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:2>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:2>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:2>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:18>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:20>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:22>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:24>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:26>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:28>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:30>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:32>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:34>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:36>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:38>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:40>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:42>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:44>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:46>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:48>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:50>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:52>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:54>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:56>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:58>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
+  - '<rainbow:60>Velocitab ⭐ A super-simple (sorted!) Velocity TAB menu plugin\n</rainbow>'
 footers:
   - |
-    \n&7For Velocity proxy servers:
-    &#1bd96a-#6cffa9&https://modrinth.com/plugin/velocitab
-    &#1bd96a-#6cffa9&https://william278.net/project/veloictab'
-format: '&#999-#fff&[%server%] &f%username%'
+    \n<gray>For Velocity proxy servers:</gray>
+    <gradient:#1bd96a:#6cffa9>https://modrinth.com/plugin/velocitab</gradient>
+    <gradient:#1bd96a:#6cffa9>https://william278.net/project/veloictab</gradient>'
+format: '<gradient:#999:#fff>[%server%] &f%username%</gradient>'
 header_footer_update_rate: 200
 ```
 In config.yml
 ```yaml
-formatter: MINEDOWN
+formatter: MINIMESSAGE
 ```
 </details>

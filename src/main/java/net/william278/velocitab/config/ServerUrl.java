@@ -19,7 +19,6 @@
 
 package net.william278.velocitab.config;
 
-import com.google.common.collect.Lists;
 import com.velocitypowered.api.util.ServerLink;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;

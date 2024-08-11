@@ -17,9 +17,9 @@ rate to use for the group.
 
 ```yaml
   headers:
-    - '&rainbow&Running Velocitab by William278'
+    - '<rainbow>Running Velocitab by William278 & AlexDev_</rainbow>'
   footers:
-    - '[There are currently %players_online%/%max_players_online% players online](gray)'
+    - '<gray>There are currently %players_online%/%max_players_online% players online</gray>'
 ```
 
 </details>
@@ -35,7 +35,7 @@ information.
 <summary>Example of format</summary>
 
 ```yaml
-  format: '&7[%server%] &f%prefix%%username%'
+  format: '<gray>[%server%] %prefix%%username%</gray>'
 ```
 
 </details>
@@ -51,8 +51,8 @@ Player formats may only utilize one line.
 
 ```yaml
   nametag:
-    prefix: '&f%prefix%'
-    suffix: '&f%suffix%'
+    prefix: '<white>%prefix%</white>'
+    suffix: '<white>%suffix%</white>'
 ```
 
 </details>
@@ -148,10 +148,10 @@ placeholders in the TAB list will update. The default is 1000 milliseconds (1 se
 groups:
   - name: lobbies
     headers:
-      - '&rainbow&Running Velocitab by William278 on Lobbies!'
+      - '<rainbow:!2>Running Velocitab by William278 & AlexDev_ on Lobbies!</rainbow>'
     footers:
-      - '[There are currently %players_online%/%max_players_online% players online](gray)'
-    format: '&7[%server%] &f%prefix%%username%'
+      - '<gray>There are currently %players_online%/%max_players_online% players online</gray>'
+    format: '<gray>[%server%] %prefix%%username%</gray>'
     servers:
       - lobby
       - hub
@@ -165,10 +165,10 @@ groups:
     placeholder_update_rate: 1000
   - name: creative
     headers:
-      - '&rainbow&Running Velocitab by William278 on Creative!'
+      - '<rainbow:!2>Running Velocitab by William278 & AlexDev_ on Creative!</rainbow>'
     footers:
-      - '[There are currently %players_online%/%max_players_online% players online](gray)'
-    format: '&7[%server%] &f%prefix%%username%'
+      - '<gray>There are currently %players_online%/%max_players_online% players online</gray>'
+    format: '<gray>[%server%] %prefix%%username%</gray>'
     servers:
       - creative
     sorting_placeholders:
@@ -178,10 +178,10 @@ groups:
     placeholder_update_rate: 1000
   - name: survival
     headers:
-      - '&rainbow&Running Velocitab by William278 on Survival!'
+      - '<rainbow:!2>Running Velocitab by William278 & AlexDev_ on Survival!</rainbow>'
     footers:
-      - '[There are currently %players_online%/%max_players_online% players online](gray)'
-    format: '&7[%server%] &f%prefix%%username%'
+      - '<gray>There are currently %players_online%/%max_players_online% players online</gray>'
+    format: '<gray>[%server%] %prefix%%username%</gray>'
     servers:
       - survival
     sorting_placeholders:

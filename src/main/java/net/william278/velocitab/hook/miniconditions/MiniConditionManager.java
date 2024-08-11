@@ -26,7 +26,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Placeholder;
-import net.william278.velocitab.hook.MiniPlaceholdersHook;
 import net.william278.velocitab.player.TabPlayer;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
@@ -42,6 +41,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MiniConditionManager {
+
+    public final static Map<String, String> REPLACE = Map.of(
+            "\"", "-q-",
+            "'", "-a-"
+    );
+
+    public final static Map<String, String> REPLACE_2 = Map.of(
+            "*LESS3*", "<",
+            "*GREATER3*",">",
+            "*LESS2*", "<",
+            "*GREATER2*", ">"
+            );
+
+    private final static Map<String, String> REPLACE_3 = Map.of(
+            "?dp?", ":"
+    );
 
     private final Velocitab plugin;
     private final JexlEngine jexlEngine;
@@ -82,6 +97,7 @@ public class MiniConditionManager {
             return Component.empty();
         }
 
+
         String condition = decodeCondition(parameters.get(0));
         if (parameters.size() < 3) {
             plugin.getLogger().warn("Invalid condition: Missing true/false values for condition: {}", condition);
@@ -93,8 +109,9 @@ public class MiniConditionManager {
             return Component.empty();
         }
 
+
         condition = Placeholder.replaceInternal(condition, plugin, tabPlayer.get());
-        String falseValue = processFalseValue(parameters.get(2));
+        final String falseValue = processFalseValue(parameters.get(2));
         final String expression = buildExpression(condition);
         return evaluateAndFormatCondition(expression, target, audience, parameters.get(1), falseValue);
     }
@@ -103,19 +120,25 @@ public class MiniConditionManager {
     private List<String> collectParameters(@NotNull ArgumentQueue queue) {
         final List<String> parameters = Lists.newArrayList();
         while (queue.hasNext()) {
-            parameters.add(queue.pop().value());
+            String param = queue.pop().value();
+            for (Map.Entry<String, String> entry : REPLACE_2.entrySet()) {
+                param = param.replace(entry.getKey(), entry.getValue());
+            }
+            for (Map.Entry<String, String> entry : REPLACE_3.entrySet()) {
+                param = param.replace(entry.getKey(), entry.getValue());
+            }
+            parameters.add(param);
         }
         return parameters;
     }
 
     @NotNull
     private String decodeCondition(@NotNull String condition) {
-        condition = condition.replace("?lt;", "<").replace("?gt;", ">");
-        for (Map.Entry<String, String> entry : MiniPlaceholdersHook.REPLACE.entrySet()) {
+        for (Map.Entry<String, String> entry : REPLACE.entrySet()) {
             condition = condition.replace(entry.getValue(), entry.getKey());
             condition = condition.replace(entry.getKey() + entry.getKey(), entry.getKey());
         }
-        for (Map.Entry<String, String> entry : Placeholder.SYMBOL_SUBSTITUTES.entrySet()) {
+        for (Map.Entry<String, String> entry : REPLACE_2.entrySet()) {
             condition = condition.replace(entry.getValue(), entry.getKey());
         }
         return condition;

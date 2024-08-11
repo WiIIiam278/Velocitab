@@ -41,3 +41,12 @@ Nametags must adhere to the following restrictions:
   * Velocitab determines which color to use here based on the last color format used in the configured prefix (displayed before their name), downsampled from RGB if necessary.
   * To control this, simply set the prefix format to end with a valid [team color](https://wiki.vg/Text_formatting#Colors) you want to use (e.g. `&4` for dark_red in Minedown formatting).
 * Nametags cannot contain newlines (must be on a single line).
+
+## Bypassing formatting restrictions
+UnlimitedNameTags is a spigot plugin that lets you create nametags with unlimited length and lines. 
+You can use rgb colors and gradients in usernames.
+In order to use this plugin you need to disable the nametag feature in Velocitab by setting `remove_nametags` to `true` in the [`config.yml` file](config-file) and put an empty nametag (empty prefix & suffix) in the [`tab_groups.yml` file](Server-Groups.md).
+You can find the plugin on [BuiltByBit](https://builtbybit.com/resources/unlimitednametags.46172/?ref=38685) and on [SpigotMC](https://www.spigotmc.org/resources/unlimitednametags.117526/).
+
+![UnlimitedNameTags](https://i.imgur.com/VvHtqlY.gif)
+

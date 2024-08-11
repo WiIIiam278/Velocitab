@@ -54,8 +54,8 @@ public class Settings implements ConfigValidator {
     @Comment("Whether to disable header and footer if they are empty and let backend servers handle them.")
     private boolean disableHeaderFooterIfEmpty = true;
 
-    @Comment("Which text formatter to use (MINEDOWN, MINIMESSAGE, or LEGACY)")
-    private Formatter formatter = Formatter.MINEDOWN;
+    @Comment("Which text formatter to use (MINIMESSAGE, MINEDOWN or LEGACY)")
+    private Formatter formatter = Formatter.MINIMESSAGE;
 
     @Comment("All servers which are not in other groups will be put in the fallback group."
             + "\n\"false\" will exclude them from Velocitab.")
@@ -104,7 +104,7 @@ public class Settings implements ConfigValidator {
             "• Specify a set of server groups each URL should be sent on. Use '*' to show a URL to all groups."})
     private List<ServerUrl> serverLinks = List.of(
             new ServerUrl(
-                    "&#00fb9a&About Velocitab",
+                    "<#00fb9a>About Velocitab</#00fb9a>",
                     "https://william278.net/project/velocitab"
             )
     );

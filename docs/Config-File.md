@@ -19,8 +19,8 @@ check_for_updates: true
 remove_nametags: true
 # Whether to disable header and footer if they are empty and let backend servers handle them.
 disable_header_footer_if_empty: true
-# Which text formatter to use (MINEDOWN, MINIMESSAGE, or LEGACY)
-formatter: MINEDOWN
+# Which text formatter to use (MINIMESSAGE, MINEDOWN or LEGACY)
+formatter: MINIMESSAGE
 # All servers which are not in other groups will be put in the fallback group.
 # "false" will exclude them from Velocitab.
 fallback_enabled: true
@@ -56,7 +56,7 @@ enable_plugin_message_api: true
 # • If you supply a url with a 'bug_report' label, it will be shown if the player is disconnected.
 # • Specify a set of server groups each URL should be sent on. Use '*' to show a URL to all groups.
 server_links:
-  - label: '&#00fb9a&About Velocitab'
+  - label: '<#00fb9a>About Velocitab</#00fb9a>'
     url: 'https://william278.net/project/velocitab'
     groups:
       - '*'
@@ -79,29 +79,30 @@ server_links:
 # ┗╸ Documentation: https://william278.net/docs/velocitab
 
 groups:
-- name: default
-  headers:
-  - '&rainbow&Running Velocitab by William278'
-  footers:
-  - '[There are currently %players_online%/%max_players_online% players online](gray)'
-  format: '&7[%server%] &f%prefix%%username%'
-  nametag:
-    prefix: '&f%prefix%'
-    suffix: '&f%suffix%'
-  servers:
-  - ^lobby[^ ]*
-  - survival
-  - creative
-  - minigames
-  - skyblock
-  - prison
-  sorting_placeholders:
-  - '%role_weight%'
-  - '%username_lower%'
-  collisions: false
-  header_footer_update_rate: 1000
-  placeholder_update_rate: 1000
-  only_list_players_in_same_server: false
+  - name: default
+    headers:
+      - <rainbow:!2>Running Velocitab by William278 & AlexDev_</rainbow>
+    footers:
+      - <gray>There are currently %players_online%/%max_players_online% players online</gray>
+    format: <gray>[%server%] %prefix%%username%</gray>
+    nametag:
+      prefix: <white>%prefix%</white>
+      suffix: <white>%suffix%</white>
+    servers:
+      - skyblock
+      - minigames
+      - survival
+      - lobby
+      - prison
+      - creative
+      - hub
+    sorting_placeholders:
+      - '%role_weight%'
+      - '%username_lower%'
+    collisions: false
+    header_footer_update_rate: 1000
+    placeholder_update_rate: 1000
+    only_list_players_in_same_server: false
 ```
 
 </details>

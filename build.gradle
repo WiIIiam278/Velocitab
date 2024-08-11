@@ -27,6 +27,7 @@ repositories {
     maven { url = 'https://repo.william278.net/velocity/' }
     maven { url = 'https://repo.papermc.io/repository/maven-public/' }
     maven { url = 'https://repo.william278.net/releases/' }
+    maven { url = 'https://repo.william278.net/snapshots/' }
     maven { url = 'https://jitpack.io/' }
     maven { url = 'https://repo.minebench.de/' }
 }
@@ -50,6 +51,7 @@ dependencies {
     implementation 'de.exlll:configlib-yaml:4.5.0'
     implementation 'org.apache.commons:commons-jexl3:3.4.0'
     implementation 'net.jodah:expiringmap:0.5.11'
+    implementation("net.william278:velocityscoreboardapi:1.0.0-b2d9518")
 
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
 }

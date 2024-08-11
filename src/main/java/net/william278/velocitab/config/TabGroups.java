@@ -48,10 +48,10 @@ public class TabGroups implements ConfigValidator {
 
     private static final Group DEFAULT_GROUP = new Group(
             "default",
-            List.of("&rainbow&Running Velocitab by William278"),
-            List.of("[There are currently %players_online%/%max_players_online% players online](gray)"),
-            "&7[%server%] &f%prefix%%username%",
-            new Nametag("&f%prefix%", "&f%suffix%"),
+            List.of("<rainbow:!2>Running Velocitab by William278 & AlexDev_</rainbow>"),
+            List.of("<gray>There are currently %players_online%/%max_players_online% players online</gray>"),
+            "<gray>[%server%] %prefix%%username%</gray>",
+            new Nametag("<white>%prefix%</white>", "<white>%suffix%</white>"),
             Set.of("lobby", "survival", "creative", "minigames", "skyblock", "prison", "hub"),
             List.of("%role_weight%", "%username_lower%"),
             false,

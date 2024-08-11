@@ -26,9 +26,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.packet.UpdateTeamsPacket;
@@ -47,7 +45,7 @@ import java.util.regex.Pattern;
 @ToString
 public final class TabPlayer implements Comparable<TabPlayer> {
 
-    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%(\\w+)%");
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%([^%]+)%");
     private static final String PLACEHOLDER_DELIMITER = "<-DELIMITER->";
 
     private final Velocitab plugin;

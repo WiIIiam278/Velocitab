@@ -1,5 +1,3 @@
-# Velocitab Conditional Placeholders Documentation
-
 In order to use these placeholders, install MiniPlaceholders on your Velocity proxy, set the `formatter_type`
 to `MINIMESSAGE`, and ensure `enable_miniplaceholders_hook` is set to `true`.
 

@@ -12,3 +12,36 @@ MiniMessage formatting can be enabled by setting `formatter` to `MINIMESSAGE` in
 > **Warning:** The option for legacy formatting is provided only for backwards compatibility with other plugins. Please consider using the MineDown or MiniMessage options instead!
 
 Legacy formatting can be enabled by setting `formatter` to `LEGACY` in `config.yml`. Legacy formatter supports Mojang color and formatting codes (e.g. `&d`, `&l`), Adventure-styled RGB color codes (e.g. `&#a25981`), as well as BungeeCord RGB color codes (e.g. `&x&a&2&5&9&8&1`). See the [LegacyComponentSerializer Syntax Reference](https://docs.advntr.dev/serializer/legacy.html) on the Adventure Docs for more technical details.
+
+## Multi-line strings
+In order to have a multi-line string in YAML, you can use the `|-` or `|` syntax. The `|-` syntax will remove last newline character, while the `|` syntax will keep it.
+You can also use `\n` to add a newline character in a string.
+
+### Example 1
+```yaml
+foo: |-
+  bar 1
+  bar 2
+  bar 3
+```
+
+is equivalent to
+
+```yaml
+foo: "bar 1\nbar 2\nbar 3"
+```
+
+### Example 2
+
+```yaml
+foo: |
+  bar 1
+  bar 2
+  bar 3
+```
+
+is equivalent to
+
+```yaml
+foo: "bar 1\nbar 2\nbar 3\n"
+```

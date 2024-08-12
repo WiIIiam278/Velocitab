@@ -51,7 +51,7 @@ dependencies {
     implementation 'de.exlll:configlib-yaml:4.5.0'
     implementation 'org.apache.commons:commons-jexl3:3.4.0'
     implementation 'net.jodah:expiringmap:0.5.11'
-    implementation("net.william278:velocityscoreboardapi:1.0.0-b2d9518")
+    implementation("net.william278:velocityscoreboardapi:1.0.2-e64805b")
 
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
 }

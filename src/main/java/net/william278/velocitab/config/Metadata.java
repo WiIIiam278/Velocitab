@@ -37,6 +37,7 @@ public class Metadata {
 
     private String velocityApiVersion;
     private int velocityMinimumBuild;
+    private boolean ignoreBuildVersion;
 
     public void validateApiVersion(@NotNull Version version) {
         if (version.compareTo(Version.fromString(velocityApiVersion)) < 0) {
@@ -48,6 +49,10 @@ public class Metadata {
     }
 
     public void validateBuild(@NotNull Version version) {
+        if (ignoreBuildVersion) {
+            return;
+        }
+
         int serverBuild = getBuildNumber(version.toString());
         if (serverBuild < velocityMinimumBuild) {
             throw new IllegalStateException("Your Velocity build version (#" + serverBuild + ") is not supported! " +

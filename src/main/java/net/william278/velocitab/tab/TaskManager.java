@@ -46,8 +46,6 @@ public class TaskManager {
     }
 
     protected void updatePeriodically(@NotNull Group group) {
-        cancelTasks(group);
-
         ScheduledTask headerFooterTask = null;
         ScheduledTask updateTask = null;
         ScheduledTask latencyTask;
@@ -119,14 +117,5 @@ public class TaskManager {
                             .ifPresent(entry -> entry.setLatency(Math.max(latency, 0))));
                 });
     }
-
-    private void cancelTasks(@NotNull Group group) {
-        groupTasks.entrySet()
-                .stream()
-                .filter(entry -> entry.getKey().name().equals(group.name()))
-                .map(Map.Entry::getValue)
-                .findFirst().ifPresent(GroupTasks::cancel);
-    }
-
 
 }

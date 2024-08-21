@@ -433,6 +433,7 @@ public class PlayerTabList {
         if (!tabPlayer.isLoaded()) {
             return;
         }
+        final boolean bypass = plugin.getSettings().isForceSendingTabListPackets();
         players.values()
                 .stream()
                 .filter(TabPlayer::isLoaded)
@@ -444,7 +445,7 @@ public class PlayerTabList {
                             }
 
                             final Component lastDisplayName = displayNameOptional.get();
-                            if (entry.getDisplayNameComponent().isEmpty() || !lastDisplayName.equals(entry.getDisplayNameComponent().get())) {
+                            if (bypass || entry.getDisplayNameComponent().isEmpty() || !lastDisplayName.equals(entry.getDisplayNameComponent().get())) {
                                 entry.setDisplayName(lastDisplayName);
                             }
                         }));
@@ -488,6 +489,7 @@ public class PlayerTabList {
      * Update the TAB list for all players when a plugin or proxy reload is performed
      */
     public void reloadUpdate() {
+        taskManager.cancelAllTasks();
         plugin.getTabGroups().getGroups().forEach(taskManager::updatePeriodically);
         if (players.isEmpty()) {
             return;

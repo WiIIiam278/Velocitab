@@ -97,6 +97,9 @@ public class Settings implements ConfigValidator {
     @Comment("Whether to enable the Plugin Message API (allows backend plugins to perform certain operations)")
     private boolean enablePluginMessageApi = true;
 
+    @Comment("Whether to force sending tab list packets to all players, even if a packet for that action has already been sent. This could fix issues with some mods.")
+    private boolean forceSendingTabListPackets = false;
+
     @Comment({"A list of links that will be sent to display on player pause menus (Minecraft 1.21+ clients only).",
             "• Labels can be fully custom or built-in (one of 'bug_report', 'community_guidelines', 'support', 'status',",
             "  'feedback', 'community', 'website', 'forums', 'news', or 'announcements').",

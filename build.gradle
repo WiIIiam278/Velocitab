@@ -36,7 +36,7 @@ dependencies {
     compileOnly "com.velocitypowered:velocity-api:${velocity_api_version}-SNAPSHOT"
     compileOnly "com.velocitypowered:velocity-proxy:${velocity_api_version}-SNAPSHOT"
 
-    compileOnly 'io.netty:netty-codec-http:4.1.112.Final'
+    compileOnly 'io.netty:netty-codec-http:4.1.113.Final'
     compileOnly 'org.projectlombok:lombok:1.18.34'
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.2.3'

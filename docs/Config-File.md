@@ -50,6 +50,8 @@ sort_players: true
 remove_spectator_effect: false
 # Whether to enable the Plugin Message API (allows backend plugins to perform certain operations)
 enable_plugin_message_api: true
+# Whether to force sending tab list packets to all players, even if a packet for that action has already been sent. This could fix issues with some mods.
+force_sending_tab_list_packets: false
 # A list of URLs that will be sent to display on player pause menus (Minecraft 1.21+ clients only).
 # • Labels can be fully custom or built-in (one of 'bug_report', 'community_guidelines', 'support', 'status',
 #   'feedback', 'community', 'website', 'forums', 'news', or 'announcements').

@@ -93,7 +93,7 @@ public class TabListListener {
 
         // Get the group the player should now be in
         final @NotNull Optional<Group> groupOptional = tabList.getGroup(serverName);
-        final boolean isDefault = groupOptional.map(g -> g.isDefault(plugin)).orElse(false);
+        final boolean isDefault = groupOptional.map(g -> g.isDefault(plugin)).orElse(true);
 
         // Removes cached relational data of the joined player from all other players
         plugin.getTabList().clearCachedData(joined);

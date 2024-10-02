@@ -91,12 +91,21 @@ public class TabListListener {
                 .map(ServerInfo::getName)
                 .orElse("");
 
+        final Optional<Group> previousGroup = tabList.getTabPlayer(joined)
+                .map(TabPlayer::getGroup);
+
         // Get the group the player should now be in
         final @NotNull Optional<Group> groupOptional = tabList.getGroup(serverName);
         final boolean isDefault = groupOptional.map(g -> g.isDefault(plugin)).orElse(true);
 
         // Removes cached relational data of the joined player from all other players
         plugin.getTabList().clearCachedData(joined);
+
+        if (!plugin.getSettings().isShowAllPlayersFromAllGroups() && previousGroup.isPresent()
+                && (groupOptional.isPresent() && !previousGroup.get().equals(groupOptional.get())
+                || groupOptional.isEmpty())) {
+            tabList.removeOldEntry(previousGroup.get(), joined.getUniqueId());
+        }
 
         // If the server is not in a group, use fallback.
         // If fallback is disabled, permit the player to switch excluded servers without a header or footer override

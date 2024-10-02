@@ -189,14 +189,14 @@ public enum Placeholder {
 
             final Matcher testMatcher = TEST.matcher(format);
             while (testMatcher.find()) {
-                if(testMatcher.group().startsWith("<velocitab_rel")) {
+                if (testMatcher.group().startsWith("<velocitab_rel")) {
                     final Matcher second = TEST.matcher(testMatcher.group().substring(1));
                     while (second.find()) {
                         String s = second.group();
                         for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES.entrySet()) {
                             s = s.replace(entry.getKey(), entry.getValue());
                         }
-                       format = format.replace(second.group(), s);
+                        format = format.replace(second.group(), s);
                     }
                     continue;
                 }

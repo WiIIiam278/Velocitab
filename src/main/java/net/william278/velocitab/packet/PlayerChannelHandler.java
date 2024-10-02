@@ -20,12 +20,15 @@
 package net.william278.velocitab.packet;
 
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ServerConnection;
+import com.velocitypowered.api.proxy.server.ServerInfo;
 import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import lombok.RequiredArgsConstructor;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -83,7 +86,7 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
 
         try {
             final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
-            if (tabPlayer.isEmpty()) {
+            if (tabPlayer.isEmpty() && !isFutureTabPlayer()) {
                 super.write(ctx, msg, promise);
                 return;
             }
@@ -120,5 +123,15 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
         entries.stream()
                 .filter(entry -> entry.getProfileId() != null && entry.getGameMode() == 3 && !entry.getProfileId().equals(player.getUniqueId()))
                 .forEach(entry -> entry.setGameMode(0));
+    }
+
+    private boolean isFutureTabPlayer() {
+        final String serverName = player.getCurrentServer()
+                .map(ServerConnection::getServerInfo)
+                .map(ServerInfo::getName)
+                .orElse("");
+
+        final Optional<Group> groupOptional = plugin.getTabList().getGroup(serverName);
+        return groupOptional.isPresent();
     }
 }

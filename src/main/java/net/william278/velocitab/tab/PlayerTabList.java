@@ -519,6 +519,10 @@ public class PlayerTabList {
         return plugin.getTabGroups().getGroupFromServer(serverName, plugin);
     }
 
+    public void removeOldEntry(@NotNull Group group, @NotNull UUID uuid) {
+        final Set<TabPlayer> players = group.getTabPlayers(plugin);
+        players.forEach(player -> player.getPlayer().getTabList().removeEntry(uuid));
+    }
 
     /**
      * Remove an offline player from the list of tracked TAB players

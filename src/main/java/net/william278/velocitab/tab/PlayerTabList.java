@@ -355,6 +355,10 @@ public class PlayerTabList {
     }
 
     protected void updateDisplayName(@NotNull TabPlayer player, @NotNull TabPlayer viewer, @NotNull Component displayName) {
+
+        if (!viewer.getGroup().usingFormat())
+            return;
+
         final Optional<Component> cached = player.getRelationalDisplayName(viewer.getPlayer().getUniqueId());
         if (cached.isPresent() && cached.get().equals(displayName) &&
                 viewer.getPlayer().getTabList().getEntry(player.getPlayer().getUniqueId())

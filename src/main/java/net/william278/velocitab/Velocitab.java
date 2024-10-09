@@ -29,7 +29,6 @@ import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.PluginDescription;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
-import com.velocitypowered.api.scheduler.ScheduledTask;
 import lombok.Getter;
 import lombok.Setter;
 import net.william278.desertwell.util.UpdateChecker;
@@ -145,9 +144,9 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
         return this;
     }
 
-    @NotNull
-    public Optional<ScoreboardManager> getScoreboardManager() {
-        return Optional.ofNullable(scoreboardManager);
+    @Override
+    public ScoreboardManager getScoreboardManager() {
+        return scoreboardManager;
     }
 
     private void prepareAPI() {

@@ -24,7 +24,6 @@ import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
 
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public interface ScoreboardProvider {
@@ -37,11 +36,10 @@ public interface ScoreboardProvider {
     Velocitab getPlugin();
 
     /**
-     * Retrieves the optional scoreboard manager.
-     *
-     * @return An {@code Optional} object that may contain a {@code ScoreboardManager} instance.
+     * Retrieves the scoreboard manager
+     * @return The scoreboard manager
      */
-    Optional<ScoreboardManager> getScoreboardManager();
+    ScoreboardManager getScoreboardManager();
 
     /**
      * Sets the scoreboard manager.
@@ -85,11 +83,9 @@ public interface ScoreboardProvider {
      *
      */
     default void prepareScoreboard() {
-        if (getPlugin().getSettings().isSendScoreboardPackets()) {
-            final ScoreboardManager scoreboardManager = new ScoreboardManager(getPlugin());
-            setScoreboardManager(scoreboardManager);
-            scoreboardManager.registerPacket();
-        }
+        final ScoreboardManager scoreboardManager = new ScoreboardManager(getPlugin(), getPlugin().getSettings().isSendScoreboardPackets());
+        setScoreboardManager(scoreboardManager);
+        scoreboardManager.registerPacket();
 
         final PlayerTabList tabList = new PlayerTabList(getPlugin());
         setTabList(tabList);
@@ -105,10 +101,8 @@ public interface ScoreboardProvider {
      * Disables the ScoreboardManager and closes the tab list for the player.
      */
     default void disableScoreboardManager() {
-        if (getScoreboardManager().isPresent() && getPlugin().getSettings().isSendScoreboardPackets()) {
-            getScoreboardManager().get().close();
-            getScoreboardManager().get().unregisterPacket();
-        }
+        getScoreboardManager().close();
+        getScoreboardManager().unregisterPacket();
 
         getTabList().close();
     }

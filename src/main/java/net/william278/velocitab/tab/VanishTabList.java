@@ -98,12 +98,12 @@ public class VanishTabList {
 
             if (!canSee) {
                 player.getTabList().removeEntry(p.getUniqueId());
-                plugin.getScoreboardManager().ifPresent(s -> s.recalculateVanishForPlayer(tabPlayer, target, false));
+                plugin.getScoreboardManager().recalculateVanishForPlayer(tabPlayer, target, false);
             } else {
                 if (!player.getTabList().containsEntry(p.getUniqueId())) {
                     final TabListEntry tabListEntry = tabList.createEntry(target, player.getTabList(), tabPlayer);
                     player.getTabList().addEntry(tabListEntry);
-                    plugin.getScoreboardManager().ifPresent(s -> s.recalculateVanishForPlayer(tabPlayer, target, true));
+                    plugin.getScoreboardManager().recalculateVanishForPlayer(tabPlayer, target, true);
                 }
             }
         });

@@ -26,6 +26,8 @@ import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.player.TabList;
 import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
+import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -34,6 +36,7 @@ import net.william278.velocitab.api.PlayerAddedToTabEvent;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.config.ServerUrl;
+import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
@@ -220,10 +223,9 @@ public class PlayerTabList {
             }
             iteratedPlayer.sendHeaderAndFooter(this);
         }
-        plugin.getScoreboardManager().ifPresent(s -> {
-            s.resendAllTeams(tabPlayer);
-            tabPlayer.getTeamName(plugin).thenAccept(t -> s.updateRole(tabPlayer, t, false));
-        });
+        final ScoreboardManager scoreboardManager = plugin.getScoreboardManager();
+        scoreboardManager.resendAllTeams(tabPlayer);
+        updateSorting(tabPlayer, false);
         fixDuplicateEntries(joined);
         // Fire event without listening for result
         plugin.getServer().getEventManager().fireAndForget(new PlayerAddedToTabEvent(tabPlayer, group));
@@ -318,7 +320,7 @@ public class PlayerTabList {
                 .delay(250, TimeUnit.MILLISECONDS)
                 .schedule();
         // Delete player team
-        plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(target));
+        plugin.getScoreboardManager().resetCache(target);
         //remove player from tab list cache
         getPlayers().remove(uuid);
     }
@@ -389,13 +391,24 @@ public class PlayerTabList {
             return;
         }
 
+        updateSorting(tabPlayer, force);
+    }
+
+    private void updateSorting(@NotNull TabPlayer tabPlayer, boolean force) {
         tabPlayer.getTeamName(plugin).thenAccept(teamName -> {
             if (teamName.isBlank()) {
                 return;
             }
-            plugin.getScoreboardManager().ifPresent(manager -> manager.updateRole(
+            plugin.getScoreboardManager().updateRole(
                     tabPlayer, teamName, force
-            ));
+            );
+            final int order = plugin.getScoreboardManager().getPosition(teamName);
+            if (order == -1) {
+                return;
+            }
+            tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer).forEach(p -> {
+                updateSorting(p, p.getPlayer().getUniqueId(), order);
+            });
         });
     }
 
@@ -531,6 +544,18 @@ public class PlayerTabList {
      */
     public void removeOfflinePlayer(@NotNull Player player) {
         players.remove(player.getUniqueId());
+    }
+
+    private boolean hasListOrder(TabPlayer tabPlayer) {
+        return tabPlayer.getPlayer().getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_21_2);
+    }
+
+    private void updateSorting(@NotNull TabPlayer tabPlayer, @NotNull UUID uuid, int position) {
+        final UpsertPlayerInfoPacket packet = new UpsertPlayerInfoPacket(UpsertPlayerInfoPacket.Action.UPDATE_LIST_ORDER);
+        final UpsertPlayerInfoPacket.Entry entry = new UpsertPlayerInfoPacket.Entry(uuid);
+        entry.setListOrder(position);
+        packet.addEntry(entry);
+        ((ConnectedPlayer) tabPlayer.getPlayer()).getConnection().write(packet);
     }
 
 }

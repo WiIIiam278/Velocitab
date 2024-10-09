@@ -407,6 +407,9 @@ public class PlayerTabList {
                 return;
             }
             tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer).forEach(p -> {
+                if(!hasListOrder(p)) {
+                    return;
+                }
                 updateSorting(p, p.getPlayer().getUniqueId(), order);
             });
         });

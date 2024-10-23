@@ -70,17 +70,17 @@ public class ScoreboardManager {
 
     private void registerVersions() {
         try {
-            final var protocol765Adapter = new Protocol765Adapter(plugin);
+            final Protocol765Adapter protocol765Adapter = new Protocol765Adapter(plugin);
             protocol765Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol765Adapter));
-            final var protocol735Adapter = new Protocol735Adapter(plugin);
+            final Protocol735Adapter protocol735Adapter = new Protocol735Adapter(plugin);
             protocol735Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol735Adapter));
-            final var protocol404Adapter = new Protocol404Adapter(plugin);
+            final Protocol404Adapter protocol404Adapter = new Protocol404Adapter(plugin);
             protocol404Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol404Adapter));
-            final var protocol48Adapter = new Protocol48Adapter(plugin);
+            final Protocol48Adapter protocol48Adapter = new Protocol48Adapter(plugin);
             protocol48Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol48Adapter));
         } catch (NoSuchFieldError e) {
             throw new IllegalStateException("Failed to register Scoreboard Teams packets." +
-                    " Velocitab probably does not (yet) support your Proxy version.", e);
+                                            " Velocitab probably does not (yet) support your Proxy version.", e);
         }
     }
 
@@ -262,7 +262,7 @@ public class ScoreboardManager {
     private void dispatchGroupCreatePacket(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer,
                                            @NotNull String teamName, @NotNull Nametag nametag,
                                            @NotNull String... teamMembers) {
-        if(!teams) {
+        if (!teams) {
             return;
         }
         tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer).forEach(viewer -> {
@@ -279,7 +279,7 @@ public class ScoreboardManager {
                                       @NotNull String teamName, @NotNull Nametag nametag,
                                       @NotNull TabPlayer viewer,
                                       @NotNull String... teamMembers) {
-        if(!teams) {
+        if (!teams) {
             return;
         }
         final boolean canSee = plugin.getVanishManager().canSee(viewer.getPlayer().getUsername(), tabPlayer.getPlayer().getUsername());

@@ -40,7 +40,8 @@ public class Protocol765Adapter extends Protocol404Adapter {
         super(plugin, Set.of(
                 ProtocolVersion.MINECRAFT_1_20_3,
                 ProtocolVersion.MINECRAFT_1_20_5,
-                ProtocolVersion.MINECRAFT_1_21
+                ProtocolVersion.MINECRAFT_1_21,
+                ProtocolVersion.MINECRAFT_1_12_2
         ));
     }
 
@@ -51,7 +52,9 @@ public class Protocol765Adapter extends Protocol404Adapter {
 
     @NotNull
     protected Component readComponent(@NotNull ByteBuf buf) {
-        return GsonComponentSerializer.gson().deserializeFromTree(ComponentHolder.deserialize(ProtocolUtils.readBinaryTag(buf, ProtocolVersion.MINECRAFT_1_20_3, null)));
+        return GsonComponentSerializer.gson().deserializeFromTree(ComponentHolder.deserialize(
+                ProtocolUtils.readBinaryTag(buf, ProtocolVersion.MINECRAFT_1_20_3, null)
+        ));
     }
 
 }

@@ -89,12 +89,12 @@ public class VanishTabList {
             final String serverName = target.getServerName();
 
             if (tabPlayer.getGroup().onlyListPlayersInSameServer()
-                    && !tabPlayer.getServerName().equals(serverName)) {
+                && !tabPlayer.getServerName().equals(serverName)) {
                 return;
             }
 
             final boolean canSee = !plugin.getVanishManager().isVanished(p.getUsername()) ||
-                    plugin.getVanishManager().canSee(player.getUsername(), p.getUsername());
+                                   plugin.getVanishManager().canSee(player.getUsername(), p.getUsername());
 
             if (!canSee) {
                 player.getTabList().removeEntry(p.getUniqueId());

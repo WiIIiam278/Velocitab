@@ -22,7 +22,8 @@ package net.william278.velocitab.tab;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import org.jetbrains.annotations.Nullable;
 
-public record GroupTasks(@Nullable ScheduledTask updateTask, @Nullable ScheduledTask headerFooterTask, @Nullable ScheduledTask latencyTask) {
+public record GroupTasks(@Nullable ScheduledTask updateTask, @Nullable ScheduledTask headerFooterTask,
+                         @Nullable ScheduledTask latencyTask) {
 
     public void cancel() {
         if (updateTask != null) {

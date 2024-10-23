@@ -239,7 +239,7 @@ public class PlayerTabList {
         final TabList observableTabPlayerTabList = observableTabPlayer.getPlayer().getTabList();
 
         if (isObservablePlayerVanished && !plugin.getVanishManager().canSee(observableUsername, observedUsername) &&
-                !observableUUID.equals(observedPlayer.getPlayer().getUniqueId())) {
+            !observableUUID.equals(observedPlayer.getPlayer().getUniqueId())) {
             observableTabPlayerTabList.removeEntry(observedPlayer.getPlayer().getUniqueId());
         } else {
             updateDisplayName(observedPlayer, observableTabPlayer);
@@ -280,7 +280,7 @@ public class PlayerTabList {
                     .filter(entry -> !entry.getKey().equals(target.getUniqueId()))
                     .forEach(entry -> target.getTabList().removeEntry(entry.getKey()));
         } catch (Throwable error) {
-            plugin.log(Level.ERROR, "Failed to fix duplicate entries for class " + target.getTabList().getClass().getName() , error);
+            plugin.log(Level.ERROR, "Failed to fix duplicate entries for class " + target.getTabList().getClass().getName(), error);
         }
     }
 
@@ -290,6 +290,7 @@ public class PlayerTabList {
 
     /**
      * Remove a player from the tab list
+     *
      * @param uuid
      */
     protected void removeTablistUUID(@NotNull UUID uuid) {
@@ -359,9 +360,9 @@ public class PlayerTabList {
     protected void updateDisplayName(@NotNull TabPlayer player, @NotNull TabPlayer viewer, @NotNull Component displayName) {
         final Optional<Component> cached = player.getRelationalDisplayName(viewer.getPlayer().getUniqueId());
         if (cached.isPresent() && cached.get().equals(displayName) &&
-                viewer.getPlayer().getTabList().getEntry(player.getPlayer().getUniqueId())
-                        .flatMap(TabListEntry::getDisplayNameComponent).map(displayName::equals)
-                        .orElse(false)
+            viewer.getPlayer().getTabList().getEntry(player.getPlayer().getUniqueId())
+                    .flatMap(TabListEntry::getDisplayNameComponent).map(displayName::equals)
+                    .orElse(false)
         ) {
             return;
         }
@@ -407,7 +408,7 @@ public class PlayerTabList {
                 return;
             }
             tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer).forEach(p -> {
-                if(!hasListOrder(p)) {
+                if (!hasListOrder(p)) {
                     return;
                 }
                 updateSorting(p, p.getPlayer().getUniqueId(), order);

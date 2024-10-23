@@ -59,7 +59,6 @@ import org.slf4j.event.Level;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 
 @Plugin(id = "velocitab")
 @Getter

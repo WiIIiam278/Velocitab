@@ -30,6 +30,7 @@ public interface LoggerProvider {
      *
      * @return the logger for the class
      */
+    @NotNull
     Logger getLogger();
 
     /**

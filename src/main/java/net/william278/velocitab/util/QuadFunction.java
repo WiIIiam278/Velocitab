@@ -32,4 +32,5 @@ public interface QuadFunction<T, U, V, S, R> {
      * @return the function result
      */
     R apply(T t, U u, V v, S s);
+
 }

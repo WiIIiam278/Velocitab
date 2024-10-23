@@ -20,10 +20,7 @@
 package net.william278.velocitab.tab;
 
 import com.google.common.collect.Maps;
-import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.scheduler.ScheduledTask;
-import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
-import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
@@ -31,7 +28,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class TaskManager {

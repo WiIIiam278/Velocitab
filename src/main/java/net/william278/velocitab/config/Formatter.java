@@ -26,7 +26,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.util.QuadFunction;
-import net.william278.velocitab.util.SerializerUtil;
+import net.william278.velocitab.util.SerializationUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -57,11 +57,11 @@ public enum Formatter {
             MiniMessage.miniMessage()::serialize
     ),
     LEGACY(
-            (text, player, viewer, plugin) -> SerializerUtil.LEGACY_SERIALIZER.deserialize(text),
+            (text, player, viewer, plugin) -> SerializationUtil.LEGACY_SERIALIZER.deserialize(text),
             Function.identity(),
             "Legacy Text",
-            SerializerUtil.LEGACY_SERIALIZER::deserialize,
-            SerializerUtil.LEGACY_SERIALIZER::serialize
+            SerializationUtil.LEGACY_SERIALIZER::deserialize,
+            SerializationUtil.LEGACY_SERIALIZER::serialize
     );
 
 

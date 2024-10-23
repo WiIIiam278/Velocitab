@@ -157,8 +157,7 @@ public class TabListListener {
         tabList.joinPlayer(joined, group);
     }
 
-    // Todo - Move this off PostOrder? The new API is a bit confusing.
-    @Subscribe(order = PostOrder.LAST)
+    @Subscribe(priority = Short.MIN_VALUE)
     public void onPlayerQuit(@NotNull DisconnectEvent event) {
         if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) {
             checkDelayedDisconnect(event);
@@ -180,7 +179,7 @@ public class TabListListener {
                 return;
             }
 
-            tabList.removeTablistUUID(event.getPlayer().getUniqueId());
+            tabList.removeTabListUUID(event.getPlayer().getUniqueId());
         }).delay(750, TimeUnit.MILLISECONDS).schedule();
     }
 

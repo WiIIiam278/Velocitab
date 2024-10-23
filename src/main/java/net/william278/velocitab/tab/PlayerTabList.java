@@ -49,10 +49,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket.Action.UPDATE_LIST_ORDER;
+
 /**
- * The main class for tracking the server TAB list
+ * The main class for tracking the server TAB list for a map of {@link TabPlayer}s
  */
 public class PlayerTabList {
+
     private final Velocitab plugin;
     @Getter
     private final VanishTabList vanishTabList;
@@ -291,12 +294,12 @@ public class PlayerTabList {
     /**
      * Remove a player from the tab list
      *
-     * @param uuid
+     * @param uuid {@link UUID} of the {@link TabPlayer player} to remove
      */
-    protected void removeTablistUUID(@NotNull UUID uuid) {
-        getPlayers().forEach((key, value) -> {
-            value.getPlayer().getTabList().getEntry(uuid).ifPresent(entry -> value.getPlayer().getTabList().removeEntry(uuid));
-        });
+    protected void removeTabListUUID(@NotNull UUID uuid) {
+        getPlayers().forEach((key, value) -> value.getPlayer().getTabList().getEntry(uuid).ifPresent(
+                entry -> value.getPlayer().getTabList().removeEntry(uuid)
+        ));
     }
 
     protected void removePlayer(@NotNull Player target, @Nullable RegisteredServer server) {
@@ -550,12 +553,18 @@ public class PlayerTabList {
         players.remove(player.getUniqueId());
     }
 
-    private boolean hasListOrder(TabPlayer tabPlayer) {
+    /**
+     * Whether the player can use server-side specified TAB list ordering (Minecraft 1.21.2+)
+     *
+     * @param tabPlayer player to check
+     * @return {@code true} if the user is on Minecraft 1.21.2+; {@code false}
+     */
+    private boolean hasListOrder(@NotNull TabPlayer tabPlayer) {
         return tabPlayer.getPlayer().getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_21_2);
     }
 
     private void updateSorting(@NotNull TabPlayer tabPlayer, @NotNull UUID uuid, int position) {
-        final UpsertPlayerInfoPacket packet = new UpsertPlayerInfoPacket(UpsertPlayerInfoPacket.Action.UPDATE_LIST_ORDER);
+        final UpsertPlayerInfoPacket packet = new UpsertPlayerInfoPacket(UPDATE_LIST_ORDER);
         final UpsertPlayerInfoPacket.Entry entry = new UpsertPlayerInfoPacket.Entry(uuid);
         entry.setListOrder(position);
         packet.addEntry(entry);

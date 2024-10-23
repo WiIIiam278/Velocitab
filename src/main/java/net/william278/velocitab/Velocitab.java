@@ -144,9 +144,9 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
         return this;
     }
 
-    @NotNull
-    public Optional<ScoreboardManager> getScoreboardManager() {
-        return Optional.ofNullable(scoreboardManager);
+    @Override
+    public ScoreboardManager getScoreboardManager() {
+        return scoreboardManager;
     }
 
     private void prepareAPI() {

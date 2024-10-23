@@ -38,10 +38,7 @@ import net.william278.velocitab.tab.Nametag;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static com.velocitypowered.api.network.ProtocolVersion.*;
 
@@ -49,26 +46,38 @@ public class ScoreboardManager {
 
     private PacketRegistration<UpdateTeamsPacket> packetRegistration;
     private final Velocitab plugin;
-    private final Set<TeamsPacketAdapter> versions;
+    private final boolean teams;
+    private final Map<ProtocolVersion, TeamsPacketAdapter> versions;
     private final Map<UUID, String> createdTeams;
     private final Map<String, Nametag> nametags;
     private final Multimap<UUID, String> trackedTeams;
+    private final PriorityQueue<String> sortedTeams;
 
-    public ScoreboardManager(@NotNull Velocitab velocitab) {
+    public ScoreboardManager(@NotNull Velocitab velocitab, boolean teams) {
         this.plugin = velocitab;
+        this.teams = teams;
         this.createdTeams = Maps.newConcurrentMap();
         this.nametags = Maps.newConcurrentMap();
-        this.versions = Sets.newHashSet();
+        this.versions = Maps.newHashMap();
         this.trackedTeams = Multimaps.synchronizedMultimap(Multimaps.newSetMultimap(Maps.newConcurrentMap(), Sets::newConcurrentHashSet));
+        this.sortedTeams = new PriorityQueue<>();
         this.registerVersions();
+    }
+
+    public boolean handleTeams() {
+        return teams;
     }
 
     private void registerVersions() {
         try {
-            versions.add(new Protocol765Adapter(plugin));
-            versions.add(new Protocol735Adapter(plugin));
-            versions.add(new Protocol404Adapter(plugin));
-            versions.add(new Protocol48Adapter(plugin));
+            final var protocol765Adapter = new Protocol765Adapter(plugin);
+            protocol765Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol765Adapter));
+            final var protocol735Adapter = new Protocol735Adapter(plugin);
+            protocol735Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol735Adapter));
+            final var protocol404Adapter = new Protocol404Adapter(plugin);
+            protocol404Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol404Adapter));
+            final var protocol48Adapter = new Protocol48Adapter(plugin);
+            protocol48Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol48Adapter));
         } catch (NoSuchFieldError e) {
             throw new IllegalStateException("Failed to register Scoreboard Teams packets." +
                     " Velocitab probably does not (yet) support your Proxy version.", e);
@@ -79,11 +88,20 @@ public class ScoreboardManager {
         return nametags.containsKey(teamName);
     }
 
+    public int getPosition(@NotNull String teamName) {
+        int index = 0;
+        for (String team : sortedTeams) {
+            if (team.equals(teamName)) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
+    }
+
     @NotNull
     public TeamsPacketAdapter getPacketAdapter(@NotNull ProtocolVersion version) {
-        return versions.stream()
-                .filter(adapter -> adapter.getProtocolVersions().contains(version))
-                .findFirst()
+        return Optional.ofNullable(versions.get(version))
                 .orElseThrow(() -> new IllegalArgumentException("No adapter found for protocol version " + version));
     }
 
@@ -94,6 +112,7 @@ public class ScoreboardManager {
     public void resetCache(@NotNull Player player) {
         final String team = createdTeams.remove(player.getUniqueId());
         if (team != null) {
+            sortedTeams.remove(team);
             plugin.getTabList().getTabPlayer(player).ifPresent(tabPlayer ->
                     dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, team), tabPlayer)
             );
@@ -104,6 +123,7 @@ public class ScoreboardManager {
     public void resetCache(@NotNull Player player, @NotNull Group group) {
         final String team = createdTeams.remove(player.getUniqueId());
         if (team != null) {
+            sortedTeams.remove(team);
             dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, team), group);
         }
     }
@@ -165,6 +185,7 @@ public class ScoreboardManager {
                 }
 
                 createdTeams.put(player.getUniqueId(), role);
+                sortedTeams.add(role);
                 this.nametags.put(role, newTag);
                 dispatchGroupCreatePacket(plugin, tabPlayer, role, newTag, name);
             } else if (force || (this.nametags.containsKey(role) && !this.nametags.get(role).equals(newTag))) {
@@ -192,6 +213,9 @@ public class ScoreboardManager {
     }
 
     public void resendAllTeams(@NotNull TabPlayer tabPlayer) {
+        if (!teams) {
+            return;
+        }
         if (!plugin.getSettings().isSendScoreboardPackets()) {
             return;
         }
@@ -238,6 +262,9 @@ public class ScoreboardManager {
     private void dispatchGroupCreatePacket(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer,
                                            @NotNull String teamName, @NotNull Nametag nametag,
                                            @NotNull String... teamMembers) {
+        if(!teams) {
+            return;
+        }
         tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer).forEach(viewer -> {
             if (!viewer.getPlayer().isActive()) {
                 return;
@@ -252,6 +279,9 @@ public class ScoreboardManager {
                                       @NotNull String teamName, @NotNull Nametag nametag,
                                       @NotNull TabPlayer viewer,
                                       @NotNull String... teamMembers) {
+        if(!teams) {
+            return;
+        }
         final boolean canSee = plugin.getVanishManager().canSee(viewer.getPlayer().getUsername(), tabPlayer.getPlayer().getUsername());
         if (!canSee) {
             return;
@@ -265,6 +295,9 @@ public class ScoreboardManager {
     private void dispatchGroupChangePacket(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer,
                                            @NotNull String teamName,
                                            @NotNull Nametag nametag) {
+        if (!teams) {
+            return;
+        }
         tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer).forEach(viewer -> {
             if (viewer == tabPlayer || !viewer.getPlayer().isActive()) {
                 return;
@@ -299,6 +332,10 @@ public class ScoreboardManager {
             return;
         }
 
+        if (!teams) {
+            return;
+        }
+
         try {
             final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
             connectedPlayer.getConnection().write(packet);
@@ -308,6 +345,10 @@ public class ScoreboardManager {
     }
 
     private void dispatchGroupPacket(@NotNull UpdateTeamsPacket packet, @NotNull Group group) {
+        if (!teams) {
+            return;
+        }
+
         final boolean isRemove = packet.isRemoveTeam();
         group.registeredServers(plugin).forEach(server -> server.getPlayersConnected().forEach(connected -> {
             try {
@@ -323,6 +364,9 @@ public class ScoreboardManager {
     }
 
     private void dispatchGroupPacket(@NotNull UpdateTeamsPacket packet, @NotNull TabPlayer tabPlayer) {
+        if (!teams) {
+            return;
+        }
         final Player player = tabPlayer.getPlayer();
         final Optional<ServerConnection> optionalServerConnection = player.getCurrentServer();
         if (optionalServerConnection.isEmpty()) {
@@ -346,6 +390,9 @@ public class ScoreboardManager {
     }
 
     public void registerPacket() {
+        if (!teams) {
+            return;
+        }
         try {
             packetRegistration = PacketRegistration.of(UpdateTeamsPacket.class)
                     .direction(ProtocolUtils.Direction.CLIENTBOUND)
@@ -389,6 +436,9 @@ public class ScoreboardManager {
      * @param canSee    A boolean indicating whether the player can see the target player.
      */
     public void recalculateVanishForPlayer(TabPlayer tabPlayer, TabPlayer target, boolean canSee) {
+        if (!teams) {
+            return;
+        }
         final Player player = tabPlayer.getPlayer();
         final String team = createdTeams.get(target.getPlayer().getUniqueId());
         if (team == null) {

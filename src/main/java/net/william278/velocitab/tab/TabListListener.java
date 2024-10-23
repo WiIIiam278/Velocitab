@@ -144,7 +144,7 @@ public class TabListListener {
         }
 
         final Group group = groupOptional.get();
-        plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined, group));
+        plugin.getScoreboardManager().resetCache(joined, group);
         if (justQuit.contains(joined.getUniqueId())) {
             plugin.getServer().getScheduler().buildTask(plugin,
                             () -> tabList.joinPlayer(joined, group))

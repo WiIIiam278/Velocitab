@@ -33,8 +33,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly "com.velocitypowered:velocity-api:${velocity_api_version}-SNAPSHOT"
-    compileOnly "com.velocitypowered:velocity-proxy:${velocity_api_version}-SNAPSHOT"
+//    compileOnly "com.velocitypowered:velocity-api:${velocity_api_version}-SNAPSHOT"
+//    compileOnly "com.velocitypowered:velocity-proxy:${velocity_api_version}-SNAPSHOT"
+    compileOnly files('libs/velocity-proxy-3.3.0-SNAPSHOT-all.jar')
 
     compileOnly 'io.netty:netty-codec-http:4.1.114.Final'
     compileOnly 'org.projectlombok:lombok:1.18.34'

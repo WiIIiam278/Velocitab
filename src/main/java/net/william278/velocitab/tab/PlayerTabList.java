@@ -410,11 +410,15 @@ public class PlayerTabList {
             if (order == -1) {
                 return;
             }
+            if (!needsToUpdateSortingOrder(tabPlayer, order)) {
+                return;
+            }
+            tabPlayer.setListOrder(order);
             tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer).forEach(p -> {
                 if (!hasListOrder(p)) {
                     return;
                 }
-                updateSorting(p, p.getPlayer().getUniqueId(), order);
+                updateSorting(p, tabPlayer.getPlayer().getUniqueId(), order);
             });
         });
     }
@@ -561,6 +565,10 @@ public class PlayerTabList {
      */
     private boolean hasListOrder(@NotNull TabPlayer tabPlayer) {
         return tabPlayer.getPlayer().getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_21_2);
+    }
+
+    private boolean needsToUpdateSortingOrder(@NotNull TabPlayer tabPlayer, int position) {
+        return tabPlayer.getListOrder() != position;
     }
 
     private void updateSorting(@NotNull TabPlayer tabPlayer, @NotNull UUID uuid, int position) {

@@ -21,8 +21,8 @@ player.sendPluginMessage(plugin, "velocitab:update_custom_name", "Steve".getByte
 ```
 </details>
 
-### 2 Update team color
-To change a player's team color in the TAB list, you can send a plugin message with the channel `velocitab:update_team_color` and as data `teamColor`.
+### 2 Update color of player's name in NameTag
+To change player's name in NameTag, you can send a plugin message with the channel `velocitab:update_team_color` and as data `teamColor`.
 You can only use legacy color codes, for example `a` for green, `b` for aqua, etc.
 This option overrides the glow effect if set
 

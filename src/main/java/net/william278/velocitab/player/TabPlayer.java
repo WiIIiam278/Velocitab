@@ -65,6 +65,8 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private Component lastHeader;
     private Component lastFooter;
     private String teamName;
+    @Setter
+    private int listOrder = -1;
     @Nullable
     @Setter
     private UpdateTeamsPacket.TeamColor teamColor;

@@ -30,6 +30,7 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 import com.velocitypowered.proxy.protocol.ProtocolUtils;
 import com.velocitypowered.proxy.protocol.StateRegistry;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
@@ -51,6 +52,7 @@ public class ScoreboardManager {
     private final Map<UUID, String> createdTeams;
     private final Map<String, Nametag> nametags;
     private final Multimap<UUID, String> trackedTeams;
+    @Getter
     private final PriorityQueue<String> sortedTeams;
 
     public ScoreboardManager(@NotNull Velocitab velocitab, boolean teams) {
@@ -60,7 +62,7 @@ public class ScoreboardManager {
         this.nametags = Maps.newConcurrentMap();
         this.versions = Maps.newHashMap();
         this.trackedTeams = Multimaps.synchronizedMultimap(Multimaps.newSetMultimap(Maps.newConcurrentMap(), Sets::newConcurrentHashSet));
-        this.sortedTeams = new PriorityQueue<>();
+        this.sortedTeams = new PriorityQueue<>(Comparator.reverseOrder());
         this.registerVersions();
     }
 
@@ -80,7 +82,7 @@ public class ScoreboardManager {
             protocol48Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol48Adapter));
         } catch (NoSuchFieldError e) {
             throw new IllegalStateException("Failed to register Scoreboard Teams packets." +
-                                            " Velocitab probably does not (yet) support your Proxy version.", e);
+                    " Velocitab probably does not (yet) support your Proxy version.", e);
         }
     }
 
@@ -147,12 +149,13 @@ public class ScoreboardManager {
             return;
         }
         final Set<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
+        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty();
 
         final Optional<Nametag> cachedTag = Optional.ofNullable(nametags.getOrDefault(teamName, null));
         cachedTag.ifPresent(nametag -> siblings.forEach(server -> server.getPlayersConnected().stream().filter(p -> p != player)
                 .forEach(connected -> {
                     if (vanish && !plugin.getVanishManager().canSee(connected.getUsername(), player.getUsername())) {
-                        dispatchPacket(UpdateTeamsPacket.removeTeam(plugin, teamName), connected);
+                        sendPacket(connected, UpdateTeamsPacket.removeTeam(plugin, teamName), isNameTagEmpty);
                         trackedTeams.remove(connected.getUniqueId(), teamName);
                     } else {
                         dispatchGroupCreatePacket(plugin, tabPlayer, teamName, nametag, player.getUsername());
@@ -183,7 +186,10 @@ public class ScoreboardManager {
                             tabPlayer
                     );
                 }
-
+                final String oldRole = createdTeams.remove(player.getUniqueId());
+                if (oldRole != null) {
+                    sortedTeams.remove(oldRole);
+                }
                 createdTeams.put(player.getUniqueId(), role);
                 sortedTeams.add(role);
                 this.nametags.put(role, newTag);
@@ -289,7 +295,8 @@ public class ScoreboardManager {
 
         final UpdateTeamsPacket packet = UpdateTeamsPacket.create(plugin, tabPlayer, teamName, nametag, viewer, teamMembers);
         trackedTeams.put(viewer.getPlayer().getUniqueId(), teamName);
-        dispatchPacket(packet, viewer.getPlayer());
+        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty();
+        sendPacket(viewer.getPlayer(), packet, isNameTagEmpty);
     }
 
     private void dispatchGroupChangePacket(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer,
@@ -298,6 +305,7 @@ public class ScoreboardManager {
         if (!teams) {
             return;
         }
+        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty();
         tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer).forEach(viewer -> {
             if (viewer == tabPlayer || !viewer.getPlayer().isActive()) {
                 return;
@@ -322,27 +330,27 @@ public class ScoreboardManager {
                 return;
             }
             tabPlayer.setRelationalNametag(viewer.getPlayer().getUniqueId(), prefix, suffix);
-            dispatchPacket(packet, viewer.getPlayer());
+            sendPacket(viewer.getPlayer(), packet, isNameTagEmpty);
         });
     }
 
-    private void dispatchPacket(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
-        if (!player.isActive()) {
-            plugin.getTabList().removeOfflinePlayer(player);
-            return;
-        }
-
-        if (!teams) {
-            return;
-        }
-
-        try {
-            final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
-            connectedPlayer.getConnection().write(packet);
-        } catch (Throwable e) {
-            plugin.log(Level.ERROR, "Failed to dispatch packet (unsupported client or server version)", e);
-        }
-    }
+//    private void dispatchPacket(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
+//        if (!player.isActive()) {
+//            plugin.getTabList().removeOfflinePlayer(player);
+//            return;
+//        }
+//
+//        if (!teams) {
+//            return;
+//        }
+//
+//        try {
+//            final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
+//            connectedPlayer.getConnection().write(packet);
+//        } catch (Throwable e) {
+//            plugin.log(Level.ERROR, "Failed to dispatch packet (unsupported client or server version)", e);
+//        }
+//    }
 
     private void dispatchGroupPacket(@NotNull UpdateTeamsPacket packet, @NotNull Group group) {
         if (!teams) {
@@ -350,10 +358,10 @@ public class ScoreboardManager {
         }
 
         final boolean isRemove = packet.isRemoveTeam();
+        final boolean isNameTagEmpty = group.nametag().isEmpty();
         group.registeredServers(plugin).forEach(server -> server.getPlayersConnected().forEach(connected -> {
             try {
-                final ConnectedPlayer connectedPlayer = (ConnectedPlayer) connected;
-                connectedPlayer.getConnection().write(packet);
+                sendPacket(connected, packet, isNameTagEmpty);
                 if (isRemove) {
                     trackedTeams.remove(connected.getUniqueId(), packet.teamName());
                 }
@@ -374,6 +382,7 @@ public class ScoreboardManager {
         }
 
         final Set<Player> players = tabPlayer.getGroup().getPlayers(plugin);
+        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty();
         players.forEach(connected -> {
             try {
                 final boolean canSee = plugin.getVanishManager().canSee(connected.getUsername(), player.getUsername());
@@ -381,12 +390,25 @@ public class ScoreboardManager {
                     return;
                 }
 
-                final ConnectedPlayer connectedPlayer = (ConnectedPlayer) connected;
-                connectedPlayer.getConnection().write(packet);
+                sendPacket(connected, packet, isNameTagEmpty);
             } catch (Throwable e) {
                 plugin.log(Level.ERROR, "Failed to dispatch packet (unsupported client or server version)", e);
             }
         });
+    }
+
+    private void sendPacket(@NotNull Player player, @NotNull UpdateTeamsPacket packet, boolean isNameTagEmpty) {
+        if (!player.isActive()) {
+            plugin.getTabList().removeOfflinePlayer(player);
+            return;
+        }
+        if(player.getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_21_2) && isNameTagEmpty) {
+            return;
+        }
+
+        final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
+        connectedPlayer.getConnection().write(packet);
+        plugin.getLogger().info("Sending packet to " + player.getUsername() + " with team " + packet.teamName());
     }
 
     public void registerPacket() {
@@ -409,7 +431,8 @@ public class ScoreboardManager {
                     .mapping(0x5A, MINECRAFT_1_19_4, false)
                     .mapping(0x5C, MINECRAFT_1_20_2, false)
                     .mapping(0x5E, MINECRAFT_1_20_3, false)
-                    .mapping(0x60, MINECRAFT_1_20_5, false);
+                    .mapping(0x60, MINECRAFT_1_20_5, false)
+                    .mapping(0x67, MINECRAFT_1_21_2, false);
             packetRegistration.register();
         } catch (Throwable e) {
             plugin.log(Level.ERROR, "Failed to register UpdateTeamsPacket", e);
@@ -446,7 +469,8 @@ public class ScoreboardManager {
         }
 
         final UpdateTeamsPacket removeTeam = UpdateTeamsPacket.removeTeam(plugin, team);
-        dispatchPacket(removeTeam, player);
+        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty();
+        sendPacket(player, removeTeam, isNameTagEmpty);
         trackedTeams.remove(player.getUniqueId(), team);
 
         if (canSee) {

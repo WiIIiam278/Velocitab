@@ -19,6 +19,8 @@
 
 package net.william278.velocitab.config;
 
+import com.velocitypowered.api.plugin.PluginContainer;
+import com.velocitypowered.api.plugin.PluginDescription;
 import de.exlll.configlib.NameFormatters;
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
@@ -137,8 +139,10 @@ public interface ConfigProvider {
 
         final Metadata metadata = getMetadata();
         final Version proxyVersion = getVelocityVersion();
+        final Version papiProxyBridgeVersion = getPapiProxyBridgeVersion();
         metadata.validateApiVersion(proxyVersion);
         metadata.validateBuild(proxyVersion);
+        metadata.validatePapiProxyBridgeVersion(papiProxyBridgeVersion);
     }
 
     @NotNull
@@ -149,6 +153,15 @@ public interface ConfigProvider {
                 .filter(s -> s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
                 .map(Boolean::parseBoolean)
                 .findFirst();
+    }
+
+    default Version getPapiProxyBridgeVersion() {
+        final Optional<PluginDescription> pluginDescription = getPlugin().getServer().getPluginManager().getPlugin("papiproxybridge").map(PluginContainer::getDescription);
+        if (pluginDescription.isEmpty() || pluginDescription.get().getVersion().isEmpty()) {
+            return Version.fromString("0.0.0");
+        }
+        final String version = pluginDescription.get().getVersion().get();
+        return Version.fromString(version);
     }
 
     @NotNull

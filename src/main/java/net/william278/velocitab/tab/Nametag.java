@@ -50,4 +50,8 @@ public record Nametag(@NotNull String prefix, @NotNull String suffix) {
         return (prefix.equals(other.prefix)) && (suffix.equals(other.suffix));
     }
 
+    public boolean isEmpty() {
+        return prefix.isEmpty() && suffix.isEmpty();
+    }
+
 }

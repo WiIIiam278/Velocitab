@@ -20,6 +20,7 @@ ext {
 
     set 'velocity_api_version', velocity_api_version.toString()
     set 'velocity_minimum_build', velocity_minimum_build.toString()
+    set 'papi_proxy_bridge_minimum_version', papi_proxy_bridge_minimum_version.toString()
 }
 
 repositories {
@@ -159,11 +160,15 @@ publishing {
 }
 
 tasks {
+    var papi = papi_proxy_bridge_minimum_version
     runVelocity {
         velocityVersion("${velocity_api_version}-SNAPSHOT")
 
         downloadPlugins {
-            modrinth ("papiproxybridge", "1.7")
+//            github("William278", "PAPIProxyBridge", papi, "PAPIProxyBridge-Velocity-" + papi + ".jar")
+//            github("William278", "PAPIProxyBridge", "1.7", "PAPIProxyBridge-Velocity-1.7.jar")
+            url("https://github.com/WiIIiam278/PAPIProxyBridge/releases/download/${papi}/PAPIProxyBridge-Velocity-${papi}.jar")
+//            modrinth ("papiproxybridge", "1.7")
             modrinth ("miniplaceholders", "2.2.4")
         }
     }

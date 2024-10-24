@@ -37,6 +37,7 @@ public class Metadata {
 
     private String velocityApiVersion;
     private int velocityMinimumBuild;
+    private String papiProxyBridgeMinimumVersion;
 
     public void validateApiVersion(@NotNull Version version) {
         if (version.compareTo(Version.fromString(velocityApiVersion)) < 0) {
@@ -53,6 +54,14 @@ public class Metadata {
             throw new IllegalStateException("Your Velocity build version (#" + serverBuild + ") is not supported! " +
                     "Disabling Velocitab. Please update to at least Velocity v" + velocityApiVersion
                     + " build #" + velocityMinimumBuild + " or newer.");
+        }
+    }
+
+    public void validatePapiProxyBridgeVersion(@NotNull Version version) {
+        if (version.compareTo(Version.fromString(papiProxyBridgeMinimumVersion)) < 0) {
+            final String serverVersion = version.toStringWithoutMetadata();
+            throw new IllegalStateException("Your PAPIProxyBridge version (" + serverVersion + ") is not supported! " +
+                    "Disabling Velocitab. Please update to at least PAPIProxyBridge v" + papiProxyBridgeMinimumVersion  + ".");
         }
     }
 

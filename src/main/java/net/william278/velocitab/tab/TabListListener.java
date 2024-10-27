@@ -20,7 +20,6 @@
 package net.william278.velocitab.tab;
 
 import com.google.common.collect.Sets;
-import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.player.KickedFromServerEvent;

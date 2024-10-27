@@ -39,7 +39,10 @@ import net.william278.velocitab.tab.Nametag;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
+import java.text.Normalizer;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import static com.velocitypowered.api.network.ProtocolVersion.*;
 
@@ -49,11 +52,12 @@ public class ScoreboardManager {
     private final Velocitab plugin;
     private final boolean teams;
     private final Map<ProtocolVersion, TeamsPacketAdapter> versions;
+    @Getter
     private final Map<UUID, String> createdTeams;
     private final Map<String, Nametag> nametags;
     private final Multimap<UUID, String> trackedTeams;
     @Getter
-    private final PriorityQueue<String> sortedTeams;
+    private final PriorityBlockingQueue<String> sortedTeams;
 
     public ScoreboardManager(@NotNull Velocitab velocitab, boolean teams) {
         this.plugin = velocitab;
@@ -62,8 +66,16 @@ public class ScoreboardManager {
         this.nametags = Maps.newConcurrentMap();
         this.versions = Maps.newHashMap();
         this.trackedTeams = Multimaps.synchronizedMultimap(Multimaps.newSetMultimap(Maps.newConcurrentMap(), Sets::newConcurrentHashSet));
-        this.sortedTeams = new PriorityQueue<>(Comparator.reverseOrder());
+        this.sortedTeams = new PriorityBlockingQueue<>(50, getComparator().reversed());
         this.registerVersions();
+    }
+
+    private static Comparator<String> getComparator() {
+        return (o1, o2) -> {
+            o1 = Normalizer.normalize(o1, Normalizer.Form.NFD).trim();
+            o2 = Normalizer.normalize(o2, Normalizer.Form.NFD).trim();
+            return o1.compareTo(o2);
+        };
     }
 
     public boolean handleTeams() {
@@ -114,7 +126,7 @@ public class ScoreboardManager {
     public void resetCache(@NotNull Player player) {
         final String team = createdTeams.remove(player.getUniqueId());
         if (team != null) {
-            sortedTeams.remove(team);
+            removeSortedTeam(team);
             plugin.getTabList().getTabPlayer(player).ifPresent(tabPlayer ->
                     dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, team), tabPlayer)
             );
@@ -125,8 +137,15 @@ public class ScoreboardManager {
     public void resetCache(@NotNull Player player, @NotNull Group group) {
         final String team = createdTeams.remove(player.getUniqueId());
         if (team != null) {
-            sortedTeams.remove(team);
+            removeSortedTeam(team);
             dispatchGroupPacket(UpdateTeamsPacket.removeTeam(plugin, team), group);
+        }
+    }
+
+    private void removeSortedTeam(@NotNull String teamName) {
+        final boolean result = sortedTeams.remove(teamName);
+        if (!result) {
+            plugin.log(Level.ERROR, "Failed to remove team " + teamName + " from sortedTeams");
         }
     }
 
@@ -170,14 +189,14 @@ public class ScoreboardManager {
      * @param role      The new role of the player. Must not be null.
      * @param force     Whether to force the update even if the player's nametag is the same.
      */
-    public void updateRole(@NotNull TabPlayer tabPlayer, @NotNull String role, boolean force) {
+    public CompletableFuture<Void> updateRole(@NotNull TabPlayer tabPlayer, @NotNull String role, boolean force) {
         final Player player = tabPlayer.getPlayer();
         if (!player.isActive()) {
             plugin.getTabList().removeOfflinePlayer(player);
-            return;
+            return CompletableFuture.completedFuture(null);
         }
-
         final String name = player.getUsername();
+        final CompletableFuture<Void> future = new CompletableFuture<>();
         tabPlayer.getNametag(plugin).thenAccept(newTag -> {
             if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
                 if (createdTeams.containsKey(player.getUniqueId())) {
@@ -188,10 +207,13 @@ public class ScoreboardManager {
                 }
                 final String oldRole = createdTeams.remove(player.getUniqueId());
                 if (oldRole != null) {
-                    sortedTeams.remove(oldRole);
+                    removeSortedTeam(oldRole);
                 }
                 createdTeams.put(player.getUniqueId(), role);
-                sortedTeams.add(role);
+                final boolean a = sortedTeams.add(role);
+                if(!a) {
+                    plugin.log(Level.ERROR, "Failed to add team " + role + " to sortedTeams");
+                }
                 this.nametags.put(role, newTag);
                 dispatchGroupCreatePacket(plugin, tabPlayer, role, newTag, name);
             } else if (force || (this.nametags.containsKey(role) && !this.nametags.get(role).equals(newTag))) {
@@ -200,10 +222,13 @@ public class ScoreboardManager {
             } else {
                 updatePlaceholders(tabPlayer);
             }
+            future.complete(null);
         }).exceptionally(e -> {
             plugin.log(Level.ERROR, "Failed to update role for " + player.getUsername(), e);
             return null;
         });
+
+        return future;
     }
 
     public void updatePlaceholders(@NotNull TabPlayer tabPlayer) {
@@ -390,7 +415,6 @@ public class ScoreboardManager {
 
         final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
         connectedPlayer.getConnection().write(packet);
-        plugin.getLogger().info("Sending packet to " + player.getUsername() + " with team " + packet.teamName());
     }
 
     public void registerPacket() {

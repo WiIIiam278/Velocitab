@@ -165,10 +165,7 @@ tasks {
         velocityVersion("${velocity_api_version}-SNAPSHOT")
 
         downloadPlugins {
-//            github("William278", "PAPIProxyBridge", papi, "PAPIProxyBridge-Velocity-" + papi + ".jar")
-//            github("William278", "PAPIProxyBridge", "1.7", "PAPIProxyBridge-Velocity-1.7.jar")
-            url("https://github.com/WiIIiam278/PAPIProxyBridge/releases/download/${papi}/PAPIProxyBridge-Velocity-${papi}.jar")
-//            modrinth ("papiproxybridge", "1.7")
+            modrinth ("papiproxybridge", papi)
             modrinth ("miniplaceholders", "2.2.4")
         }
     }

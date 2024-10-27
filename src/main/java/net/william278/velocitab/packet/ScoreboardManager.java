@@ -334,24 +334,6 @@ public class ScoreboardManager {
         });
     }
 
-//    private void dispatchPacket(@NotNull UpdateTeamsPacket packet, @NotNull Player player) {
-//        if (!player.isActive()) {
-//            plugin.getTabList().removeOfflinePlayer(player);
-//            return;
-//        }
-//
-//        if (!teams) {
-//            return;
-//        }
-//
-//        try {
-//            final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
-//            connectedPlayer.getConnection().write(packet);
-//        } catch (Throwable e) {
-//            plugin.log(Level.ERROR, "Failed to dispatch packet (unsupported client or server version)", e);
-//        }
-//    }
-
     private void dispatchGroupPacket(@NotNull UpdateTeamsPacket packet, @NotNull Group group) {
         if (!teams) {
             return;

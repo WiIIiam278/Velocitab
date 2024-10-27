@@ -51,7 +51,7 @@ public class TabGroups implements ConfigValidator {
             List.of("<rainbow:!2>Running Velocitab by William278 & AlexDev_</rainbow>"),
             List.of("<gray>There are currently %players_online%/%max_players_online% players online</gray>"),
             "<gray>[%server%] %prefix%%username%</gray>",
-            new Nametag("<white>%prefix%</white>", "<white>%suffix%</white>"),
+            new Nametag("", ""),
             Set.of("lobby", "survival", "creative", "minigames", "skyblock", "prison", "hub"),
             List.of("%role_weight%", "%username_lower%"),
             false,

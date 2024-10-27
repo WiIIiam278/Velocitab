@@ -63,11 +63,12 @@ public class TabGroups implements ConfigValidator {
     public List<Group> groups = List.of(DEFAULT_GROUP);
 
     @NotNull
+    @SuppressWarnings("unused")
     public Group getGroupFromName(@NotNull String name) {
         return groups.stream()
                 .filter(group -> group.name().equals(name))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No group with name " + name + " found"));
+                .orElseThrow(() -> new IllegalStateException("No group with name %s found".formatted(name)));
     }
 
     public Optional<Group> getGroup(@NotNull String name) {

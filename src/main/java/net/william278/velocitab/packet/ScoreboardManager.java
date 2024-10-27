@@ -82,7 +82,7 @@ public class ScoreboardManager {
             protocol48Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol48Adapter));
         } catch (NoSuchFieldError e) {
             throw new IllegalStateException("Failed to register Scoreboard Teams packets." +
-                    " Velocitab probably does not (yet) support your Proxy version.", e);
+                                            " Velocitab probably does not (yet) support your Proxy version.", e);
         }
     }
 
@@ -384,7 +384,7 @@ public class ScoreboardManager {
             plugin.getTabList().removeOfflinePlayer(player);
             return;
         }
-        if(player.getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_21_2) && isNameTagEmpty) {
+        if (player.getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_21_2) && isNameTagEmpty) {
             return;
         }
 

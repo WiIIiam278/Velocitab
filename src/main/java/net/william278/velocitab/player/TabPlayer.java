@@ -244,6 +244,10 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         relationalNametags.remove(target);
     }
 
+    public void unsetTabListOrder(@NotNull UUID target) {
+        cachedListOrders.remove(target);
+    }
+
     public Optional<Component[]> getRelationalNametag(@NotNull UUID target) {
         return Optional.ofNullable(relationalNametags.get(target));
     }

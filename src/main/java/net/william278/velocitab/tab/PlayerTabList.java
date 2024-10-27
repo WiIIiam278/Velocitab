@@ -147,6 +147,7 @@ public class PlayerTabList {
         players.values().forEach(p -> {
             p.unsetRelationalDisplayName(player.getUniqueId());
             p.unsetRelationalNametag(player.getUniqueId());
+            p.unsetTabListOrder(player.getUniqueId());
         });
     }
 

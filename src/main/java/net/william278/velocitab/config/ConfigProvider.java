@@ -131,18 +131,24 @@ public interface ConfigProvider {
         }
     }
 
+    @SuppressWarnings("OptionalIsPresent")
     default void checkCompatibility() {
         if (getSkipCompatibilityCheck().orElse(false)) {
-            getPlugin().getLogger().warn("Skipping compatibility check");
+            getPlugin().getLogger().warn("Skipping compatibility checks");
             return;
         }
 
+        // Validate Velocity platform version
         final Metadata metadata = getMetadata();
         final Version proxyVersion = getVelocityVersion();
-        final Version papiProxyBridgeVersion = getPapiProxyBridgeVersion();
         metadata.validateApiVersion(proxyVersion);
         metadata.validateBuild(proxyVersion);
-        metadata.validatePapiProxyBridgeVersion(papiProxyBridgeVersion);
+
+        // Validate PAPIProxyBridge hook version
+        final Optional<Version> papiProxyBridgeVersion = getPapiProxyBridgeVersion();
+        if (papiProxyBridgeVersion.isPresent()) {
+            metadata.validatePapiProxyBridgeVersion(papiProxyBridgeVersion.get());
+        }
     }
 
     @NotNull
@@ -155,13 +161,10 @@ public interface ConfigProvider {
                 .findFirst();
     }
 
-    default Version getPapiProxyBridgeVersion() {
-        final Optional<PluginDescription> pluginDescription = getPlugin().getServer().getPluginManager().getPlugin("papiproxybridge").map(PluginContainer::getDescription);
-        if (pluginDescription.isEmpty() || pluginDescription.get().getVersion().isEmpty()) {
-            return Version.fromString("0.0.0");
-        }
-        final String version = pluginDescription.get().getVersion().get();
-        return Version.fromString(version);
+    default Optional<Version> getPapiProxyBridgeVersion() {
+        return getPlugin().getServer().getPluginManager()
+                .getPlugin("papiproxybridge").map(PluginContainer::getDescription)
+                .flatMap(PluginDescription::getVersion).map(Version::fromString);
     }
 
     @NotNull

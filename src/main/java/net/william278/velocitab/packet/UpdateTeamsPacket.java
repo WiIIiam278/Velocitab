@@ -36,7 +36,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Getter
@@ -208,22 +207,14 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
     @Override
     public void decode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
-        final Optional<ScoreboardManager> optionalManager = plugin.getScoreboardManager();
-        if (optionalManager.isEmpty()) {
-            return;
-        }
-
-        optionalManager.get().getPacketAdapter(protocolVersion).decode(byteBuf, this, protocolVersion);
+        final ScoreboardManager scoreboardManager = plugin.getScoreboardManager();
+        scoreboardManager.getPacketAdapter(protocolVersion).decode(byteBuf, this, protocolVersion);
     }
 
     @Override
     public void encode(ByteBuf byteBuf, ProtocolUtils.Direction direction, ProtocolVersion protocolVersion) {
-        final Optional<ScoreboardManager> optionalManager = plugin.getScoreboardManager();
-        if (optionalManager.isEmpty()) {
-            return;
-        }
-
-        optionalManager.get().getPacketAdapter(protocolVersion).encode(byteBuf, this, protocolVersion);
+        final ScoreboardManager scoreboardManager = plugin.getScoreboardManager();
+        scoreboardManager.getPacketAdapter(protocolVersion).encode(byteBuf, this, protocolVersion);
     }
 
     @Override

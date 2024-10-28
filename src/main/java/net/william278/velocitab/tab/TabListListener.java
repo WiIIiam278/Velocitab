@@ -48,7 +48,8 @@ public class TabListListener {
 
     private final Velocitab plugin;
     private final PlayerTabList tabList;
-    // In 1.8 there is a packet delay problem
+
+    // Set of UUIDs of users who just left the game - fixes packet delay problem on Minecraft 1.8.x
     private final Set<UUID> justQuit;
 
     public TabListListener(@NotNull Velocitab plugin, @NotNull PlayerTabList tabList) {
@@ -102,7 +103,7 @@ public class TabListListener {
         plugin.getTabList().clearCachedData(joined);
 
         if (!plugin.getSettings().isShowAllPlayersFromAllGroups() && previousGroup.isPresent()
-                && (groupOptional.isPresent() && !previousGroup.get().equals(groupOptional.get())
+            && (groupOptional.isPresent() && !previousGroup.get().equals(groupOptional.get())
                 || groupOptional.isEmpty())) {
             tabList.removeOldEntry(previousGroup.get(), joined.getUniqueId());
         }
@@ -126,7 +127,7 @@ public class TabListListener {
                 final Component currentHeader = joined.getPlayerListHeader();
                 final Component currentFooter = joined.getPlayerListFooter();
                 if ((header.equals(currentHeader) && footer.equals(currentFooter)) ||
-                        (currentHeader.equals(Component.empty()) && currentFooter.equals(Component.empty()))
+                    (currentHeader.equals(Component.empty()) && currentFooter.equals(Component.empty()))
                 ) {
                     joined.sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
                     joined.getCurrentServer().ifPresent(serverConnection -> serverConnection.getServer().getPlayersConnected().forEach(player ->
@@ -144,7 +145,7 @@ public class TabListListener {
         }
 
         final Group group = groupOptional.get();
-        plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(joined, group));
+        plugin.getScoreboardManager().resetCache(joined, group);
         if (justQuit.contains(joined.getUniqueId())) {
             plugin.getServer().getScheduler().buildTask(plugin,
                             () -> tabList.joinPlayer(joined, group))
@@ -156,7 +157,8 @@ public class TabListListener {
         tabList.joinPlayer(joined, group);
     }
 
-    @Subscribe(order = PostOrder.LAST)
+    @SuppressWarnings("deprecation")
+    @Subscribe(order = PostOrder.CUSTOM, priority = Short.MIN_VALUE)
     public void onPlayerQuit(@NotNull DisconnectEvent event) {
         if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) {
             checkDelayedDisconnect(event);
@@ -178,7 +180,7 @@ public class TabListListener {
                 return;
             }
 
-            tabList.removeTablistUUID(event.getPlayer().getUniqueId());
+            tabList.removeTabListUUID(event.getPlayer().getUniqueId());
         }).delay(750, TimeUnit.MILLISECONDS).schedule();
     }
 

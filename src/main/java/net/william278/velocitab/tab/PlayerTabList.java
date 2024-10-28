@@ -26,6 +26,8 @@ import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.player.TabList;
 import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
+import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -34,6 +36,7 @@ import net.william278.velocitab.api.PlayerAddedToTabEvent;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.config.ServerUrl;
+import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
@@ -46,10 +49,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket.Action.UPDATE_LIST_ORDER;
+
 /**
- * The main class for tracking the server TAB list
+ * The main class for tracking the server TAB list for a map of {@link TabPlayer}s
  */
 public class PlayerTabList {
+
     private final Velocitab plugin;
     @Getter
     private final VanishTabList vanishTabList;
@@ -141,6 +147,7 @@ public class PlayerTabList {
         players.values().forEach(p -> {
             p.unsetRelationalDisplayName(player.getUniqueId());
             p.unsetRelationalNametag(player.getUniqueId());
+            p.unsetTabListOrder(player.getUniqueId());
         });
     }
 
@@ -220,10 +227,9 @@ public class PlayerTabList {
             }
             iteratedPlayer.sendHeaderAndFooter(this);
         }
-        plugin.getScoreboardManager().ifPresent(s -> {
-            s.resendAllTeams(tabPlayer);
-            tabPlayer.getTeamName(plugin).thenAccept(t -> s.updateRole(tabPlayer, t, false));
-        });
+        final ScoreboardManager scoreboardManager = plugin.getScoreboardManager();
+        scoreboardManager.resendAllTeams(tabPlayer);
+        updateSorting(tabPlayer, false);
         fixDuplicateEntries(joined);
         // Fire event without listening for result
         plugin.getServer().getEventManager().fireAndForget(new PlayerAddedToTabEvent(tabPlayer, group));
@@ -278,7 +284,7 @@ public class PlayerTabList {
                     .filter(entry -> !entry.getKey().equals(target.getUniqueId()))
                     .forEach(entry -> target.getTabList().removeEntry(entry.getKey()));
         } catch (Throwable error) {
-            plugin.log(Level.ERROR, "Failed to fix duplicate entries for class " + target.getTabList().getClass().getName() , error);
+            plugin.log(Level.ERROR, "Failed to fix duplicate entries for class " + target.getTabList().getClass().getName(), error);
         }
     }
 
@@ -288,12 +294,13 @@ public class PlayerTabList {
 
     /**
      * Remove a player from the tab list
-     * @param uuid
+     *
+     * @param uuid {@link UUID} of the {@link TabPlayer player} to remove
      */
-    protected void removeTablistUUID(@NotNull UUID uuid) {
-        getPlayers().forEach((key, value) -> {
-            value.getPlayer().getTabList().getEntry(uuid).ifPresent(entry -> value.getPlayer().getTabList().removeEntry(uuid));
-        });
+    protected void removeTabListUUID(@NotNull UUID uuid) {
+        getPlayers().forEach((key, value) -> value.getPlayer().getTabList().getEntry(uuid).ifPresent(
+                entry -> value.getPlayer().getTabList().removeEntry(uuid)
+        ));
     }
 
     protected void removePlayer(@NotNull Player target, @Nullable RegisteredServer server) {
@@ -318,7 +325,7 @@ public class PlayerTabList {
                 .delay(250, TimeUnit.MILLISECONDS)
                 .schedule();
         // Delete player team
-        plugin.getScoreboardManager().ifPresent(manager -> manager.resetCache(target));
+        plugin.getScoreboardManager().resetCache(target);
         //remove player from tab list cache
         getPlayers().remove(uuid);
     }
@@ -389,13 +396,25 @@ public class PlayerTabList {
             return;
         }
 
+        updateSorting(tabPlayer, force);
+    }
+
+    private void updateSorting(@NotNull TabPlayer tabPlayer, boolean force) {
         tabPlayer.getTeamName(plugin).thenAccept(teamName -> {
             if (teamName.isBlank()) {
                 return;
             }
-            plugin.getScoreboardManager().ifPresent(manager -> manager.updateRole(
-                    tabPlayer, teamName, force
-            ));
+            plugin.getScoreboardManager().updateRole(tabPlayer, teamName, force).thenAccept(v -> {
+                final int order = plugin.getScoreboardManager().getPosition(teamName);
+                if (order == -1) {
+                    plugin.log(Level.ERROR, "Failed to get position for " + tabPlayer.getPlayer().getUsername());
+                    return;
+                }
+
+                tabPlayer.setListOrder(order);
+                final Set<TabPlayer> players = tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer);
+                players.forEach(p -> recalculateSortingForPlayer(p, players));
+            });
         });
     }
 
@@ -531,6 +550,46 @@ public class PlayerTabList {
      */
     public void removeOfflinePlayer(@NotNull Player player) {
         players.remove(player.getUniqueId());
+    }
+
+    /**
+     * Whether the player can use server-side specified TAB list ordering (Minecraft 1.21.2+)
+     *
+     * @param tabPlayer player to check
+     * @return {@code true} if the user is on Minecraft 1.21.2+; {@code false}
+     */
+    private boolean hasListOrder(@NotNull TabPlayer tabPlayer) {
+        return tabPlayer.getPlayer().getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_21_2);
+    }
+
+    private void updateSorting(@NotNull TabPlayer tabPlayer, @NotNull UUID uuid, int position) {
+        if (!tabPlayer.getPlayer().getTabList().containsEntry(uuid)) {
+            return;
+        }
+        if (tabPlayer.getCachedListOrders().containsKey(uuid) && tabPlayer.getCachedListOrders().get(uuid) == position) {
+            return;
+        }
+        tabPlayer.getCachedListOrders().put(uuid, position);
+        final UpsertPlayerInfoPacket packet = new UpsertPlayerInfoPacket(UPDATE_LIST_ORDER);
+        final UpsertPlayerInfoPacket.Entry entry = new UpsertPlayerInfoPacket.Entry(uuid);
+        entry.setListOrder(position);
+        packet.addEntry(entry);
+        ((ConnectedPlayer) tabPlayer.getPlayer()).getConnection().write(packet);
+    }
+
+    private String getPlayerName(UUID uuid) {
+        return plugin.getServer().getPlayer(uuid).map(Player::getUsername).orElse("Unknown");
+    }
+
+    public synchronized void recalculateSortingForPlayer(@NotNull TabPlayer tabPlayer, @NotNull Set<TabPlayer> players) {
+        if (!hasListOrder(tabPlayer)) {
+            return;
+        }
+
+        players.forEach(p -> {
+            final int order = p.getListOrder();
+            updateSorting(tabPlayer, p.getPlayer().getUniqueId(), order);
+        });
     }
 
 }

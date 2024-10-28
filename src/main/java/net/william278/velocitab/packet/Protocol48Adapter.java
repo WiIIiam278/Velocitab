@@ -104,6 +104,7 @@ public class Protocol48Adapter extends TeamsPacketAdapter {
     /**
      * Returns a shortened version of the given string, with a maximum length of 16 characters.
      * This is used to ensure that the team name, display name, prefix and suffix are not too long for the client.
+     *
      * @param string the string to be shortened
      * @return the shortened string
      */

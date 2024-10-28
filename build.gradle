@@ -2,15 +2,15 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
     id 'xyz.jpenilla.run-velocity' version '2.3.1'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'com.gradleup.shadow' version '8.3.3'
     id 'org.cadixdev.licenser' version '0.6.1'
-    id 'org.ajoberstar.grgit' version '5.2.2'
+    id 'org.ajoberstar.grgit' version '5.3.0'
     id 'maven-publish'
     id 'java'
 }
 
 group 'net.william278'
-version "$ext.plugin_version${versionMetadata()}"
+version "$ext.plugin_version"
 description "$ext.plugin_description"
 defaultTasks 'licenseFormat', 'build'
 
@@ -20,23 +20,24 @@ ext {
 
     set 'velocity_api_version', velocity_api_version.toString()
     set 'velocity_minimum_build', velocity_minimum_build.toString()
+    set 'papi_proxy_bridge_minimum_version', papi_proxy_bridge_minimum_version.toString()
 }
 
 repositories {
     mavenCentral()
     maven { url = 'https://repo.william278.net/velocity/' }
-    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
-    maven { url = 'https://jitpack.io' }
     maven { url = 'https://repo.william278.net/releases/' }
     maven { url = 'https://repo.william278.net/snapshots/' }
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
     maven { url = 'https://repo.minebench.de/' }
+    maven { url = 'https://jitpack.io' }
 }
 
 dependencies {
     compileOnly "com.velocitypowered:velocity-api:${velocity_api_version}-SNAPSHOT"
     compileOnly "com.velocitypowered:velocity-proxy:${velocity_api_version}-SNAPSHOT"
 
-    compileOnly 'io.netty:netty-codec-http:4.1.112.Final'
+    compileOnly 'io.netty:netty-codec-http:4.1.114.Final'
     compileOnly 'org.projectlombok:lombok:1.18.34'
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.2.3'
@@ -71,7 +72,6 @@ license {
 }
 
 logger.lifecycle("Building Velocitab ${version} by William278")
-
 version rootProject.version
 archivesBaseName = "${rootProject.name}"
 
@@ -160,11 +160,12 @@ publishing {
 }
 
 tasks {
+    var papi = papi_proxy_bridge_minimum_version
     runVelocity {
         velocityVersion("${velocity_api_version}-SNAPSHOT")
 
         downloadPlugins {
-            modrinth ("papiproxybridge", "1.6.1")
+            modrinth ("papiproxybridge", papi)
             modrinth ("miniplaceholders", "2.2.4")
         }
     }

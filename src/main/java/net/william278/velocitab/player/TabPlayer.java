@@ -36,7 +36,10 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,10 +61,13 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private final Map<UUID, Component> relationalDisplayNames;
     private final Map<UUID, Component[]> relationalNametags;
     private final Map<String, String> cachedPlaceholders;
+    private final Map<UUID, Integer> cachedListOrders;
     private String lastDisplayName;
     private Component lastHeader;
     private Component lastFooter;
     private String teamName;
+    @Setter
+    private int listOrder = -1;
     @Nullable
     @Setter
     private UpdateTeamsPacket.TeamColor teamColor;
@@ -86,6 +92,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         this.relationalDisplayNames = Maps.newConcurrentMap();
         this.relationalNametags = Maps.newConcurrentMap();
         this.cachedPlaceholders = Maps.newConcurrentMap();
+        this.cachedListOrders = Maps.newConcurrentMap();
     }
 
     @NotNull
@@ -237,6 +244,10 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         relationalNametags.remove(target);
     }
 
+    public void unsetTabListOrder(@NotNull UUID target) {
+        cachedListOrders.remove(target);
+    }
+
     public Optional<Component[]> getRelationalNametag(@NotNull UUID target) {
         return Optional.ofNullable(relationalNametags.get(target));
     }
@@ -248,6 +259,8 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         lastHeader = null;
         lastFooter = null;
         role = Role.DEFAULT_ROLE;
+        teamName = null;
+        cachedListOrders.clear();
     }
 
     /**

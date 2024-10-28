@@ -65,7 +65,7 @@ jobs:
           hangar-token: ${{ secrets.HANGAR_API_KEY }}
           hangar-version-type: Alpha
           hangar-game-versions: |
-            3.3
+            3.4
           files: target/Velocitab-*.jar
           name: Velocitab v${{ env.version_name }}
           version: ${{ env.version_name }}
@@ -124,4 +124,5 @@ jobs:
             1.20.6
             1.21
             1.21.1
+            1.21.2
           java: 17

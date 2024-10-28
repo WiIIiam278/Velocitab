@@ -19,6 +19,8 @@
 
 package net.william278.velocitab.config;
 
+import com.velocitypowered.api.plugin.PluginContainer;
+import com.velocitypowered.api.plugin.PluginDescription;
 import de.exlll.configlib.NameFormatters;
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
@@ -129,16 +131,24 @@ public interface ConfigProvider {
         }
     }
 
+    @SuppressWarnings("OptionalIsPresent")
     default void checkCompatibility() {
         if (getSkipCompatibilityCheck().orElse(false)) {
-            getPlugin().getLogger().warn("Skipping compatibility check");
+            getPlugin().getLogger().warn("Skipping compatibility checks");
             return;
         }
 
+        // Validate Velocity platform version
         final Metadata metadata = getMetadata();
         final Version proxyVersion = getVelocityVersion();
         metadata.validateApiVersion(proxyVersion);
         metadata.validateBuild(proxyVersion);
+
+        // Validate PAPIProxyBridge hook version
+        final Optional<Version> papiProxyBridgeVersion = getPapiProxyBridgeVersion();
+        if (papiProxyBridgeVersion.isPresent()) {
+            metadata.validatePapiProxyBridgeVersion(papiProxyBridgeVersion.get());
+        }
     }
 
     @NotNull
@@ -149,6 +159,12 @@ public interface ConfigProvider {
                 .filter(s -> s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false"))
                 .map(Boolean::parseBoolean)
                 .findFirst();
+    }
+
+    default Optional<Version> getPapiProxyBridgeVersion() {
+        return getPlugin().getServer().getPluginManager()
+                .getPlugin("papiproxybridge").map(PluginContainer::getDescription)
+                .flatMap(PluginDescription::getVersion).map(Version::fromString);
     }
 
     @NotNull

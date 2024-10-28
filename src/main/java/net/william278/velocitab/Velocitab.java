@@ -59,7 +59,6 @@ import org.slf4j.event.Level;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 
 @Plugin(id = "velocitab")
 @Getter
@@ -144,9 +143,9 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
         return this;
     }
 
-    @NotNull
-    public Optional<ScoreboardManager> getScoreboardManager() {
-        return Optional.ofNullable(scoreboardManager);
+    @Override
+    public ScoreboardManager getScoreboardManager() {
+        return scoreboardManager;
     }
 
     private void prepareAPI() {

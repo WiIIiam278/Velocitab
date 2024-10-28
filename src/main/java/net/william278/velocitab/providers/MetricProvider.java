@@ -36,7 +36,8 @@ public interface MetricProvider {
 
     /**
      * Retrieves the Velocitab plugin instance.
-     * @return
+     *
+     * @return The Velocitab plugin instance.
      */
     Velocitab getPlugin();
 

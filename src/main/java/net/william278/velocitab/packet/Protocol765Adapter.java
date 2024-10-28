@@ -32,7 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Set;
 
 /**
- * Adapter for handling the UpdateTeamsPacket for Minecraft 1.20.3-1.20.5
+ * Adapter for handling the UpdateTeamsPacket for Minecraft 1.20.3-1.21.2
  */
 public class Protocol765Adapter extends Protocol404Adapter {
 
@@ -40,7 +40,8 @@ public class Protocol765Adapter extends Protocol404Adapter {
         super(plugin, Set.of(
                 ProtocolVersion.MINECRAFT_1_20_3,
                 ProtocolVersion.MINECRAFT_1_20_5,
-                ProtocolVersion.MINECRAFT_1_21
+                ProtocolVersion.MINECRAFT_1_21,
+                ProtocolVersion.MINECRAFT_1_21_2
         ));
     }
 
@@ -51,7 +52,9 @@ public class Protocol765Adapter extends Protocol404Adapter {
 
     @NotNull
     protected Component readComponent(@NotNull ByteBuf buf) {
-        return GsonComponentSerializer.gson().deserializeFromTree(ComponentHolder.deserialize(ProtocolUtils.readBinaryTag(buf, ProtocolVersion.MINECRAFT_1_20_3, null)));
+        return GsonComponentSerializer.gson().deserializeFromTree(ComponentHolder.deserialize(
+                ProtocolUtils.readBinaryTag(buf, ProtocolVersion.MINECRAFT_1_20_3, null)
+        ));
     }
 
 }

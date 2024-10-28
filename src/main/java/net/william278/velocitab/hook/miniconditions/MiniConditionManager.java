@@ -49,10 +49,10 @@ public class MiniConditionManager {
 
     public final static Map<String, String> REPLACE_2 = Map.of(
             "*LESS3*", "<",
-            "*GREATER3*",">",
+            "*GREATER3*", ">",
             "*LESS2*", "<",
             "*GREATER2*", ">"
-            );
+    );
 
     private final static Map<String, String> REPLACE_3 = Map.of(
             "?dp?", ":"

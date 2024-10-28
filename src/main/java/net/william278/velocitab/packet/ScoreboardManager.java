@@ -35,14 +35,14 @@ import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.sorting.SortedSet;
 import net.william278.velocitab.tab.Nametag;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
-import java.text.Normalizer;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import static com.velocitypowered.api.network.ProtocolVersion.*;
 
@@ -57,7 +57,7 @@ public class ScoreboardManager {
     private final Map<String, Nametag> nametags;
     private final Multimap<UUID, String> trackedTeams;
     @Getter
-    private final PriorityBlockingQueue<String> sortedTeams;
+    private final SortedSet sortedTeams;
 
     public ScoreboardManager(@NotNull Velocitab velocitab, boolean teams) {
         this.plugin = velocitab;
@@ -66,16 +66,8 @@ public class ScoreboardManager {
         this.nametags = Maps.newConcurrentMap();
         this.versions = Maps.newHashMap();
         this.trackedTeams = Multimaps.synchronizedMultimap(Multimaps.newSetMultimap(Maps.newConcurrentMap(), Sets::newConcurrentHashSet));
-        this.sortedTeams = new PriorityBlockingQueue<>(50, getComparator().reversed());
+        this.sortedTeams = new SortedSet(Comparator.reverseOrder());
         this.registerVersions();
-    }
-
-    private static Comparator<String> getComparator() {
-        return (o1, o2) -> {
-            o1 = Normalizer.normalize(o1, Normalizer.Form.NFD).trim();
-            o2 = Normalizer.normalize(o2, Normalizer.Form.NFD).trim();
-            return o1.compareTo(o2);
-        };
     }
 
     public boolean handleTeams() {
@@ -103,14 +95,7 @@ public class ScoreboardManager {
     }
 
     public int getPosition(@NotNull String teamName) {
-        int index = 0;
-        for (String team : sortedTeams) {
-            if (team.equals(teamName)) {
-                return index;
-            }
-            index++;
-        }
-        return -1;
+        return sortedTeams.getPosition(teamName);
     }
 
     @NotNull
@@ -143,7 +128,7 @@ public class ScoreboardManager {
     }
 
     private void removeSortedTeam(@NotNull String teamName) {
-        final boolean result = sortedTeams.remove(teamName);
+        final boolean result = sortedTeams.removeTeam(teamName);
         if (!result) {
             plugin.log(Level.ERROR, "Failed to remove team " + teamName + " from sortedTeams");
         }
@@ -189,7 +174,7 @@ public class ScoreboardManager {
      * @param role      The new role of the player. Must not be null.
      * @param force     Whether to force the update even if the player's nametag is the same.
      */
-    public CompletableFuture<Void> updateRole(@NotNull TabPlayer tabPlayer, @NotNull String role, boolean force) {
+    public synchronized CompletableFuture<Void> updateRole(@NotNull TabPlayer tabPlayer, @NotNull String role, boolean force) {
         final Player player = tabPlayer.getPlayer();
         if (!player.isActive()) {
             plugin.getTabList().removeOfflinePlayer(player);
@@ -210,7 +195,7 @@ public class ScoreboardManager {
                     removeSortedTeam(oldRole);
                 }
                 createdTeams.put(player.getUniqueId(), role);
-                final boolean a = sortedTeams.add(role);
+                final boolean a = sortedTeams.addTeam(role);
                 if(!a) {
                     plugin.log(Level.ERROR, "Failed to add team " + role + " to sortedTeams");
                 }

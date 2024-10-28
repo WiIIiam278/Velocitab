@@ -412,12 +412,8 @@ public class PlayerTabList {
                 }
 
                 tabPlayer.setListOrder(order);
-                plugin.getServer().getScheduler().buildTask(plugin, () -> {
-                    System.out.println(plugin.getScoreboardManager().getSortedTeams());
-                    final Set<TabPlayer> players = tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer);
-                    players.forEach(p -> recalculateSortingForPlayer(p, players));
-                }).delay(100, TimeUnit.MILLISECONDS).schedule();
-
+                final Set<TabPlayer> players = tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer);
+                players.forEach(p -> recalculateSortingForPlayer(p, players));
             });
         });
     }

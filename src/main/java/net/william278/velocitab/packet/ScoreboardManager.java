@@ -42,7 +42,6 @@ import org.slf4j.event.Level;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 import static com.velocitypowered.api.network.ProtocolVersion.*;
 
@@ -174,7 +173,7 @@ public class ScoreboardManager {
      * @param role      The new role of the player. Must not be null.
      * @param force     Whether to force the update even if the player's nametag is the same.
      */
-    public synchronized CompletableFuture<Void> updateRole(@NotNull TabPlayer tabPlayer, @NotNull String role, boolean force) {
+    public CompletableFuture<Void> updateRole(@NotNull TabPlayer tabPlayer, @NotNull String role, boolean force) {
         final Player player = tabPlayer.getPlayer();
         if (!player.isActive()) {
             plugin.getTabList().removeOfflinePlayer(player);

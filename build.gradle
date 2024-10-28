@@ -41,7 +41,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.34'
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.2.3'
-    compileOnly 'net.william278:papiproxybridge:1.6.2'
+    compileOnly 'net.william278:papiproxybridge:1.7'
     compileOnly 'it.unimi.dsi:fastutil:8.5.15'
     compileOnly 'net.kyori:adventure-nbt:4.17.0'
 

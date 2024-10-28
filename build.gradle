@@ -36,12 +36,12 @@ repositories {
 dependencies {
     compileOnly "com.velocitypowered:velocity-api:${velocity_api_version}-SNAPSHOT"
     compileOnly "com.velocitypowered:velocity-proxy:${velocity_api_version}-SNAPSHOT"
+    compileOnly "net.william278:papiproxybridge:${papi_proxy_bridge_minimum_version}"
 
     compileOnly 'io.netty:netty-codec-http:4.1.114.Final'
     compileOnly 'org.projectlombok:lombok:1.18.34'
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.2.3'
-    compileOnly 'net.william278:papiproxybridge:1.6.2'
     compileOnly 'it.unimi.dsi:fastutil:8.5.15'
     compileOnly 'net.kyori:adventure-nbt:4.17.0'
 

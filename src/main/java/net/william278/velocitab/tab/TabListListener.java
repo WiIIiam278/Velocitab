@@ -20,6 +20,7 @@
 package net.william278.velocitab.tab;
 
 import com.google.common.collect.Sets;
+import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.player.KickedFromServerEvent;
@@ -156,7 +157,8 @@ public class TabListListener {
         tabList.joinPlayer(joined, group);
     }
 
-    @Subscribe(priority = Short.MIN_VALUE)
+    @SuppressWarnings("deprecation")
+    @Subscribe(order = PostOrder.CUSTOM, priority = Short.MIN_VALUE)
     public void onPlayerQuit(@NotNull DisconnectEvent event) {
         if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) {
             checkDelayedDisconnect(event);

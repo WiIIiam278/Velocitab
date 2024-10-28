@@ -195,7 +195,7 @@ public class ScoreboardManager {
                 }
                 createdTeams.put(player.getUniqueId(), role);
                 final boolean a = sortedTeams.addTeam(role);
-                if(!a) {
+                if (!a) {
                     plugin.log(Level.ERROR, "Failed to add team " + role + " to sortedTeams");
                 }
                 this.nametags.put(role, newTag);

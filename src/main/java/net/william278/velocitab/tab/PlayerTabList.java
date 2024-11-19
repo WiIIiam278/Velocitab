@@ -28,6 +28,8 @@ import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket;
+import com.velocitypowered.proxy.tablist.KeyedVelocityTabList;
+import com.velocitypowered.proxy.tablist.VelocityTabList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -62,15 +64,38 @@ public class PlayerTabList {
     @Getter(value = AccessLevel.PUBLIC)
     private final Map<UUID, TabPlayer> players;
     private final TaskManager taskManager;
+    private final Map<Class<?>, Field> entriesFields;
 
     public PlayerTabList(@NotNull Velocitab plugin) {
         this.plugin = plugin;
         this.vanishTabList = new VanishTabList(plugin, this);
         this.players = Maps.newConcurrentMap();
         this.taskManager = new TaskManager(plugin);
+        this.entriesFields = Maps.newHashMap();
         this.reloadUpdate();
         this.registerListener();
         this.ensureDisplayNameTask();
+        this.registerFields();
+    }
+
+    // VelocityTabListLegacy is not supported
+    private void registerFields() {
+        final Class<KeyedVelocityTabList> keyedVelocityTabListClass = KeyedVelocityTabList.class;
+        final Class<VelocityTabList> velocityTabListClass = VelocityTabList.class;
+        try {
+            final Field entriesField = keyedVelocityTabListClass.getDeclaredField("entries");
+            entriesField.setAccessible(true);
+            this.entriesFields.put(keyedVelocityTabListClass, entriesField);
+        } catch (NoSuchFieldException e) {
+            plugin.log(Level.ERROR, "Failed to register KeyedVelocityTabList field", e);
+        }
+        try {
+            final Field entriesField = velocityTabListClass.getDeclaredField("entries");
+            entriesField.setAccessible(true);
+            this.entriesFields.put(velocityTabListClass, entriesField);
+        } catch (NoSuchFieldException e) {
+            plugin.log(Level.ERROR, "Failed to register VelocityTabList field", e);
+        }
     }
 
     private void registerListener() {
@@ -275,8 +300,11 @@ public class PlayerTabList {
     @SuppressWarnings("unchecked")
     private void fixDuplicateEntries(@NotNull Player target) {
         try {
-            final Field entriesField = target.getTabList().getClass().getDeclaredField("entries");
-            entriesField.setAccessible(true);
+            final Optional<Field> optionalField = Optional.ofNullable(this.entriesFields.get(target.getTabList().getClass()));
+            if (optionalField.isEmpty()) {
+                return;
+            }
+            final Field entriesField = optionalField.get();
             final Map<UUID, TabListEntry> entries = (Map<UUID, TabListEntry>) entriesField.get(target.getTabList());
             entries.entrySet().stream()
                     .filter(entry -> entry.getValue().getProfile() != null)

@@ -152,7 +152,7 @@ public class ScoreboardManager {
             return;
         }
         final Set<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
-        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty();
+        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty() && !plugin.getSettings().isRemoveNametags();
 
         final Optional<Nametag> cachedTag = Optional.ofNullable(nametags.getOrDefault(teamName, null));
         cachedTag.ifPresent(nametag -> siblings.forEach(server -> server.getPlayersConnected().stream().filter(p -> p != player)
@@ -304,7 +304,7 @@ public class ScoreboardManager {
 
         final UpdateTeamsPacket packet = UpdateTeamsPacket.create(plugin, tabPlayer, teamName, nametag, viewer, teamMembers);
         trackedTeams.put(viewer.getPlayer().getUniqueId(), teamName);
-        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty();
+        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty() && !plugin.getSettings().isRemoveNametags();
         sendPacket(viewer.getPlayer(), packet, isNameTagEmpty);
     }
 
@@ -314,7 +314,7 @@ public class ScoreboardManager {
         if (!teams) {
             return;
         }
-        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty();
+        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty() && !plugin.getSettings().isRemoveNametags();
         tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer).forEach(viewer -> {
             if (viewer == tabPlayer || !viewer.getPlayer().isActive()) {
                 return;
@@ -373,7 +373,7 @@ public class ScoreboardManager {
         }
 
         final Set<Player> players = tabPlayer.getGroup().getPlayers(plugin);
-        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty();
+        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty() && !plugin.getSettings().isRemoveNametags();
         players.forEach(connected -> {
             try {
                 final boolean canSee = plugin.getVanishManager().canSee(connected.getUsername(), player.getUsername());
@@ -459,7 +459,7 @@ public class ScoreboardManager {
         }
 
         final UpdateTeamsPacket removeTeam = UpdateTeamsPacket.removeTeam(plugin, team);
-        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty();
+        final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty() && !plugin.getSettings().isRemoveNametags();
         sendPacket(player, removeTeam, isNameTagEmpty);
         trackedTeams.remove(player.getUniqueId(), team);
 

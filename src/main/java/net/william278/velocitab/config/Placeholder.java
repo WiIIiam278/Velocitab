@@ -95,7 +95,7 @@ public enum Placeholder {
     }),
     USERNAME((plugin, player) -> player.getCustomName().orElse(player.getPlayer().getUsername())),
     USERNAME_LOWER((plugin, player) -> player.getCustomName().orElse(player.getPlayer().getUsername()).toLowerCase()),
-    SERVER((plugin, player) -> player.getServerDisplayName(plugin)),
+    SERVER((plugin, player) -> player.getServerName()),
     PING((plugin, player) -> Long.toString(player.getPlayer().getPing())),
     PREFIX((plugin, player) -> player.getRole().getPrefix()
             .orElse(getPlaceholderFallback(plugin, "%luckperms_prefix%"))),

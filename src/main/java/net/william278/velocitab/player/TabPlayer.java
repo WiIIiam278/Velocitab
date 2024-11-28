@@ -123,18 +123,6 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         return plugin.getTabGroups().getPosition(group);
     }
 
-    /**
-     * Get the display name of the server the player is currently on.
-     * Affected by server aliases defined in the config.
-     *
-     * @param plugin The plugin instance
-     * @return The display name of the server
-     */
-    @NotNull
-    public String getServerDisplayName(@NotNull Velocitab plugin) {
-        return plugin.getSettings().getServerDisplayName(getServerName());
-    }
-
     @NotNull
     public CompletableFuture<String> getDisplayName(@NotNull Velocitab plugin) {
         final String format = formatGroup();

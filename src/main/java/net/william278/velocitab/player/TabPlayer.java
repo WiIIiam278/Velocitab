@@ -166,7 +166,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
             displayName = displayName.replace(placeholder, value);
         }
 
-        displayName = Placeholder.replaceInternal(displayName, plugin, this);
+        displayName = Placeholder.replaceInternal(displayName, plugin, this).first();
         return lastDisplayName = displayName;
     }
 

@@ -54,6 +54,9 @@ public class TabGroups implements ConfigValidator {
             new Nametag("", ""),
             Set.of("lobby", "survival", "creative", "minigames", "skyblock", "prison", "hub"),
             List.of("%role_weight%", "%username_lower%"),
+            new LinkedHashMap<>() {{
+                put("%advancedvanish_is_vanished%", List.of(new PlaceholderReplacement("Yes", " &7[V]&r"), new PlaceholderReplacement("No", "")));
+            }},
             false,
             1000,
             1000,
@@ -140,6 +143,10 @@ public class TabGroups implements ConfigValidator {
             if (group.sortingPlaceholders() == null) {
                 missingKeys.put(group, "sortingPlaceholders");
             }
+
+            if (group.placeholderReplaments() == null) {
+                missingKeys.put(group, "placeholderReplaments");
+            }
         }
 
         return missingKeys;
@@ -160,6 +167,7 @@ public class TabGroups implements ConfigValidator {
                     group.nametag() == null ? DEFAULT_GROUP.nametag() : group.nametag(),
                     group.servers() == null ? DEFAULT_GROUP.servers() : group.servers(),
                     group.sortingPlaceholders() == null ? DEFAULT_GROUP.sortingPlaceholders() : group.sortingPlaceholders(),
+                    group.placeholderReplaments() == null ? DEFAULT_GROUP.placeholderReplaments() : group.placeholderReplaments(),
                     group.collisions(),
                     group.headerFooterUpdateRate(),
                     group.placeholderUpdateRate(),

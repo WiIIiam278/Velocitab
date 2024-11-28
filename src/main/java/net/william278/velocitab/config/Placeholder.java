@@ -19,6 +19,7 @@
 
 package net.william278.velocitab.config;
 
+import com.google.common.collect.Maps;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import it.unimi.dsi.fastutil.Pair;
@@ -36,8 +37,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
@@ -162,12 +162,11 @@ public enum Placeholder {
     }
 
     @NotNull
-    public static String replaceInternal(@NotNull String format, @NotNull Velocitab plugin, @Nullable TabPlayer player) {
+    public static Pair<String, Map<String, String>> replaceInternal(@NotNull String format, @NotNull Velocitab plugin, @Nullable TabPlayer player) {
         final Pair<Boolean, String> result = processRelationalPlaceholders(format, plugin);
         format = result.right();
-        format = replacePlaceholders(format, plugin, player);
 
-        return format;
+        return replacePlaceholders(format, plugin, player);
     }
 
     private static Pair<Boolean, String> processRelationalPlaceholders(@NotNull String format, @NotNull Velocitab plugin) {
@@ -227,21 +226,48 @@ public enum Placeholder {
     }
 
     @NotNull
-    private static String replacePlaceholders(@NotNull String format, @NotNull Velocitab plugin, @Nullable TabPlayer player) {
+    private static Pair<String, Map<String, String>> replacePlaceholders(@NotNull String format, @NotNull Velocitab plugin, @Nullable TabPlayer player) {
+        final Map<String, String> replacedPlaceholders = Maps.newHashMap();
         for (Placeholder placeholder : values()) {
-            Matcher matcher = placeholder.pattern.matcher(format);
+            final Matcher matcher = placeholder.pattern.matcher(format);
             if (placeholder.parameterised) {
-                format = matcher.replaceAll(matchResult ->
-                        Matcher.quoteReplacement(
-                                placeholder.replacer.apply(StringUtils.chop(matchResult.group().replace("%" + placeholder.name().toLowerCase(), "")
-                                                .replaceFirst("_", ""))
-                                        , plugin, player)
-                        ));
+                format = matcher.replaceAll(matchResult -> {
+                    String replacement = placeholder.replacer.apply(StringUtils.chop(matchResult.group().replace("%" + placeholder.name().toLowerCase(), "")
+                            .replaceFirst("_", "")), plugin, player);
+                    replacedPlaceholders.put(matchResult.group(), replacement);
+                    return Matcher.quoteReplacement(replacement);
+                });
             } else {
-                format = matcher.replaceAll(matchResult -> Matcher.quoteReplacement(placeholder.replacer.apply(null, plugin, player)));
+                format = matcher.replaceAll(matchResult -> {
+                    String replacement = placeholder.replacer.apply(null, plugin, player);
+                    replacedPlaceholders.put(matchResult.group(), replacement);
+                    return Matcher.quoteReplacement(replacement);
+                });
             }
         }
-        return format;
+        return Pair.of(format, replacedPlaceholders);
+    }
+
+    @NotNull
+    private static String applyPlaceholderReplacements(@NotNull String text, @NotNull TabPlayer player,
+                                                       @NotNull Map<String, String> parsed) {
+        for (final Map.Entry<String, List<PlaceholderReplacement>> entry : player.getGroup().placeholderReplaments().entrySet()) {
+            if (!parsed.containsKey(entry.getKey())) {
+                continue;
+            }
+
+            final String replaced = parsed.get(entry.getKey());
+            final Optional<PlaceholderReplacement> replacement = entry.getValue().stream()
+                    .filter(r -> r.placeholder().equalsIgnoreCase(replaced))
+                    .findFirst();
+
+            if (replacement.isPresent()) {
+                text = text.replace(entry.getKey(), replacement.get().replacement());
+            }
+
+        }
+
+        return applyPlaceholders(text, parsed);
     }
 
     public static CompletableFuture<String> replace(@NotNull String format, @NotNull Velocitab plugin,
@@ -251,22 +277,49 @@ public enum Placeholder {
             return CompletableFuture.completedFuture("");
         }
 
-        final String replaced = replaceInternal(format, plugin, player);
+        final Pair<String, Map<String, String>> replaced = replaceInternal(format, plugin, player);
 
-        if (!PLACEHOLDER_PATTERN.matcher(replaced).find()) {
-            return CompletableFuture.completedFuture(replaced);
+        if (!PLACEHOLDER_PATTERN.matcher(replaced.first()).find()) {
+            return CompletableFuture.completedFuture(replaced.first());
         }
 
+        final List<String> placeholders = getPlaceholders(replaced.first());
+
         return plugin.getPAPIProxyBridgeHook()
-                .map(hook -> hook.formatPlaceholders(replaced, player.getPlayer())
+                .map(hook -> hook.parsePlaceholders(placeholders, player.getPlayer())
                         .exceptionally(e -> {
                             plugin.log(Level.ERROR, "An error occurred whilst parsing placeholders: " + e.getMessage());
-                            return replaced;
+                            return Map.of();
                         })
                 )
-                .orElse(CompletableFuture.completedFuture(replaced)).exceptionally(e -> {
+                .orElse(CompletableFuture.completedFuture(Map.of())).exceptionally(e -> {
                     plugin.log(Level.ERROR, "An error occurred whilst parsing placeholders: " + e.getMessage());
-                    return replaced;
-                });
+                    return Map.of();
+                })
+                .thenApply(m -> applyPlaceholderReplacements(format, player, mergeMaps(m, replaced.second())));
+    }
+
+    @NotNull
+    private static String applyPlaceholders(@NotNull String text, @NotNull Map<String, String> replacements) {
+        for (Map.Entry<String, String> entry : replacements.entrySet()) {
+            text = text.replace(entry.getKey(), entry.getValue());
+        }
+        return text;
+    }
+
+    @NotNull
+    private static Map<String, String> mergeMaps(@NotNull Map<String, String> map1, @NotNull Map<String, String> map2) {
+        map1.putAll(map2);
+        return map1;
+    }
+
+    @NotNull
+    private static List<String> getPlaceholders(@NotNull String text) {
+        final List<String> placeholders = new ArrayList<>();
+        final Matcher matcher = PLACEHOLDER_PATTERN.matcher(text);
+        while (matcher.find()) {
+            placeholders.add(matcher.group());
+        }
+        return placeholders;
     }
 }

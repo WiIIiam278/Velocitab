@@ -31,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.event.Level;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,6 +47,7 @@ public record Group(
         Nametag nametag,
         Set<String> servers,
         List<String> sortingPlaceholders,
+        Map<String, List<PlaceholderReplacement>> placeholderReplaments,
         boolean collisions,
         int headerFooterUpdateRate,
         int placeholderUpdateRate,

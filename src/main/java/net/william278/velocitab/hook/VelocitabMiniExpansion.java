@@ -98,7 +98,7 @@ public class VelocitabMiniExpansion {
             }
 
             final String value = fixValue(popAll(queue));
-            String replaced = Placeholder.replaceInternal(value, plugin, targetPlayer);
+            final String replaced = Placeholder.replaceInternal(value, plugin, targetPlayer).first();
 
             return Tag.selfClosingInserting(MiniMessage.miniMessage().deserialize(replaced, MiniPlaceholders.getAudienceGlobalPlaceholders(audience)));
         }));

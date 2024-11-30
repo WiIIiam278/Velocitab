@@ -19,6 +19,7 @@
 
 package net.william278.velocitab.config;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
@@ -126,6 +127,7 @@ public enum Placeholder {
             "*LESS*", "*LESS2*",
             "*GREATER*", "*GREATER2*"
     );
+    private final static String ELSE_PLACEHOLDER = "ELSE";
 
     /**
      * Function to replace placeholders with a real value
@@ -263,6 +265,13 @@ public enum Placeholder {
 
             if (replacement.isPresent()) {
                 text = text.replace(entry.getKey(), replacement.get().replacement());
+            } else {
+                final Optional<PlaceholderReplacement> elseReplacement = entry.getValue().stream()
+                        .filter(r -> r.placeholder().equalsIgnoreCase(ELSE_PLACEHOLDER))
+                        .findFirst();
+                if (elseReplacement.isPresent()) {
+                    text = text.replace(entry.getKey(), elseReplacement.get().replacement());
+                }
             }
 
         }
@@ -315,7 +324,7 @@ public enum Placeholder {
 
     @NotNull
     private static List<String> getPlaceholders(@NotNull String text) {
-        final List<String> placeholders = new ArrayList<>();
+        final List<String> placeholders = Lists.newArrayList();
         final Matcher matcher = PLACEHOLDER_PATTERN.matcher(text);
         while (matcher.find()) {
             placeholders.add(matcher.group());

@@ -180,6 +180,7 @@ public class TabListListener {
                 return;
             }
 
+            tabList.removeOfflinePlayer(player);
             tabList.removeTabListUUID(event.getPlayer().getUniqueId());
         }).delay(750, TimeUnit.MILLISECONDS).schedule();
     }

@@ -127,6 +127,8 @@ public enum Placeholder {
             "*LESS*", "*LESS2*",
             "*GREATER*", "*GREATER2*"
     );
+    private final static String VEL_PLACEHOLDER = "<vel";
+    private final static String VELOCITAB_PLACEHOLDER = "<velocitab_rel";
     private final static String ELSE_PLACEHOLDER = "ELSE";
 
     /**
@@ -165,15 +167,12 @@ public enum Placeholder {
 
     @NotNull
     public static Pair<String, Map<String, String>> replaceInternal(@NotNull String format, @NotNull Velocitab plugin, @Nullable TabPlayer player) {
-        final Pair<Boolean, String> result = processRelationalPlaceholders(format, plugin);
-        format = result.right();
-
+        format = processRelationalPlaceholders(format, plugin);
         return replacePlaceholders(format, plugin, player);
     }
 
-    private static Pair<Boolean, String> processRelationalPlaceholders(@NotNull String format, @NotNull Velocitab plugin) {
-        boolean foundRelational = false;
-        if (plugin.getFormatter().equals(Formatter.MINIMESSAGE) && format.contains("<vel")) {
+    private static String processRelationalPlaceholders(@NotNull String format, @NotNull Velocitab plugin) {
+        if (plugin.getFormatter().equals(Formatter.MINIMESSAGE) && format.contains(VEL_PLACEHOLDER)) {
             final Matcher conditionReplacer = CONDITION_REPLACER.matcher(format);
             while (conditionReplacer.find()) {
 
@@ -190,7 +189,7 @@ public enum Placeholder {
 
             final Matcher testMatcher = TEST.matcher(format);
             while (testMatcher.find()) {
-                if (testMatcher.group().startsWith("<velocitab_rel")) {
+                if (testMatcher.group().startsWith(VELOCITAB_PLACEHOLDER)) {
                     final Matcher second = TEST.matcher(testMatcher.group().substring(1));
                     while (second.find()) {
                         String s = second.group();
@@ -210,7 +209,6 @@ public enum Placeholder {
 
             final Matcher velocitabRelationalMatcher = VELOCITAB_PATTERN.matcher(format);
             while (velocitabRelationalMatcher.find()) {
-                foundRelational = true;
                 final String relationalPlaceholder = velocitabRelationalMatcher.group().substring(1, velocitabRelationalMatcher.group().length() - 1);
                 String fixedString = relationalPlaceholder;
                 for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES_2.entrySet()) {
@@ -224,11 +222,12 @@ public enum Placeholder {
             }
 
         }
-        return Pair.of(foundRelational, format);
+        return format;
     }
 
     @NotNull
-    private static Pair<String, Map<String, String>> replacePlaceholders(@NotNull String format, @NotNull Velocitab plugin, @Nullable TabPlayer player) {
+    private static Pair<String, Map<String, String>> replacePlaceholders(@NotNull String format, @NotNull Velocitab plugin,
+                                                                         @Nullable TabPlayer player) {
         final Map<String, String> replacedPlaceholders = Maps.newHashMap();
         for (Placeholder placeholder : values()) {
             final Matcher matcher = placeholder.pattern.matcher(format);
@@ -287,13 +286,11 @@ public enum Placeholder {
         }
 
         final Pair<String, Map<String, String>> replaced = replaceInternal(format, plugin, player);
-
         if (!PLACEHOLDER_PATTERN.matcher(replaced.first()).find()) {
             return CompletableFuture.completedFuture(replaced.first());
         }
 
-        final List<String> placeholders = getPlaceholders(replaced.first());
-
+        final List<String> placeholders = extractPlaceholders(replaced.first());
         return plugin.getPAPIProxyBridgeHook()
                 .map(hook -> hook.parsePlaceholders(placeholders, player.getPlayer())
                         .exceptionally(e -> {
@@ -323,7 +320,7 @@ public enum Placeholder {
     }
 
     @NotNull
-    private static List<String> getPlaceholders(@NotNull String text) {
+    private static List<String> extractPlaceholders(@NotNull String text) {
         final List<String> placeholders = Lists.newArrayList();
         final Matcher matcher = PLACEHOLDER_PATTERN.matcher(text);
         while (matcher.find()) {

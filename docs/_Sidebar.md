@@ -11,6 +11,7 @@
 * ✍️ [[Placeholders]]
 * 🔗 [[Relational Placeholders]]
 * 🔀 [[Conditional Placeholders]]
+* 📝 [[Placeholders Replacements]]
 * ✨ [[Animations]]
 * 🖼️ [[Custom Logos]]
 * 🔗 [[Server Links]]

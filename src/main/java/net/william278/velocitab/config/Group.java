@@ -47,7 +47,7 @@ public record Group(
         Nametag nametag,
         Set<String> servers,
         List<String> sortingPlaceholders,
-        Map<String, List<PlaceholderReplacement>> placeholderReplaments,
+        Map<String, List<PlaceholderReplacement>> placeholderReplacements,
         boolean collisions,
         int headerFooterUpdateRate,
         int placeholderUpdateRate,

@@ -148,8 +148,8 @@ public class TabGroups implements ConfigValidator {
                 missingKeys.put(group, "sortingPlaceholders");
             }
 
-            if (group.placeholderReplaments() == null) {
-                missingKeys.put(group, "placeholderReplaments");
+            if (group.placeholderReplacements() == null) {
+                missingKeys.put(group, "placeholderReplacements");
             }
         }
 
@@ -171,7 +171,7 @@ public class TabGroups implements ConfigValidator {
                     group.nametag() == null ? DEFAULT_GROUP.nametag() : group.nametag(),
                     group.servers() == null ? DEFAULT_GROUP.servers() : group.servers(),
                     group.sortingPlaceholders() == null ? DEFAULT_GROUP.sortingPlaceholders() : group.sortingPlaceholders(),
-                    group.placeholderReplaments() == null ? DEFAULT_GROUP.placeholderReplaments() : group.placeholderReplaments(),
+                    group.placeholderReplacements() == null ? DEFAULT_GROUP.placeholderReplacements() : group.placeholderReplacements(),
                     group.collisions(),
                     group.headerFooterUpdateRate(),
                     group.placeholderUpdateRate(),

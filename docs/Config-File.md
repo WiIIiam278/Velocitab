@@ -97,7 +97,7 @@ groups:
     sorting_placeholders:
       - '%role_weight%'
       - '%username_lower%'
-    placeholder_replaments:
+    placeholder_replacements:
       '%current_date_weekday_en-US%':
         - placeholder: Monday
           replacement: <red>Monday</red>
@@ -132,5 +132,5 @@ You can use various placeholders that will be replaced with values (for example,
 ### Server Links
 For Minecraft 1.21+ clients, Velocitab supports specifying a list of URLs that will be sent to display in the player pause menu. See [[Server Links]] for more information.
 
-### Placeholder Replaments
-Velocitab supports replacing values of placeholders with other values. See [[Placeholders Replaments]] for more information.
+### Placeholder Replacements
+Velocitab supports replacing values of placeholders with other values. See [[Placeholders Replacements]] for more information.

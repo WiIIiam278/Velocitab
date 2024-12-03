@@ -252,7 +252,7 @@ public enum Placeholder {
     @NotNull
     private static String applyPlaceholderReplacements(@NotNull String text, @NotNull TabPlayer player,
                                                        @NotNull Map<String, String> parsed) {
-        for (final Map.Entry<String, List<PlaceholderReplacement>> entry : player.getGroup().placeholderReplaments().entrySet()) {
+        for (final Map.Entry<String, List<PlaceholderReplacement>> entry : player.getGroup().placeholderReplacements().entrySet()) {
             if (!parsed.containsKey(entry.getKey())) {
                 continue;
             }

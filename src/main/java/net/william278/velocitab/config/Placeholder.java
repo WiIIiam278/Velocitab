@@ -298,7 +298,7 @@ public enum Placeholder {
                             return Map.of();
                         })
                 )
-                .orElse(CompletableFuture.completedFuture(Map.of())).exceptionally(e -> {
+                .orElse(CompletableFuture.completedFuture(Maps.newHashMap())).exceptionally(e -> {
                     plugin.log(Level.ERROR, "An error occurred whilst parsing placeholders: " + e.getMessage());
                     return Map.of();
                 })

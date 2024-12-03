@@ -28,10 +28,6 @@ fallback_enabled: true
 fallback_group: default
 # Whether to show all players from all groups in the TAB list.
 show_all_players_from_all_groups: false
-# Define custom names to be shown in the TAB list for specific server names.
-# If no custom display name is provided for a server, its original name will be used.
-server_display_names:
-  very-long-server-name: VLSN
 # Whether to enable the PAPIProxyBridge hook for PAPI support
 enable_papi_hook: true
 # How long in seconds to cache PAPI placeholders for, in milliseconds. (0 to disable)
@@ -101,6 +97,14 @@ groups:
     sorting_placeholders:
       - '%role_weight%'
       - '%username_lower%'
+    placeholder_replaments:
+      '%current_date_weekday_en-US%':
+        - placeholder: Monday
+          replacement: <red>Monday</red>
+        - placeholder: Tuesday
+          replacement: <gold>Tuesday</gold>
+        - placeholder: Else
+          replacement: <green>Other day</green>
     collisions: false
     header_footer_update_rate: 1000
     placeholder_update_rate: 1000
@@ -127,3 +131,6 @@ You can use various placeholders that will be replaced with values (for example,
 
 ### Server Links
 For Minecraft 1.21+ clients, Velocitab supports specifying a list of URLs that will be sent to display in the player pause menu. See [[Server Links]] for more information.
+
+### Placeholder Replaments
+Velocitab supports replacing values of placeholders with other values. See [[Placeholders Replaments]] for more information.

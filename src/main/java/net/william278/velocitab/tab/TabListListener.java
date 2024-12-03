@@ -160,6 +160,9 @@ public class TabListListener {
     @SuppressWarnings("deprecation")
     @Subscribe(order = PostOrder.CUSTOM, priority = Short.MIN_VALUE)
     public void onPlayerQuit(@NotNull DisconnectEvent event) {
+        if(event.getLoginStatus() == DisconnectEvent.LoginStatus.CONFLICTING_LOGIN) {
+            return;
+        }
         if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) {
             checkDelayedDisconnect(event);
             return;

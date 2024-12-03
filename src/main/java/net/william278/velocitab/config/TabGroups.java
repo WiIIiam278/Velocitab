@@ -55,7 +55,11 @@ public class TabGroups implements ConfigValidator {
             Set.of("lobby", "survival", "creative", "minigames", "skyblock", "prison", "hub"),
             List.of("%role_weight%", "%username_lower%"),
             new LinkedHashMap<>() {{
-                put("%advancedvanish_is_vanished%", List.of(new PlaceholderReplacement("Yes", " &7[V]&r"), new PlaceholderReplacement("No", "")));
+                put("%current_date_weekday_en-US%", List.of(
+                        new PlaceholderReplacement("Monday", "<red>Monday</red>"),
+                        new PlaceholderReplacement("Tuesday", "<gold>Tuesday</gold>"),
+                        new PlaceholderReplacement("Else", "<green>Other day</green>")
+                ));
             }},
             false,
             1000,

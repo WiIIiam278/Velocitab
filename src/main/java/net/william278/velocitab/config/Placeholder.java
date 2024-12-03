@@ -233,14 +233,14 @@ public enum Placeholder {
             final Matcher matcher = placeholder.pattern.matcher(format);
             if (placeholder.parameterised) {
                 format = matcher.replaceAll(matchResult -> {
-                    String replacement = placeholder.replacer.apply(StringUtils.chop(matchResult.group().replace("%" + placeholder.name().toLowerCase(), "")
+                    final String replacement = placeholder.replacer.apply(StringUtils.chop(matchResult.group().replace("%" + placeholder.name().toLowerCase(), "")
                             .replaceFirst("_", "")), plugin, player);
                     replacedPlaceholders.put(matchResult.group(), replacement);
                     return Matcher.quoteReplacement(replacement);
                 });
             } else {
                 format = matcher.replaceAll(matchResult -> {
-                    String replacement = placeholder.replacer.apply(null, plugin, player);
+                    final String replacement = placeholder.replacer.apply(null, plugin, player);
                     replacedPlaceholders.put(matchResult.group(), replacement);
                     return Matcher.quoteReplacement(replacement);
                 });
@@ -272,9 +272,7 @@ public enum Placeholder {
                     text = text.replace(entry.getKey(), elseReplacement.get().replacement());
                 }
             }
-
         }
-
         return applyPlaceholders(text, parsed);
     }
 

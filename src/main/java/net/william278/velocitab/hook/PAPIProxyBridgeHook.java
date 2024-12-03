@@ -56,8 +56,6 @@ public class PAPIProxyBridgeHook extends Hook {
         }
 
         return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).thenApply(v -> map);
-
-
     }
 
 }

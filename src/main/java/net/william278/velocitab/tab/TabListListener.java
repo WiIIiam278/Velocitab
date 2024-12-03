@@ -103,7 +103,7 @@ public class TabListListener {
         plugin.getTabList().clearCachedData(joined);
 
         if (!plugin.getSettings().isShowAllPlayersFromAllGroups() && previousGroup.isPresent()
-            && (groupOptional.isPresent() && !previousGroup.get().equals(groupOptional.get())
+                && (groupOptional.isPresent() && !previousGroup.get().equals(groupOptional.get())
                 || groupOptional.isEmpty())) {
             tabList.removeOldEntry(previousGroup.get(), joined.getUniqueId());
         }
@@ -127,7 +127,7 @@ public class TabListListener {
                 final Component currentHeader = joined.getPlayerListHeader();
                 final Component currentFooter = joined.getPlayerListFooter();
                 if ((header.equals(currentHeader) && footer.equals(currentFooter)) ||
-                    (currentHeader.equals(Component.empty()) && currentFooter.equals(Component.empty()))
+                        (currentHeader.equals(Component.empty()) && currentFooter.equals(Component.empty()))
                 ) {
                     joined.sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
                     joined.getCurrentServer().ifPresent(serverConnection -> serverConnection.getServer().getPlayersConnected().forEach(player ->
@@ -160,7 +160,7 @@ public class TabListListener {
     @SuppressWarnings("deprecation")
     @Subscribe(order = PostOrder.CUSTOM, priority = Short.MIN_VALUE)
     public void onPlayerQuit(@NotNull DisconnectEvent event) {
-        if(event.getLoginStatus() == DisconnectEvent.LoginStatus.CONFLICTING_LOGIN) {
+        if (event.getLoginStatus() == DisconnectEvent.LoginStatus.CONFLICTING_LOGIN) {
             return;
         }
         if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) {

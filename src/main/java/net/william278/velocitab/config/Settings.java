@@ -67,10 +67,6 @@ public class Settings implements ConfigValidator {
     @Comment("Whether to show all players from all groups in the TAB list.")
     private boolean showAllPlayersFromAllGroups = false;
 
-    @Comment("Define custom names to be shown in the TAB list for specific server names."
-            + "\nIf no custom display name is provided for a server, its original name will be used.")
-    private Map<String, String> serverDisplayNames = Map.of("very-long-server-name", "VLSN");
-
     @Comment("Whether to enable the PAPIProxyBridge hook for PAPI support")
     private boolean enablePapiHook = true;
 
@@ -111,17 +107,6 @@ public class Settings implements ConfigValidator {
                     "https://william278.net/project/velocitab"
             )
     );
-
-    /**
-     * Get display name for the server
-     *
-     * @param serverName The server name
-     * @return The display name, or the server name if no display name is defined
-     */
-    @NotNull
-    public String getServerDisplayName(@NotNull String serverName) {
-        return serverDisplayNames.getOrDefault(serverName, serverName);
-    }
 
     @NotNull
     public List<ServerUrl> getUrlsForGroup(@NotNull Group group) {

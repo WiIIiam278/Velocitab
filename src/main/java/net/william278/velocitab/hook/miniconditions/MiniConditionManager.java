@@ -110,7 +110,7 @@ public class MiniConditionManager {
         }
 
 
-        condition = Placeholder.replaceInternal(condition, plugin, tabPlayer.get());
+        condition = Placeholder.replaceInternal(condition, plugin, tabPlayer.get()).first();
         final String falseValue = processFalseValue(parameters.get(2));
         final String expression = buildExpression(condition);
         return evaluateAndFormatCondition(expression, target, audience, parameters.get(1), falseValue);

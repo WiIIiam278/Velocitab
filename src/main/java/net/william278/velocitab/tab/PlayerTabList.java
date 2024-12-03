@@ -26,6 +26,7 @@ import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.player.TabList;
 import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+import com.velocitypowered.api.util.GameProfile;
 import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
 import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket;
 import com.velocitypowered.proxy.tablist.KeyedVelocityTabList;

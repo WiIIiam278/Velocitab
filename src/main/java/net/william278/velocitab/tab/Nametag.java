@@ -32,13 +32,13 @@ public record Nametag(@NotNull String prefix, @NotNull String suffix) {
 
     @NotNull
     public Component getPrefixComponent(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer, @NotNull TabPlayer target) {
-        final String formatted = Placeholder.replaceInternal(prefix, plugin, tabPlayer);
+        final String formatted = Placeholder.replaceInternal(prefix, plugin, tabPlayer).first();
         return plugin.getFormatter().format(formatted, tabPlayer, target, plugin);
     }
 
     @NotNull
     public Component getSuffixComponent(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer, @NotNull TabPlayer target) {
-        final String formatted = Placeholder.replaceInternal(suffix, plugin, tabPlayer);
+        final String formatted = Placeholder.replaceInternal(suffix, plugin, tabPlayer).first();
         return plugin.getFormatter().format(formatted, tabPlayer, target, plugin);
     }
 

@@ -40,20 +40,6 @@ Placeholders can be included in the header, footer and player name format of the
 You can find a list of common primary language subtags [here](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_common_primary_language_subtags).
 
 
-### Customising server display names
-You can make use of the `server_display_names` feature in `config.yml` to customise how server display name appear when using the `%server%` placeholder. In the below example, if a user is connected to a server with the name "`very-long-server-`name" and the player name format for the group that server belongs to includes a `%server%` placeholder, the placeholder would be replaced with "`VSLN`" instead of the full server name.
-
-<details>
-<summary>Server display names (config.yml)</summary>
-
-```yaml
-# Define custom names to be shown in the TAB list for specific server names.
-# If no custom display name is provided for a server, its original name will be used.
-server_display_names:
-  very-long-server-name: VLSN
-```
-</details>
-
 ## PlaceholderAPI support
 To use PlaceholderAPI placeholders in Velocitab, install the [PAPIProxyBridge](https://modrinth.com/plugin/papiproxybridge) library plugin on your Velocity proxy and all Minecraft spigot servers on your network, and ensure the PAPI hook option is enabled in your Velocitab [[Config File]]. You can then include PAPI placeholders in your formats as you would any of the default placeholders.
 

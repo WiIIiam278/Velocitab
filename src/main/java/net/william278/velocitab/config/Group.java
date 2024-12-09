@@ -43,6 +43,7 @@ public record Group(
         String name,
         List<String> headers,
         List<String> footers,
+        boolean usingFormat,
         String format,
         Nametag nametag,
         Set<String> servers,

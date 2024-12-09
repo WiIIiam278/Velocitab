@@ -30,7 +30,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class Role implements Comparable<Role> {
 
-    public static final int DEFAULT_WEIGHT = 0;
+    public static final int DEFAULT_WEIGHT = -1;
     public static final Role DEFAULT_ROLE = new Role(DEFAULT_WEIGHT, null, null, null, null);
     @Getter
     private final int weight;
@@ -65,8 +65,11 @@ public class Role implements Comparable<Role> {
     }
 
     @NotNull
-    protected String getWeightString() {
-        return Integer.toString(weight);
+    protected Optional<String> getWeightString() {
+        if (weight == -1) {
+            return Optional.empty();
+        }
+        return Optional.of(Integer.toString(weight));
     }
 
     @Override

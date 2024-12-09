@@ -96,7 +96,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     @NotNull
-    public String getRoleWeightString() {
+    public Optional<String> getRoleWeightString() {
         return getRole().getWeightString();
     }
 
@@ -263,7 +263,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     @Override
     public int compareTo(@NotNull TabPlayer o) {
         final int roleDifference = role.compareTo(o.role);
-        if (roleDifference == 0) {
+        if (roleDifference <= 0) {
             return player.getUsername().compareTo(o.player.getUsername());
         }
         return roleDifference;

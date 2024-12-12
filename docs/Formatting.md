@@ -47,3 +47,34 @@ is equivalent to
 ```yaml
 foo: "bar 1\nbar 2\nbar 3\n"
 ```
+
+## List of multi lines strings
+
+> **Note:** The examples above are generic examples on how yaml works in multi line. If you want to use multi line in headers & footers you need to provide a list of multi line strings like in the example below.
+
+```yaml
+    headers:
+      - |
+        <rainbow:!2>Running Velocitab by William278 & AlexDev_</rainbow>
+        <gray>Second line of the first element</gray>
+        <yellow>Third line of the first element</yellow>
+      - |
+        <rainbow:!4>Running Velocitab by William278 & AlexDev_</rainbow>
+        <gray>Second line of the second element</gray>
+        <yellow>Third line of the second element</yellow>
+    footers:
+      - <gray>There are currently %players_online%/%max_players_online% players online</gray>
+      - | 
+        <gray> Test 1 </gray>
+        <yellow> Test 2 </yellow>
+```
+
+In this example the header will switch between the 2 elements, but it will always display all the 3 lines.
+
+The footer in this example will switch between 2 elements, the first one is just a simple string, the second element will display 2 lines since it's a multi line string
+
+<figure style="text-align: center;">
+  <img src="https://i.imgur.com/YKu1RWi.gif" />
+  <figcaption>Example of a header and footer with multi line strings</figcaption>
+</figure>
+

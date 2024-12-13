@@ -146,15 +146,12 @@ public class TabListListener {
 
         final Group group = groupOptional.get();
         plugin.getScoreboardManager().resetCache(joined, group);
-        if (justQuit.contains(joined.getUniqueId())) {
-            plugin.getServer().getScheduler().buildTask(plugin,
-                            () -> tabList.joinPlayer(joined, group))
-                    .delay(250, TimeUnit.MILLISECONDS)
-                    .schedule();
-            return;
-        }
 
-        tabList.joinPlayer(joined, group);
+        final int delay = justQuit.contains(joined.getUniqueId()) ? 100 : 250;
+        plugin.getServer().getScheduler().buildTask(plugin,
+                        () -> tabList.joinPlayer(joined, group))
+                .delay(delay, TimeUnit.MILLISECONDS)
+                .schedule();
     }
 
     @SuppressWarnings("deprecation")

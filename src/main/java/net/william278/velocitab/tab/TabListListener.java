@@ -146,7 +146,6 @@ public class TabListListener {
 
         final Group group = groupOptional.get();
         plugin.getScoreboardManager().resetCache(joined, group);
-
         final int delay = justQuit.contains(joined.getUniqueId()) ? 100 : 250;
         plugin.getServer().getScheduler().buildTask(plugin,
                         () -> tabList.joinPlayer(joined, group))

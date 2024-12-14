@@ -149,7 +149,12 @@ public final class TabPlayer implements Comparable<TabPlayer> {
 
         for (int i = 0; i < placeholderArray.length; i++) {
             final String placeholder = keyArray[i];
-            final String value = placeholderArray[i];
+            String value = placeholderArray[i];
+
+            if (value.contains("%ct_")) {
+                value = "";
+            }
+
             cachedPlaceholders.put(placeholder, value);
             displayName = displayName.replace(placeholder, value);
         }

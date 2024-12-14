@@ -42,7 +42,12 @@ public class PAPIProxyBridgeHook extends Hook {
     }
 
     public CompletableFuture<String> formatPlaceholders(@NotNull String input, @NotNull Player player) {
-        return api.formatPlaceholders(input, player.getUniqueId());
+        return api.formatPlaceholders(input, player.getUniqueId()).thenApply(formattedString -> {
+                if (formattedString.contains("ct_")) {
+                    return "";
+                }
+                return formattedString;
+            });
     }
 
     public CompletableFuture<Map<String, String>> parsePlaceholders(@NotNull List<String> input, @NotNull Player player) {

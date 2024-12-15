@@ -285,7 +285,7 @@ public enum Placeholder {
 
         final Pair<String, Map<String, String>> replaced = replaceInternal(format, plugin, player);
         if (!PLACEHOLDER_PATTERN.matcher(replaced.first()).find()) {
-            return CompletableFuture.completedFuture(replaced.first());
+            return CompletableFuture.completedFuture(applyPlaceholderReplacements(format, player, replaced.second()));
         }
 
         final List<String> placeholders = extractPlaceholders(replaced.first());
@@ -296,7 +296,8 @@ public enum Placeholder {
                             return Map.of();
                         })
                 )
-                .orElse(CompletableFuture.completedFuture(Maps.newHashMap())).exceptionally(e -> {
+                .orElse(CompletableFuture.completedFuture(Maps.newHashMap()))
+                .exceptionally(e -> {
                     plugin.log(Level.ERROR, "An error occurred whilst parsing placeholders: " + e.getMessage());
                     return Map.of();
                 })

@@ -117,7 +117,7 @@ public enum Placeholder {
     private final static Pattern VELOCITAB_PATTERN = Pattern.compile("<velocitab_.*?>");
     private final static Pattern TEST = Pattern.compile("<.*?>");
     private final static Pattern CONDITION_REPLACER = Pattern.compile("<velocitab_rel_condition:[^:]*:");
-    private final static Pattern PLACEHOLDER_PATTERN = Pattern.compile("%.*?%");
+    private final static Pattern PLACEHOLDER_PATTERN = Pattern.compile("%.*?%", Pattern.DOTALL);
     private final static String DELIMITER = ":::";
     private final static Map<String, String> SYMBOL_SUBSTITUTES = Map.of(
             "<", "*LESS*",

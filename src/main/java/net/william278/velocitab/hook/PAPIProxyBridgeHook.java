@@ -19,15 +19,11 @@
 
 package net.william278.velocitab.hook;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.velocitypowered.api.proxy.Player;
 import net.william278.papiproxybridge.api.PlaceholderAPI;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class PAPIProxyBridgeHook extends Hook {
@@ -43,19 +39,6 @@ public class PAPIProxyBridgeHook extends Hook {
 
     public CompletableFuture<String> formatPlaceholders(@NotNull String input, @NotNull Player player) {
         return api.formatPlaceholders(input, player.getUniqueId());
-    }
-
-    public CompletableFuture<Map<String, String>> parsePlaceholders(@NotNull List<String> input, @NotNull Player player) {
-        final Map<String, String> map = Maps.newConcurrentMap();
-        final List<CompletableFuture<String>> futures = Lists.newArrayList();
-
-        for (String s : input) {
-            final CompletableFuture<String> future = formatPlaceholders(s, player);
-            futures.add(future);
-            future.thenAccept(r -> map.put(s, r));
-        }
-
-        return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).thenApply(v -> map);
     }
 
 }

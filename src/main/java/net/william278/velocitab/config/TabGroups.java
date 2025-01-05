@@ -27,6 +27,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.placeholder.PlaceholderReplacement;
 import net.william278.velocitab.tab.Nametag;
 import org.jetbrains.annotations.NotNull;
 
@@ -62,6 +63,8 @@ public class TabGroups implements ConfigValidator {
                 ));
             }},
             false,
+            1000,
+            1000,
             1000,
             1000,
             false
@@ -174,6 +177,8 @@ public class TabGroups implements ConfigValidator {
                     group.placeholderReplacements() == null ? DEFAULT_GROUP.placeholderReplacements() : group.placeholderReplacements(),
                     group.collisions(),
                     group.headerFooterUpdateRate(),
+                    group.formatUpdateRate(),
+                    group.nametagUpdateRate(),
                     group.placeholderUpdateRate(),
                     group.onlyListPlayersInSameServer()
             );

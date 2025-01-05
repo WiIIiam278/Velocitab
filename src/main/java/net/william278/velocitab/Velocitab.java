@@ -45,6 +45,7 @@ import net.william278.velocitab.hook.LuckPermsHook;
 import net.william278.velocitab.hook.MiniPlaceholdersHook;
 import net.william278.velocitab.packet.PacketEventManager;
 import net.william278.velocitab.packet.ScoreboardManager;
+import net.william278.velocitab.placeholder.PlaceholderManager;
 import net.william278.velocitab.providers.HookProvider;
 import net.william278.velocitab.providers.LoggerProvider;
 import net.william278.velocitab.providers.MetricProvider;
@@ -87,6 +88,7 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
     private VanishManager vanishManager;
     private PacketEventManager packetEventManager;
     private PluginMessageAPI pluginMessageAPI;
+    private PlaceholderManager placeholderManager;
 
     @Inject
     public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path configDirectory) {
@@ -102,6 +104,7 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
         loadHooks();
         prepareVanishManager();
         prepareChannelManager();
+        preparePlaceholderManager();
         prepareScoreboard();
         registerCommands();
         registerMetrics();
@@ -135,6 +138,10 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
 
     private void prepareChannelManager() {
         this.packetEventManager = new PacketEventManager(this);
+    }
+
+    private void preparePlaceholderManager() {
+        this.placeholderManager = new PlaceholderManager(this);
     }
 
     @Override

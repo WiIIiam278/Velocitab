@@ -17,32 +17,31 @@
  *  limitations under the License.
  */
 
-package net.william278.velocitab.config;
+package net.william278.velocitab.placeholder;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import it.unimi.dsi.fastutil.Pair;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.hook.miniconditions.MiniConditionManager;
 import net.william278.velocitab.player.TabPlayer;
-import net.william278.velocitab.tab.Nametag;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.TriFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.event.Level;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public enum Placeholder {
 
@@ -118,7 +117,7 @@ public enum Placeholder {
     private final static Pattern VELOCITAB_PATTERN = Pattern.compile("<velocitab_.*?>");
     private final static Pattern TEST = Pattern.compile("<.*?>");
     private final static Pattern CONDITION_REPLACER = Pattern.compile("<velocitab_rel_condition:[^:]*:");
-    private final static Pattern PLACEHOLDER_PATTERN = Pattern.compile("%.*?%", Pattern.DOTALL);
+    final static Pattern PLACEHOLDER_PATTERN = Pattern.compile("%.*?%", Pattern.DOTALL);
     private final static String DELIMITER = ":::";
     private final static Map<String, String> SYMBOL_SUBSTITUTES = Map.of(
             "<", "*LESS*",
@@ -130,7 +129,9 @@ public enum Placeholder {
     );
     private final static String VEL_PLACEHOLDER = "<vel";
     private final static String VELOCITAB_PLACEHOLDER = "<velocitab_rel";
-    private final static String ELSE_PLACEHOLDER = "ELSE";
+    private final static List<Placeholder> VALUES = Arrays.asList(values());
+    private final static Map<String, Placeholder> BY_NAME = VALUES.stream().collect(Collectors.toMap(p -> p.name().toLowerCase(), Function.identity()));
+    private final static List<Placeholder> PARAMETERISED = VALUES.stream().filter(p -> p.parameterised).toList();
 
     /**
      * Function to replace placeholders with a real value
@@ -151,13 +152,6 @@ public enum Placeholder {
         this.pattern = Pattern.compile("%" + this.name().toLowerCase() + "[^%]*%", Pattern.CASE_INSENSITIVE);
     }
 
-    public static CompletableFuture<Nametag> replace(@NotNull Nametag nametag, @NotNull Velocitab plugin,
-                                                     @NotNull TabPlayer player) {
-        return replace(nametag.prefix() + DELIMITER + nametag.suffix(), plugin, player)
-                .thenApply(s -> s.split(DELIMITER, 2))
-                .thenApply(v -> new Nametag(v[0], v.length > 1 ? v[1] : ""));
-    }
-
     @NotNull
     private static String getPlaceholderFallback(@NotNull Velocitab plugin, @NotNull String fallback) {
         if (plugin.getPAPIProxyBridgeHook().isPresent() && plugin.getSettings().isFallbackToPapiIfPlaceholderBlank()) {
@@ -172,7 +166,7 @@ public enum Placeholder {
         return replacePlaceholders(format, plugin, player);
     }
 
-    private static String processRelationalPlaceholders(@NotNull String format, @NotNull Velocitab plugin) {
+    public static String processRelationalPlaceholders(@NotNull String format, @NotNull Velocitab plugin) {
         if (plugin.getFormatter().equals(Formatter.MINIMESSAGE) && format.contains(VEL_PLACEHOLDER)) {
             final Matcher conditionReplacer = CONDITION_REPLACER.matcher(format);
             while (conditionReplacer.find()) {
@@ -230,7 +224,7 @@ public enum Placeholder {
     private static Pair<String, Map<String, String>> replacePlaceholders(@NotNull String format, @NotNull Velocitab plugin,
                                                                          @Nullable TabPlayer player) {
         final Map<String, String> replacedPlaceholders = Maps.newHashMap();
-        for (Placeholder placeholder : values()) {
+        for (Placeholder placeholder : VALUES) {
             final Matcher matcher = placeholder.pattern.matcher(format);
             if (placeholder.parameterised) {
                 format = matcher.replaceAll(matchResult -> {
@@ -250,82 +244,31 @@ public enum Placeholder {
         return Pair.of(format, replacedPlaceholders);
     }
 
-    @NotNull
-    private static String applyPlaceholderReplacements(@NotNull String text, @NotNull TabPlayer player,
-                                                       @NotNull Map<String, String> parsed) {
-        for (final Map.Entry<String, List<PlaceholderReplacement>> entry : player.getGroup().placeholderReplacements().entrySet()) {
-            if (!parsed.containsKey(entry.getKey())) {
-                continue;
-            }
+    public static Optional<Placeholder> byName(@NotNull String name) {
+        return Optional.ofNullable(BY_NAME.get(name.toLowerCase().replace("%", "")));
+    }
 
-            final String replaced = parsed.get(entry.getKey());
-            final Optional<PlaceholderReplacement> replacement = entry.getValue().stream()
-                    .filter(r -> r.placeholder().equalsIgnoreCase(replaced))
-                    .findFirst();
-
-            if (replacement.isPresent()) {
-                text = text.replace(entry.getKey(), replacement.get().replacement());
-            } else {
-                final Optional<PlaceholderReplacement> elseReplacement = entry.getValue().stream()
-                        .filter(r -> r.placeholder().equalsIgnoreCase(ELSE_PLACEHOLDER))
-                        .findFirst();
-                if (elseReplacement.isPresent()) {
-                    text = text.replace(entry.getKey(), elseReplacement.get().replacement());
+    protected static Optional<String> replaceSingle(@NotNull String placeholder, @NotNull Velocitab plugin, @NotNull TabPlayer player) {
+        final Optional<Placeholder> optionalPlaceholder = byName(placeholder);
+        if (optionalPlaceholder.isEmpty()) {
+            //check if it's parameterised
+            for (Placeholder placeholderType : PARAMETERISED) {
+                final Matcher matcher = placeholderType.pattern.matcher(placeholder);
+                if (matcher.find()) {
+                    final String s = StringUtils.chop(matcher.group().replace("%" + placeholderType.name().toLowerCase(), "")
+                            .replaceFirst("_", ""));
+                    return Optional.of(placeholderType.replacer.apply(s, plugin, player));
                 }
             }
-        }
-        return applyPlaceholders(text, parsed);
-    }
 
-    public static CompletableFuture<String> replace(@NotNull String format, @NotNull Velocitab plugin,
-                                                    @NotNull TabPlayer player) {
-
-        if (format.equals(DELIMITER)) {
-            return CompletableFuture.completedFuture("");
+            return Optional.empty();
         }
 
-        final Pair<String, Map<String, String>> replaced = replaceInternal(format, plugin, player);
-        if (!PLACEHOLDER_PATTERN.matcher(replaced.first()).find()) {
-            return CompletableFuture.completedFuture(applyPlaceholderReplacements(format, player, replaced.second()));
+        if(optionalPlaceholder.get().parameterised) {
+            throw new IllegalArgumentException("Placeholder " + placeholder + " is parameterised");
         }
 
-        final List<String> placeholders = extractPlaceholders(replaced.first());
-        return plugin.getPAPIProxyBridgeHook()
-                .map(hook -> hook.parsePlaceholders(placeholders, player.getPlayer())
-                        .exceptionally(e -> {
-                            plugin.log(Level.ERROR, "An error occurred whilst parsing placeholders: " + e.getMessage());
-                            return Map.of();
-                        })
-                )
-                .orElse(CompletableFuture.completedFuture(Maps.newHashMap()))
-                .exceptionally(e -> {
-                    plugin.log(Level.ERROR, "An error occurred whilst parsing placeholders: " + e.getMessage());
-                    return Map.of();
-                })
-                .thenApply(m -> applyPlaceholderReplacements(format, player, mergeMaps(m, replaced.second())));
-    }
-
-    @NotNull
-    private static String applyPlaceholders(@NotNull String text, @NotNull Map<String, String> replacements) {
-        for (Map.Entry<String, String> entry : replacements.entrySet()) {
-            text = text.replace(entry.getKey(), entry.getValue());
-        }
-        return text;
-    }
-
-    @NotNull
-    private static Map<String, String> mergeMaps(@NotNull Map<String, String> map1, @NotNull Map<String, String> map2) {
-        map1.putAll(map2);
-        return map1;
-    }
-
-    @NotNull
-    private static List<String> extractPlaceholders(@NotNull String text) {
-        final List<String> placeholders = Lists.newArrayList();
-        final Matcher matcher = PLACEHOLDER_PATTERN.matcher(text);
-        while (matcher.find()) {
-            placeholders.add(matcher.group());
-        }
-        return placeholders;
+        final Placeholder placeholderType = optionalPlaceholder.get();
+        return Optional.of(placeholderType.replacer.apply(null, plugin, player));
     }
 }

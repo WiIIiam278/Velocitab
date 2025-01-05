@@ -29,6 +29,7 @@ import com.velocitypowered.api.event.proxy.ProxyReloadEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.ServerInfo;
+import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
@@ -101,6 +102,7 @@ public class TabListListener {
 
         // Removes cached relational data of the joined player from all other players
         plugin.getTabList().clearCachedData(joined);
+        plugin.getPlaceholderManager().clearPlaceholders(joined.getUniqueId());
 
         if (!plugin.getSettings().isShowAllPlayersFromAllGroups() && previousGroup.isPresent()
                 && (groupOptional.isPresent() && !previousGroup.get().equals(groupOptional.get())
@@ -147,9 +149,18 @@ public class TabListListener {
         final Group group = groupOptional.get();
         plugin.getScoreboardManager().resetCache(joined, group);
 
+        final ScheduledTask task = plugin.getServer().getScheduler()
+                .buildTask(plugin, () -> plugin.getPlaceholderManager().fetchPlaceholders(joined.getUniqueId(), group.getTextsWithPlaceholders()))
+                .delay(100, TimeUnit.MILLISECONDS)
+                .repeat(50, TimeUnit.MILLISECONDS)
+                .schedule();
+
         final int delay = justQuit.contains(joined.getUniqueId()) ? 650 : 500;
         plugin.getServer().getScheduler().buildTask(plugin,
-                        () -> tabList.joinPlayer(joined, group))
+                        () -> {
+                            task.cancel();
+                            tabList.joinPlayer(joined, group);
+                        })
                 .delay(delay, TimeUnit.MILLISECONDS)
                 .schedule();
     }
@@ -167,6 +178,7 @@ public class TabListListener {
 
         // Remove the player from the tab list of all other players
         tabList.removePlayer(event.getPlayer());
+        plugin.getPlaceholderManager().clearPlaceholders(event.getPlayer().getUniqueId());
     }
 
     private void checkDelayedDisconnect(@NotNull DisconnectEvent event) {

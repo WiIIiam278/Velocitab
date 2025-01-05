@@ -26,10 +26,15 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.event.Level;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MiniPlaceholdersHook extends Hook {
 
     private final VelocitabMiniExpansion expansion;
+
 
     public MiniPlaceholdersHook(@NotNull Velocitab plugin) {
         super(plugin);

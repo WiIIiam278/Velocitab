@@ -19,10 +19,12 @@
 
 package net.william278.velocitab.config;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.placeholder.PlaceholderReplacement;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.tab.Nametag;
 import org.apache.commons.text.StringEscapeUtils;
@@ -50,6 +52,8 @@ public record Group(
         Map<String, List<PlaceholderReplacement>> placeholderReplacements,
         boolean collisions,
         int headerFooterUpdateRate,
+        int formatUpdateRate,
+        int nametagUpdateRate,
         int placeholderUpdateRate,
         boolean onlyListPlayersInSameServer
 ) {
@@ -82,6 +86,7 @@ public record Group(
                 (isDefault(plugin) && plugin.getSettings().isFallbackEnabled())) {
             return Sets.newHashSet(plugin.getServer().getAllServers());
         }
+
         return getRegexServers(plugin);
     }
 
@@ -99,6 +104,7 @@ public record Group(
                 plugin.getServer().getServer(server).ifPresent(totalServers::add);
             }
         }
+
         return totalServers;
     }
 
@@ -108,10 +114,21 @@ public record Group(
 
     @NotNull
     public Set<Player> getPlayers(@NotNull Velocitab plugin) {
-        Set<Player> players = Sets.newHashSet();
+        final Set<Player> players = Sets.newHashSet();
         for (RegisteredServer server : registeredServers(plugin)) {
             players.addAll(server.getPlayersConnected());
         }
+
+        return players;
+    }
+
+    @NotNull
+    public List<Player> getPlayersAsList(@NotNull Velocitab plugin) {
+        final List<Player> players = Lists.newArrayList();
+        for (RegisteredServer server : registeredServers(plugin)) {
+            players.addAll(server.getPlayersConnected());
+        }
+
         return players;
     }
 
@@ -120,11 +137,13 @@ public record Group(
         if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
             return Sets.newHashSet(plugin.getServer().getAllPlayers());
         }
+
         if (onlyListPlayersInSameServer) {
             return tabPlayer.getPlayer().getCurrentServer()
                     .map(s -> Sets.newHashSet(s.getServer().getPlayersConnected()))
                     .orElseGet(Sets::newHashSet);
         }
+
         return getPlayers(plugin);
     }
 
@@ -140,6 +159,7 @@ public record Group(
         if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
             return Sets.newHashSet(plugin.getTabList().getPlayers().values());
         }
+
         return plugin.getTabList().getPlayers()
                 .values()
                 .stream()
@@ -152,6 +172,7 @@ public record Group(
         if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
             return Sets.newHashSet(plugin.getTabList().getPlayers().values());
         }
+
         if (onlyListPlayersInSameServer) {
             return plugin.getTabList().getPlayers()
                     .values()
@@ -159,7 +180,21 @@ public record Group(
                     .filter(player -> player.getGroup().equals(this) && player.getServerName().equals(tabPlayer.getServerName()))
                     .collect(Collectors.toSet());
         }
+
         return getTabPlayers(plugin);
+    }
+
+    @NotNull
+    public List<String> getTextsWithPlaceholders() {
+        final List<String> texts = Lists.newArrayList();
+        texts.add(name);
+        texts.add(format);
+        texts.addAll(headers);
+        texts.addAll(footers);
+        texts.add(nametag.prefix());
+        texts.add(nametag.suffix());
+        texts.addAll(sortingPlaceholders);
+        return texts;
     }
 
     @Override
@@ -167,6 +202,7 @@ public record Group(
         if (!(obj instanceof Group group)) {
             return false;
         }
+
         return name.equals(group.name);
     }
 }

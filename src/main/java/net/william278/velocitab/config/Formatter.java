@@ -25,6 +25,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.util.MiniMessageUtil;
 import net.william278.velocitab.util.QuadFunction;
 import net.william278.velocitab.util.SerializationUtil;
 import org.jetbrains.annotations.NotNull;
@@ -49,8 +50,9 @@ public enum Formatter {
     MINIMESSAGE(
             (text, player, viewer, plugin) -> plugin.getMiniPlaceholdersHook()
                     .filter(hook -> player != null)
-                    .map(hook -> hook.format(text, player.getPlayer(), viewer == null ? null : viewer.getPlayer()))
-                    .orElse(MiniMessage.miniMessage().deserialize(text)),
+                    .map(hook -> hook.format(MiniMessageUtil.getINSTANCE().checkForErrors(text, plugin),
+                            player.getPlayer(), viewer == null ? null : viewer.getPlayer()))
+                    .orElse(MiniMessage.miniMessage().deserialize(MiniMessageUtil.getINSTANCE().checkForErrors(text, plugin))),
             (text) -> MiniMessage.miniMessage().escapeTags(text),
             "MiniMessage",
             (text) -> MiniMessage.miniMessage().deserialize(text),

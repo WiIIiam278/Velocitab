@@ -22,7 +22,7 @@ package net.william278.velocitab.sorting;
 import com.google.common.collect.Lists;
 import com.velocitypowered.api.network.ProtocolVersion;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.config.Placeholder;
+import net.william278.velocitab.placeholder.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 public class SortingManager {
 
     private final Velocitab plugin;
-    private static final String DELIMITER = ":::";
     private static final Pattern NUMBER_PATTERN = Pattern.compile("^-?[0-9]\\d*(\\.\\d+)?$");
 
     public SortingManager(@NotNull Velocitab plugin) {
@@ -43,15 +42,18 @@ public class SortingManager {
     }
 
     @NotNull
-    public CompletableFuture<String> getTeamName(@NotNull TabPlayer player) {
+    public String getTeamName(@NotNull TabPlayer player) {
         if (!plugin.getSettings().isSortPlayers()) {
-            return CompletableFuture.completedFuture("");
+            return "";
         }
 
-        return Placeholder.replace(String.join(DELIMITER, player.getGroup().sortingPlaceholders()), plugin, player)
-                .thenApply(s -> Arrays.asList(s.split(DELIMITER)))
-                .thenApply(v -> v.stream().map(s -> adaptValue(s, player)).collect(Collectors.toList()))
-                .thenApply(v -> handleList(player, v));
+        final List<String> placeholders = player.getGroup().sortingPlaceholders()
+                .stream()
+                .map(s -> plugin.getPlaceholderManager().applyPlaceholders(player, s))
+                .map(s -> adaptValue(s, player))
+                .toList();
+
+        return handleList(player, placeholders);
     }
 
     @NotNull

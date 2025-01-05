@@ -25,7 +25,7 @@ import net.jodah.expiringmap.ExpiringMap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.config.Placeholder;
+import net.william278.velocitab.placeholder.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
@@ -110,7 +110,7 @@ public class MiniConditionManager {
         }
 
 
-        condition = Placeholder.replaceInternal(condition, plugin, tabPlayer.get()).first();
+        condition = plugin.getPlaceholderManager().applyPlaceholders(tabPlayer.get(), condition);
         final String falseValue = processFalseValue(parameters.get(2));
         final String expression = buildExpression(condition);
         return evaluateAndFormatCondition(expression, target, audience, parameters.get(1), falseValue);
@@ -194,7 +194,7 @@ public class MiniConditionManager {
             }
 
             final String text = "%" + placeholder + "%";
-            final Optional<String> placeholderValue = tabPlayer.get().getCachedPlaceholderValue(text);
+            final Optional<String> placeholderValue = plugin.getPlaceholderManager().getCachedPlaceholderValue(text, target.getUniqueId());
             return placeholderValue.orElse(text);
         });
     }

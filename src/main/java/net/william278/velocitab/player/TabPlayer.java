@@ -20,7 +20,6 @@
 package net.william278.velocitab.player;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.velocitypowered.api.proxy.Player;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +27,6 @@ import lombok.ToString;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
-import net.william278.velocitab.config.Placeholder;
 import net.william278.velocitab.packet.UpdateTeamsPacket;
 import net.william278.velocitab.tab.Nametag;
 import net.william278.velocitab.tab.PlayerTabList;
@@ -38,18 +36,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Getter
 @ToString
 public final class TabPlayer implements Comparable<TabPlayer> {
-
-    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%([^%]+)%");
-    private static final String PLACEHOLDER_DELIMITER = "<-DELIMITER->";
 
     private final Velocitab plugin;
     private final Player player;
@@ -60,7 +51,6 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     // Each TabPlayer contains the components for each TabPlayer it's currently viewing this player
     private final Map<UUID, Component> relationalDisplayNames;
     private final Map<UUID, Component[]> relationalNametags;
-    private final Map<String, String> cachedPlaceholders;
     private final Map<UUID, Integer> cachedListOrders;
     private String lastDisplayName;
     private Component lastHeader;
@@ -91,7 +81,6 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         this.group = group;
         this.relationalDisplayNames = Maps.newConcurrentMap();
         this.relationalNametags = Maps.newConcurrentMap();
-        this.cachedPlaceholders = Maps.newConcurrentMap();
         this.cachedListOrders = Maps.newConcurrentMap();
     }
 
@@ -123,74 +112,36 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         return plugin.getTabGroups().getPosition(group);
     }
 
-    @NotNull
-    public CompletableFuture<String> getDisplayName(@NotNull Velocitab plugin) {
-        final String format = formatGroup();
-        return Placeholder.replace(format, plugin, this)
-                .thenApply(d -> cacheDisplayName(d, format));
-    }
 
     @NotNull
-    private String formatGroup() {
-        final Set<String> placeholders = Sets.newHashSet();
-        final Matcher matcher = PLACEHOLDER_PATTERN.matcher(group.format());
-        while (matcher.find()) {
-            placeholders.add("%" + matcher.group(1) + "%");
-        }
-
-        return String.join(PLACEHOLDER_DELIMITER, placeholders);
-    }
-
-    @NotNull
-    private String cacheDisplayName(@NotNull String placeholders, @NotNull String keys) {
-        String displayName = group.format();
-        final String[] placeholderArray = placeholders.split(PLACEHOLDER_DELIMITER);
-        final String[] keyArray = keys.split(PLACEHOLDER_DELIMITER);
-
-        for (int i = 0; i < placeholderArray.length; i++) {
-            final String placeholder = keyArray[i];
-            final String value = placeholderArray[i];
-            cachedPlaceholders.put(placeholder, value);
-            displayName = displayName.replace(placeholder, value);
-        }
-
-        displayName = Placeholder.replaceInternal(displayName, plugin, this).first();
+    public String getDisplayName(@NotNull Velocitab plugin) {
+        final String format = group.format();
+        final String displayName = plugin.getPlaceholderManager().applyPlaceholders(this, format);
         return lastDisplayName = displayName;
     }
 
-    @NotNull
-    public CompletableFuture<Nametag> getNametag(@NotNull Velocitab plugin) {
-        return Placeholder.replace(group.nametag(), plugin, this);
+    public Nametag getNametag(@NotNull Velocitab plugin) {
+        final String prefix = plugin.getPlaceholderManager().applyPlaceholders(this, group.nametag().prefix());
+        final String suffix = plugin.getPlaceholderManager().applyPlaceholders(this, group.nametag().suffix());
+        return new Nametag(prefix, suffix);
     }
 
     @NotNull
-    public CompletableFuture<String> getTeamName(@NotNull Velocitab plugin) {
-        return plugin.getSortingManager().getTeamName(this)
-                .thenApply(teamName -> this.teamName = teamName);
+    public String getTeamName(@NotNull Velocitab plugin) {
+        final String teamName = plugin.getSortingManager().getTeamName(this);
+        return this.teamName = teamName;
     }
 
     public Optional<String> getLastTeamName() {
         return Optional.ofNullable(teamName);
     }
 
-    public CompletableFuture<Void> sendHeaderAndFooter(@NotNull PlayerTabList tabList) {
-        return tabList.getHeader(this).thenCompose(header -> tabList.getFooter(this).thenAccept(footer -> {
-            final boolean disabled = plugin.getSettings().isDisableHeaderFooterIfEmpty();
-            if (disabled) {
-                if ((!Component.empty().equals(header) && !header.equals(lastHeader)) ||
-                        (!Component.empty().equals(footer) && !footer.equals(lastFooter))) {
-                    lastHeader = header;
-                    lastFooter = footer;
-                    player.sendPlayerListHeaderAndFooter(header, footer);
-                }
-            } else {
-                if (!header.equals(lastHeader) || !footer.equals(lastFooter)) {
-                    lastHeader = header;
-                    lastFooter = footer;
-                    player.sendPlayerListHeaderAndFooter(header, footer);
-                }
-            }
-        }));
+    public void sendHeaderAndFooter(@NotNull PlayerTabList tabList) {
+        final Component header = tabList.getHeader(this);
+        final Component footer = tabList.getFooter(this);
+        lastHeader = header;
+        lastFooter = footer;
+        player.sendPlayerListHeaderAndFooter(header, footer);
     }
 
     public void incrementIndexes() {
@@ -272,9 +223,5 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     @Override
     public boolean equals(Object obj) {
         return obj instanceof TabPlayer other && player.getUniqueId().equals(other.player.getUniqueId());
-    }
-
-    public Optional<String> getCachedPlaceholderValue(@NotNull String placeholder) {
-        return Optional.ofNullable(cachedPlaceholders.get(placeholder));
     }
 }

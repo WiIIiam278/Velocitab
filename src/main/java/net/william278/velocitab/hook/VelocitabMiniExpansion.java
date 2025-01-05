@@ -28,7 +28,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.config.Placeholder;
+import net.william278.velocitab.placeholder.Placeholder;
 import net.william278.velocitab.hook.miniconditions.MiniConditionManager;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
@@ -98,7 +98,7 @@ public class VelocitabMiniExpansion {
             }
 
             final String value = fixValue(popAll(queue));
-            final String replaced = Placeholder.replaceInternal(value, plugin, targetPlayer).first();
+            final String replaced = plugin.getPlaceholderManager().applyPlaceholders(targetPlayer, value);
 
             return Tag.selfClosingInserting(MiniMessage.miniMessage().deserialize(replaced, MiniPlaceholders.getAudienceGlobalPlaceholders(audience)));
         }));

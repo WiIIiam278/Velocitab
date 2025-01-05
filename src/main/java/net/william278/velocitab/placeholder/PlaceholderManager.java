@@ -23,9 +23,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.velocitypowered.api.proxy.Player;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.config.Group;
+import net.william278.velocitab.hook.miniconditions.MiniConditionManager;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -37,8 +40,21 @@ import java.util.regex.Pattern;
 
 public class PlaceholderManager {
 
-    private static final Pattern PLACEHOLDER_PATTERN = Placeholder.PLACEHOLDER_PATTERN;
-    private final static String ELSE_PLACEHOLDER = "ELSE";
+    private static final String ELSE_PLACEHOLDER = "ELSE";
+    private static final Pattern VELOCITAB_PATTERN = Pattern.compile("<velocitab_.*?>");
+    private static final Pattern TEST = Pattern.compile("<.*?>");
+    private static final Pattern CONDITION_REPLACER = Pattern.compile("<velocitab_rel_condition:[^:]*:");
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%.*?%", Pattern.DOTALL);
+    private static final Map<String, String> SYMBOL_SUBSTITUTES = Map.of(
+            "<", "*LESS*",
+            ">", "*GREATER*"
+    );
+    private static final Map<String, String> SYMBOL_SUBSTITUTES_2 = Map.of(
+            "*LESS*", "*LESS2*",
+            "*GREATER*", "*GREATER2*"
+    );
+    private static final String VEL_PLACEHOLDER = "<vel";
+    private static final String VELOCITAB_PLACEHOLDER = "<velocitab_rel";
 
     private final Velocitab plugin;
     private final Map<UUID, Map<String, String>> placeholders;
@@ -68,7 +84,7 @@ public class PlaceholderManager {
                 .map(s -> s.replace("%target_", "%"))
                 .toList();
 
-        placeholders.forEach(placeholder -> Placeholder.replaceSingle(placeholder, plugin, tabPlayer)
+        placeholders.forEach(placeholder -> replaceSingle(placeholder, plugin, tabPlayer)
                 .ifPresentOrElse(replacement -> parsed.put(placeholder, replacement),
                         () -> plugin.getPAPIProxyBridgeHook().ifPresent(hook ->
                                 hook.formatPlaceholders(placeholder, player).thenAccept(replacement -> {
@@ -83,18 +99,18 @@ public class PlaceholderManager {
     public String applyPlaceholders(@NotNull TabPlayer player, @NotNull String text) {
         final Map<String, String> parsed = placeholders.computeIfAbsent(player.getPlayer().getUniqueId(), uuid -> Maps.newConcurrentMap());
         final String applied = applyPlaceholderReplacements(text, player, parsed);
-        return Placeholder.processRelationalPlaceholders(applied, plugin);
+        return processRelationalPlaceholders(applied, plugin);
     }
 
     @NotNull
     public String applyPlaceholders(@NotNull TabPlayer player, @NotNull String text, @NotNull TabPlayer target) {
         final Map<String, String> parsed = placeholders.computeIfAbsent(player.getPlayer().getUniqueId(), uuid -> Maps.newConcurrentMap());
         final String applied = applyPlaceholderReplacements(text, player, parsed);
-        final String relational = Placeholder.processRelationalPlaceholders(applied, plugin);
+        final String relational = processRelationalPlaceholders(applied, plugin);
 
         final Map<String, String> targetParsed = placeholders.computeIfAbsent(target.getPlayer().getUniqueId(), uuid -> Maps.newConcurrentMap());
         final String targetApplied = applyPlaceholderReplacements(relational.replace("%target_", "%"), target, targetParsed);
-        return Placeholder.processRelationalPlaceholders(targetApplied, plugin);
+        return processRelationalPlaceholders(targetApplied, plugin);
     }
 
     public void clearPlaceholders(@NotNull UUID uuid) {
@@ -154,5 +170,83 @@ public class PlaceholderManager {
         }
 
         return Optional.ofNullable(placeholders.get(uuid).get(text));
+    }
+
+    private Optional<String> replaceSingle(@NotNull String placeholder, @NotNull Velocitab plugin, @NotNull TabPlayer player) {
+        final Optional<Placeholder> optionalPlaceholder = Placeholder.byName(placeholder);
+        if (optionalPlaceholder.isEmpty()) {
+            //check if it's parameterised
+            for (Placeholder placeholderType : Placeholder.getPARAMETERISED()) {
+                final Matcher matcher = placeholderType.getPattern().matcher(placeholder);
+                if (matcher.find()) {
+                    final String s = StringUtils.chop(matcher.group().replace("%" + placeholderType.name().toLowerCase(), "")
+                            .replaceFirst("_", ""));
+                    return Optional.of(placeholderType.getReplacer().apply(s, plugin, player));
+                }
+            }
+
+            return Optional.empty();
+        }
+
+        if(optionalPlaceholder.get().isParameterised()) {
+            throw new IllegalArgumentException("Placeholder " + placeholder + " is parameterised");
+        }
+
+        final Placeholder placeholderType = optionalPlaceholder.get();
+        return Optional.of(placeholderType.getReplacer().apply(null, plugin, player));
+    }
+
+    private String processRelationalPlaceholders(@NotNull String format, @NotNull Velocitab plugin) {
+        if (plugin.getFormatter().equals(Formatter.MINIMESSAGE) && format.contains(VEL_PLACEHOLDER)) {
+            final Matcher conditionReplacer = CONDITION_REPLACER.matcher(format);
+            while (conditionReplacer.find()) {
+
+                final String search = conditionReplacer.group().split(":")[1];
+                String condition = search;
+                for (Map.Entry<String, String> entry : MiniConditionManager.REPLACE.entrySet()) {
+                    condition = condition.replace(entry.getKey(), entry.getValue());
+                }
+                for (Map.Entry<String, String> entry : MiniConditionManager.REPLACE_2.entrySet()) {
+                    condition = condition.replace(entry.getValue(), entry.getKey());
+                }
+                format = format.replace(search, condition);
+            }
+
+            final Matcher testMatcher = TEST.matcher(format);
+            while (testMatcher.find()) {
+                if (testMatcher.group().startsWith(VELOCITAB_PLACEHOLDER)) {
+                    final Matcher second = TEST.matcher(testMatcher.group().substring(1));
+                    while (second.find()) {
+                        String s = second.group();
+                        for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES.entrySet()) {
+                            s = s.replace(entry.getKey(), entry.getValue());
+                        }
+                        format = format.replace(second.group(), s);
+                    }
+                    continue;
+                }
+                String s = testMatcher.group();
+                for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES.entrySet()) {
+                    s = s.replace(entry.getKey(), entry.getValue());
+                }
+                format = format.replace(testMatcher.group(), s);
+            }
+
+            final Matcher velocitabRelationalMatcher = VELOCITAB_PATTERN.matcher(format);
+            while (velocitabRelationalMatcher.find()) {
+                final String relationalPlaceholder = velocitabRelationalMatcher.group().substring(1, velocitabRelationalMatcher.group().length() - 1);
+                String fixedString = relationalPlaceholder;
+                for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES_2.entrySet()) {
+                    fixedString = fixedString.replace(entry.getKey(), entry.getValue());
+                }
+                format = format.replace(relationalPlaceholder, fixedString);
+            }
+
+            for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES.entrySet()) {
+                format = format.replace(entry.getValue(), entry.getKey());
+            }
+
+        }
+        return format;
     }
 }

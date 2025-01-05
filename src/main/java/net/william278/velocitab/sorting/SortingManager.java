@@ -22,13 +22,10 @@ package net.william278.velocitab.sorting;
 import com.google.common.collect.Lists;
 import com.velocitypowered.api.network.ProtocolVersion;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.placeholder.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 

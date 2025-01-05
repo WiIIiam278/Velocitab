@@ -23,7 +23,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public final class SerializationUtil {
 
-    public final static LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.builder()
+    public static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.builder()
             .hexCharacter('#')
             .character('&')
             .hexColors()

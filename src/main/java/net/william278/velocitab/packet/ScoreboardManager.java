@@ -41,6 +41,8 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.velocitypowered.api.network.ProtocolVersion.*;
 
@@ -48,6 +50,7 @@ public class ScoreboardManager {
 
     private PacketRegistration<UpdateTeamsPacket> packetRegistration;
     private final Velocitab plugin;
+    private final ExecutorService executorService;
     private final boolean teams;
     private final Map<ProtocolVersion, TeamsPacketAdapter> versions;
     @Getter
@@ -64,8 +67,9 @@ public class ScoreboardManager {
         this.nametags = Maps.newConcurrentMap();
         this.versions = Maps.newHashMap();
         this.trackedTeams = Multimaps.synchronizedMultimap(Multimaps.newSetMultimap(Maps.newConcurrentMap(), Sets::newConcurrentHashSet));
-        this.sortedTeams = new SortedSet(Comparator.reverseOrder());
+        this.sortedTeams = new SortedSet(Comparator.reverseOrder()); //Comparator.reverseOrder()
         this.registerVersions();
+        this.executorService = Executors.newFixedThreadPool(2);
     }
 
     public boolean handleTeams() {
@@ -389,8 +393,10 @@ public class ScoreboardManager {
             return;
         }
 
-        final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
-        connectedPlayer.getConnection().write(packet);
+        executorService.submit(() -> {
+            final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
+            connectedPlayer.getConnection().write(packet);
+        });
     }
 
     public void registerPacket() {

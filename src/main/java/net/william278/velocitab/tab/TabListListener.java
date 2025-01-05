@@ -155,7 +155,7 @@ public class TabListListener {
                 .repeat(50, TimeUnit.MILLISECONDS)
                 .schedule();
 
-        final int delay = justQuit.contains(joined.getUniqueId()) ? 650 : 500;
+        final int delay = justQuit.contains(joined.getUniqueId()) ? 400 : 200;
         plugin.getServer().getScheduler().buildTask(plugin,
                         () -> {
                             task.cancel();

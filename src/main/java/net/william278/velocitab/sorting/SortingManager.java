@@ -48,7 +48,7 @@ public class SortingManager {
                 .stream()
                 .map(s -> plugin.getPlaceholderManager().applyPlaceholders(player, s))
                 .map(s -> adaptValue(s, player))
-                .toList();
+                .collect(Collectors.toList());
 
         return handleList(player, placeholders);
     }

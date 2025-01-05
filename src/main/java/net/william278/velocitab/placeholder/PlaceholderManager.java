@@ -76,7 +76,9 @@ public class PlaceholderManager {
         }
         final Map<String, String> parsed = placeholders.computeIfAbsent(uuid, k -> Maps.newConcurrentMap());
         final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player)
-                .orElse(new TabPlayer(plugin, player, Role.DEFAULT_ROLE, plugin.getTabList().getGroupOrDefault(player)));
+                .orElse(new TabPlayer(plugin, player,
+                        plugin.getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE),
+                        plugin.getTabList().getGroupOrDefault(player)));
 
         final List<String> placeholders = texts.stream()
                 .map(PlaceholderManager::extractPlaceholders)

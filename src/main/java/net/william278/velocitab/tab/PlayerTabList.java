@@ -28,8 +28,6 @@ import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import com.velocitypowered.api.util.ServerLink;
-import com.velocitypowered.proxy.connection.client.ConnectedPlayer;
-import com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket;
 import com.velocitypowered.proxy.tablist.KeyedVelocityTabList;
 import com.velocitypowered.proxy.tablist.VelocityTabList;
 import lombok.AccessLevel;
@@ -50,8 +48,6 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import static com.velocitypowered.proxy.protocol.packet.UpsertPlayerInfoPacket.Action.UPDATE_LIST_ORDER;
 
 /**
  * The main class for tracking the server TAB list for a map of {@link TabPlayer}s
@@ -172,7 +168,6 @@ public class PlayerTabList {
         players.values().forEach(p -> {
             p.unsetRelationalDisplayName(player.getUniqueId());
             p.unsetRelationalNametag(player.getUniqueId());
-            p.unsetTabListOrder(player.getUniqueId());
         });
     }
 
@@ -185,6 +180,7 @@ public class PlayerTabList {
             tabPlayerOptional.get().setGroup(group);
             tabPlayerOptional.get().setRole(plugin.getLuckPermsHook().map(hook -> hook.getPlayerRole(joined)).orElse(Role.DEFAULT_ROLE));
         }
+
         final TabPlayer tabPlayer = tabPlayerOptional.orElseGet(() -> createTabPlayer(joined, group));
         final String serverName = getServerName(joined);
         // Store last server, so it's possible to have the last server on disconnect
@@ -193,7 +189,6 @@ public class PlayerTabList {
         // Send server URLs (1.21 clients)
         sendPlayerServerLinks(tabPlayer);
 
-        tabPlayer.getDisplayName(plugin);
         handleDisplayLoad(tabPlayer);
     }
 
@@ -404,7 +399,13 @@ public class PlayerTabList {
             return;
         }
 
-        updateSorting(tabPlayer, force);
+        plugin.getPlaceholderManager().fetchPlaceholders(tabPlayer.getPlayer().getUniqueId(), tabPlayer.getGroup().sortingPlaceholders());
+
+        //to make sure that role placeholder is updated even for a backend placeholder
+        plugin.getServer().getScheduler().buildTask(plugin,
+                () -> updateSorting(tabPlayer, force))
+                .delay(100, TimeUnit.MILLISECONDS)
+                .schedule();
     }
 
     public void updateSorting(@NotNull Group group) {
@@ -416,13 +417,13 @@ public class PlayerTabList {
         if (teamName.isBlank()) {
             return;
         }
-
         plugin.getScoreboardManager().updateRole(tabPlayer, teamName, force);
         final int order = plugin.getScoreboardManager().getPosition(teamName);
         if (order == -1) {
             plugin.log(Level.ERROR, "Failed to get position for " + tabPlayer.getPlayer().getUsername());
             return;
         }
+
         tabPlayer.setListOrder(order);
         final Set<TabPlayer> players = tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer);
         players.forEach(p -> recalculateSortingForPlayer(p, players));
@@ -586,15 +587,13 @@ public class PlayerTabList {
         if (!tabPlayer.getPlayer().getTabList().containsEntry(uuid)) {
             return;
         }
-        if (tabPlayer.getCachedListOrders().containsKey(uuid) && tabPlayer.getCachedListOrders().get(uuid) == position) {
+
+        final Optional<TabListEntry> entry = tabPlayer.getPlayer().getTabList().getEntry(uuid);
+        if(entry.isEmpty() || entry.get().getListOrder() == position) {
             return;
         }
-        tabPlayer.getCachedListOrders().put(uuid, position);
-        final UpsertPlayerInfoPacket packet = new UpsertPlayerInfoPacket(UPDATE_LIST_ORDER);
-        final UpsertPlayerInfoPacket.Entry entry = new UpsertPlayerInfoPacket.Entry(uuid);
-        entry.setListOrder(position);
-        packet.addEntry(entry);
-        ((ConnectedPlayer) tabPlayer.getPlayer()).getConnection().write(packet);
+
+        entry.get().setListOrder(position);
     }
 
     public synchronized void recalculateSortingForPlayer(@NotNull TabPlayer tabPlayer, @NotNull Set<TabPlayer> players) {
@@ -603,7 +602,7 @@ public class PlayerTabList {
         }
 
         players.forEach(p -> {
-            final int order = p.getListOrder();
+            final int order = plugin.getScoreboardManager().getPosition(p.getLastTeamName().orElse(""));
             updateSorting(tabPlayer, p.getPlayer().getUniqueId(), order);
         });
     }

@@ -120,7 +120,7 @@ public class LuckPermsHook extends Hook {
                             tabList.getVanishTabList().recalculateVanishForPlayer(tabPlayer);
                             checkRoleUpdate(tabPlayer, oldRole);
                         })
-                        .delay(500, TimeUnit.MILLISECONDS)
+                        .delay(100, TimeUnit.MILLISECONDS)
                         .schedule());
     }
 
@@ -145,6 +145,7 @@ public class LuckPermsHook extends Hook {
         if (oldRole.equals(player.getRole())) {
             return;
         }
+
         plugin.getTabList().updatePlayer(player, false);
     }
 

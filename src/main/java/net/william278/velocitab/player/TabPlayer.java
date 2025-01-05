@@ -110,14 +110,6 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         return plugin.getTabGroups().getPosition(group);
     }
 
-
-    @NotNull
-    public String getDisplayName(@NotNull Velocitab plugin) {
-        final String format = group.format();
-        final String displayName = plugin.getPlaceholderManager().applyPlaceholders(this, format);
-        return lastDisplayName = displayName;
-    }
-
     public Nametag getNametag(@NotNull Velocitab plugin) {
         final String prefix = plugin.getPlaceholderManager().applyPlaceholders(this, group.nametag().prefix());
         final String suffix = plugin.getPlaceholderManager().applyPlaceholders(this, group.nametag().suffix());

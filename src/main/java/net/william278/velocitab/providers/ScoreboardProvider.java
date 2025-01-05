@@ -91,7 +91,7 @@ public interface ScoreboardProvider {
         setTabList(tabList);
         getPlugin().getServer().getEventManager().register(this, tabList);
 
-        getPlugin().getServer().getScheduler().buildTask(this, tabList::load).delay(1, TimeUnit.SECONDS).schedule();
+        getPlugin().getServer().getScheduler().buildTask(this, tabList::load).delay(250, TimeUnit.MILLISECONDS).schedule();
 
         final SortingManager sortingManager = new SortingManager(getPlugin());
         setSortingManager(sortingManager);

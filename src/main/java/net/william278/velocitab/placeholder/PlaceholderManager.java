@@ -74,6 +74,7 @@ public class PlaceholderManager {
         if (player == null) {
             return;
         }
+
         final Map<String, String> parsed = placeholders.computeIfAbsent(uuid, k -> Maps.newConcurrentMap());
         final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player)
                 .orElse(new TabPlayer(plugin, player,

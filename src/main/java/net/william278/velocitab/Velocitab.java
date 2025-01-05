@@ -102,9 +102,9 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
         checkCompatibility();
         loadConfigs();
         loadHooks();
+        preparePlaceholderManager();
         prepareVanishManager();
         prepareChannelManager();
-        preparePlaceholderManager();
         prepareScoreboard();
         registerCommands();
         registerMetrics();

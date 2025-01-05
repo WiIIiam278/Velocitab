@@ -68,7 +68,6 @@ public class PlayerTabList {
         this.players = Maps.newConcurrentMap();
         this.taskManager = new TaskManager(plugin);
         this.entriesFields = Maps.newHashMap();
-        this.reloadUpdate();
         this.registerListener();
         this.ensureDisplayNameTask();
         this.registerFields();
@@ -137,6 +136,8 @@ public class PlayerTabList {
 
             joinPlayer(p, group.get());
         });
+
+        reloadUpdate();
     }
 
     /**

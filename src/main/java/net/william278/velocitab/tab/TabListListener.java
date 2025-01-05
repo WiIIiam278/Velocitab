@@ -151,7 +151,7 @@ public class TabListListener {
 
         final ScheduledTask task = plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> plugin.getPlaceholderManager().fetchPlaceholders(joined.getUniqueId(), group.getTextsWithPlaceholders()))
-                .delay(100, TimeUnit.MILLISECONDS)
+                .delay(10, TimeUnit.MILLISECONDS)
                 .repeat(50, TimeUnit.MILLISECONDS)
                 .schedule();
 

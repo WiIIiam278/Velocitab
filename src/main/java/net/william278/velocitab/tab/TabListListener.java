@@ -149,9 +149,15 @@ public class TabListListener {
         final Group group = groupOptional.get();
         plugin.getScoreboardManager().resetCache(joined, group);
 
+        plugin.getServer().getScheduler().buildTask(plugin, () -> {
+            plugin.getPlaceholderManager().unblockPlayer(joined.getUniqueId());
+        }).delay(10, TimeUnit.MILLISECONDS).schedule();
+
         final ScheduledTask task = plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> plugin.getPlaceholderManager().fetchPlaceholders(joined.getUniqueId(), group.getTextsWithPlaceholders()))
-                .delay(10, TimeUnit.MILLISECONDS)
+                .buildTask(plugin, () -> {
+                    plugin.getPlaceholderManager().fetchPlaceholders(joined.getUniqueId(), group.getTextsWithPlaceholders());
+                })
+                .delay(15, TimeUnit.MILLISECONDS)
                 .repeat(50, TimeUnit.MILLISECONDS)
                 .schedule();
 
@@ -180,6 +186,7 @@ public class TabListListener {
         // Remove the player from the tab list of all other players
         tabList.removePlayer(event.getPlayer());
         plugin.getPlaceholderManager().clearPlaceholders(event.getPlayer().getUniqueId());
+        plugin.getPlaceholderManager().unblockPlayer(event.getPlayer().getUniqueId());
     }
 
     private void checkDelayedDisconnect(@NotNull DisconnectEvent event) {

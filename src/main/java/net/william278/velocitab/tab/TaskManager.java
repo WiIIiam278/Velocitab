@@ -21,7 +21,6 @@ package net.william278.velocitab.tab;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
@@ -96,12 +95,13 @@ public class TaskManager {
     }
 
     private void updatePlaceholders(@NotNull Group group) {
-        final List<Player> players = group.getPlayersAsList(plugin);
+        final List<TabPlayer> players = group.getTabPlayersAsList(plugin);
         if (players.isEmpty()) {
             return;
         }
+
         final List<String> texts = group.getTextsWithPlaceholders();
-        players.forEach(player -> plugin.getPlaceholderManager().fetchPlaceholders(player.getUniqueId(), texts));
+        players.forEach(player -> plugin.getPlaceholderManager().fetchPlaceholders(player.getPlayer().getUniqueId(), texts));
     }
 
     private void updateLatency(@NotNull Group group) {

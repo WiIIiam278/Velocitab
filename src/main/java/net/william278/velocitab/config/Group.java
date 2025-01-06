@@ -167,6 +167,18 @@ public record Group(
                 .collect(Collectors.toSet());
     }
 
+    public List<TabPlayer> getTabPlayersAsList(@NotNull Velocitab plugin) {
+        if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
+            return Lists.newArrayList(plugin.getTabList().getPlayers().values());
+        }
+
+        return plugin.getTabList().getPlayers()
+                .values()
+                .stream()
+                .filter(tabPlayer -> tabPlayer.isLoaded() && tabPlayer.getGroup().equals(this))
+                .collect(Collectors.toList());
+    }
+
     @NotNull
     public Set<TabPlayer> getTabPlayers(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {
         if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {

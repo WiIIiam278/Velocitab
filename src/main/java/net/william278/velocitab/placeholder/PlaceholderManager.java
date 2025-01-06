@@ -21,6 +21,7 @@ package net.william278.velocitab.placeholder;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.velocitypowered.api.proxy.Player;
 import lombok.Setter;
 import net.william278.velocitab.Velocitab;
@@ -32,10 +33,8 @@ import net.william278.velocitab.player.TabPlayer;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,10 +61,14 @@ public class PlaceholderManager {
 
     private final Velocitab plugin;
     private final Map<UUID, Map<String, String>> placeholders;
+    private final Map<UUID, Set<CompletableFuture<?>>> requests;
+    private final Set<UUID> blocked;
 
     public PlaceholderManager(Velocitab plugin) {
         this.plugin = plugin;
         this.placeholders = Maps.newConcurrentMap();
+        this.requests = Maps.newConcurrentMap();
+        this.blocked = Sets.newConcurrentHashSet();
     }
 
     public void fetchPlaceholders(@NotNull Group group) {
@@ -76,6 +79,10 @@ public class PlaceholderManager {
     public void fetchPlaceholders(@NotNull UUID uuid, @NotNull List<String> texts) {
         final Player player = plugin.getServer().getPlayer(uuid).orElse(null);
         if (player == null) {
+            return;
+        }
+
+        if (blocked.contains(uuid)) {
             return;
         }
 
@@ -95,18 +102,26 @@ public class PlaceholderManager {
 
         placeholders.forEach(placeholder -> replaceSingle(placeholder, plugin, tabPlayer)
                 .ifPresentOrElse(replacement -> parsed.put(placeholder, replacement),
-                        () -> plugin.getPAPIProxyBridgeHook().ifPresent(hook ->
-                                hook.formatPlaceholders(placeholder, player).thenAccept(replacement -> {
-                                    if (replacement == null || replacement.equals(placeholder)) {
-                                        return;
-                                    }
+                        () -> plugin.getPAPIProxyBridgeHook().ifPresent(hook -> {
+                            final CompletableFuture<String> future = hook.formatPlaceholders(placeholder, player);
+                            requests.computeIfAbsent(player.getUniqueId(), u -> Sets.newConcurrentHashSet()).add(future);
+                            future.thenAccept(replacement -> {
+                                if (replacement == null || replacement.equals(placeholder)) {
+                                    return;
+                                }
 
-                                    if (debug) {
-                                        plugin.getLogger().info("Placeholder {} replaced with  {} in {}ms", placeholder, replacement, System.currentTimeMillis() - start);
-                                    }
+                                if (blocked.contains(player.getUniqueId())) {
+                                    return;
+                                }
 
-                                    parsed.put(placeholder, replacement);
-                                }))));
+                                if (debug) {
+                                    plugin.getLogger().info("Placeholder {} replaced with  {} in {}ms", placeholder, replacement, System.currentTimeMillis() - start);
+                                }
+
+                                parsed.put(placeholder, replacement);
+                                requests.get(player.getUniqueId()).remove(future);
+                            });
+                        })));
     }
 
     @NotNull
@@ -128,7 +143,14 @@ public class PlaceholderManager {
     }
 
     public void clearPlaceholders(@NotNull UUID uuid) {
+        blocked.add(uuid);
         placeholders.remove(uuid);
+        Optional.ofNullable(requests.get(uuid)).ifPresent(set -> set.forEach(c -> c.cancel(true)));
+    }
+
+    public void unblockPlayer(@NotNull UUID uuid) {
+        blocked.remove(uuid);
+        requests.remove(uuid);
     }
 
     @NotNull

@@ -22,6 +22,7 @@ package net.william278.velocitab.placeholder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.velocitypowered.api.proxy.Player;
+import lombok.Setter;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.config.Group;
@@ -39,6 +40,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PlaceholderManager {
+
+    @Setter
+    private boolean debug = false;
 
     private static final String ELSE_PLACEHOLDER = "ELSE";
     private static final Pattern VELOCITAB_PATTERN = Pattern.compile("<velocitab_.*?>");
@@ -87,13 +91,20 @@ public class PlaceholderManager {
                 .map(s -> s.replace("%target_", "%"))
                 .toList();
 
+        final long start = System.currentTimeMillis();
+
         placeholders.forEach(placeholder -> replaceSingle(placeholder, plugin, tabPlayer)
                 .ifPresentOrElse(replacement -> parsed.put(placeholder, replacement),
                         () -> plugin.getPAPIProxyBridgeHook().ifPresent(hook ->
                                 hook.formatPlaceholders(placeholder, player).thenAccept(replacement -> {
-                                    if(replacement == null || replacement.equals(placeholder)) {
+                                    if (replacement == null || replacement.equals(placeholder)) {
                                         return;
                                     }
+
+                                    if (debug) {
+                                        plugin.getLogger().info("Placeholder {} replaced with  {} in {}ms", placeholder, replacement, System.currentTimeMillis() - start);
+                                    }
+
                                     parsed.put(placeholder, replacement);
                                 }))));
     }
@@ -133,7 +144,7 @@ public class PlaceholderManager {
 
     @NotNull
     private String applyPlaceholderReplacements(@NotNull String text, @NotNull TabPlayer player,
-                                                         @NotNull Map<String, String> parsed) {
+                                                @NotNull Map<String, String> parsed) {
         for (final Map.Entry<String, List<PlaceholderReplacement>> entry : player.getGroup().placeholderReplacements().entrySet()) {
             if (!parsed.containsKey(entry.getKey())) {
                 continue;
@@ -191,7 +202,7 @@ public class PlaceholderManager {
             return Optional.empty();
         }
 
-        if(optionalPlaceholder.get().isParameterised()) {
+        if (optionalPlaceholder.get().isParameterised()) {
             throw new IllegalArgumentException("Placeholder " + placeholder + " is parameterised");
         }
 

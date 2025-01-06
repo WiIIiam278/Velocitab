@@ -155,7 +155,8 @@ public class TabListListener {
                 .repeat(50, TimeUnit.MILLISECONDS)
                 .schedule();
 
-        final int delay = justQuit.contains(joined.getUniqueId()) ? 400 : 200;
+        //After updating papiproxybridge we can check if redis is used
+        final int delay = justQuit.contains(joined.getUniqueId()) ? 400 : 300;
         plugin.getServer().getScheduler().buildTask(plugin,
                         () -> {
                             task.cancel();

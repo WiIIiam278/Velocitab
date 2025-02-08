@@ -326,30 +326,47 @@ public class PlayerTabList {
 
     protected void removePlayer(@NotNull Player target, @Nullable RegisteredServer server) {
         final UUID uuid = target.getUniqueId();
-        plugin.getServer().getAllPlayers().forEach(player -> player.getTabList().removeEntry(uuid));
+        final Optional<TabPlayer> tabPlayer = getTabPlayer(target.getUniqueId());
+        if (tabPlayer.isEmpty()) {
+            return;
+        }
+//        getTabPlayer(target.getUniqueId()).ifPresent(tabPlayer -> tabPlayer.setLoaded(false));
 
-        final Set<Player> currentServerPlayers = Optional.ofNullable(server)
-                .map(RegisteredServer::getPlayersConnected)
-                .map(HashSet::new)
-                .orElseGet(HashSet::new);
-        currentServerPlayers.add(target);
-        getTabPlayer(target.getUniqueId()).ifPresent(tabPlayer -> tabPlayer.setLoaded(false));
-
-        // Update the tab list of all players
-        plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> getPlayers().values().stream()
-                        .filter(p -> currentServerPlayers.isEmpty() || !currentServerPlayers.contains(p.getPlayer()))
-                        .forEach(player -> {
-                            player.getPlayer().getTabList().removeEntry(uuid);
-                            player.sendHeaderAndFooter(this);
-                            updatePlayerDisplayName(player);
-                        }))
-                .delay(250, TimeUnit.MILLISECONDS)
-                .schedule();
-        // Delete player team
-        plugin.getScoreboardManager().resetCache(target);
         //remove player from tab list cache
         getPlayers().remove(uuid);
+//        final Set<Player> currentServerPlayers = Optional.ofNullable(server)
+//                .map(RegisteredServer::getPlayersConnected)
+//                .map(HashSet::new)
+//                .orElseGet(HashSet::new);
+//        currentServerPlayers.add(target);
+//
+//        // Update the tab list of all players
+//        plugin.getServer().getScheduler()
+//                .buildTask(plugin, () -> getPlayers().values().stream()
+//                        .filter(p -> currentServerPlayers.isEmpty() || !currentServerPlayers.contains(p.getPlayer()))
+//                        .forEach(player -> {
+//                            player.getPlayer().getTabList().removeEntry(uuid);
+//                            player.sendHeaderAndFooter(this);
+//                            updatePlayerDisplayName(player);
+//                        }))
+//                .delay(250, TimeUnit.MILLISECONDS)
+//                .schedule();
+
+        final List<TabPlayer> list = tabPlayer.get().getGroup().getTabPlayersAsList(plugin, tabPlayer.get());
+
+        plugin.getServer().getScheduler()
+                .buildTask(plugin, () -> list.forEach(player -> {
+                    player.getPlayer().getTabList().removeEntry(uuid);
+                    player.sendHeaderAndFooter(this);
+                    updatePlayerDisplayName(player);
+                }))
+                .delay(250, TimeUnit.MILLISECONDS)
+                .schedule();
+
+
+        // Delete player team
+        plugin.getScoreboardManager().resetCache(target);
+
     }
 
     @NotNull

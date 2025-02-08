@@ -197,6 +197,23 @@ public record Group(
     }
 
     @NotNull
+    public List<TabPlayer> getTabPlayersAsList(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {
+        if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
+            return plugin.getTabList().getPlayers().values().stream().filter(TabPlayer::isLoaded).collect(Collectors.toList());
+        }
+
+        if (onlyListPlayersInSameServer) {
+            return plugin.getTabList().getPlayers()
+                    .values()
+                    .stream()
+                    .filter(player -> player.isLoaded() && player.getGroup().equals(this) && player.getServerName().equals(tabPlayer.getServerName()))
+                    .collect(Collectors.toList());
+        }
+
+        return getTabPlayersAsList(plugin);
+    }
+
+    @NotNull
     public List<String> getTextsWithPlaceholders() {
         final List<String> texts = Lists.newArrayList();
         texts.add(name);

@@ -110,7 +110,9 @@ public class TabListListener {
         if (!plugin.getSettings().isShowAllPlayersFromAllGroups() && previousGroup.isPresent()
                 && ((groupOptional.isPresent() && !previousGroup.get().equals(groupOptional.get())) || groupOptional.isEmpty())
         ) {
-            tabList.removeOldEntry(previousGroup.get(), joined.getUniqueId());
+            plugin.getServer().getScheduler().buildTask(plugin, () -> tabList.removeOldEntry(previousGroup.get(), joined.getUniqueId()))
+                    .delay(250, TimeUnit.MILLISECONDS)
+                    .schedule();
         }
 
         // If the server is not in a group, use fallback.

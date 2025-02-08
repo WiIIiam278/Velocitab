@@ -75,7 +75,7 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
             // This is to prevent conflicts with Velocitab teams.
             plugin.getLogger().warn("Cancelled team \"{}\" packet from backend for player {}. " +
                                     "We suggest disabling \"send_scoreboard_packets\" in Velocitab's config.yml file, " +
-                                    "but note this will disable TAB sorting",
+                                    "but note this will disable TAB sorting. If you want to use sorting you have to disable team handling on your backend servers (plugin or vanilla scoreboard teams)",
                     updateTeamsPacket.teamName(), player.getUsername());
             return;
         }

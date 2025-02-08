@@ -62,6 +62,7 @@ public class PlaceholderManager {
     private final Velocitab plugin;
     private final Map<UUID, Map<String, String>> placeholders;
     private final Map<UUID, Set<CompletableFuture<?>>> requests;
+    private final Map<Group, List<String>> cachedTexts;
     private final Set<UUID> blocked;
 
     public PlaceholderManager(Velocitab plugin) {
@@ -69,14 +70,19 @@ public class PlaceholderManager {
         this.placeholders = Maps.newConcurrentMap();
         this.requests = Maps.newConcurrentMap();
         this.blocked = Sets.newConcurrentHashSet();
+        this.cachedTexts = Maps.newConcurrentMap();
     }
 
     public void fetchPlaceholders(@NotNull Group group) {
-        final List<String> texts = group.getTextsWithPlaceholders();
-        group.getPlayersAsList(plugin).forEach(player -> fetchPlaceholders(player.getUniqueId(), texts));
+        final List<String> texts = cachedTexts.computeIfAbsent(group, Group::getTextsWithPlaceholders);
+        group.getPlayersAsList(plugin).forEach(player -> fetchPlaceholders(player.getUniqueId(), texts, group));
     }
 
-    public void fetchPlaceholders(@NotNull UUID uuid, @NotNull List<String> texts) {
+    public void reload() {
+        cachedTexts.clear();
+    }
+
+    public void fetchPlaceholders(@NotNull UUID uuid, @NotNull List<String> texts, @NotNull Group group) {
         final Player player = plugin.getServer().getPlayer(uuid).orElse(null);
         if (player == null) {
             return;
@@ -116,6 +122,17 @@ public class PlaceholderManager {
 
                                 if (debug) {
                                     plugin.getLogger().info("Placeholder {} replaced with  {} in {}ms", placeholder, replacement, System.currentTimeMillis() - start);
+                                }
+
+                                final long diff = System.currentTimeMillis() - start;
+                                if (diff > group.placeholderUpdateRate()) {
+                                    final long increase = diff + 100;
+                                    plugin.getLogger().warn("""
+                                                    Placeholder {} took more than group placeholder update rate of {} ms to update. This may cause a thread leak.
+                                                    Please fix the issue of the plugin providing the placeholder.
+                                                    If you can't fix it, increase the placeholder update rate of the group to at least {} ms.
+                                                    """
+                                            , placeholder, group.placeholderUpdateRate(), increase);
                                 }
 
                                 parsed.put(placeholder, replacement);

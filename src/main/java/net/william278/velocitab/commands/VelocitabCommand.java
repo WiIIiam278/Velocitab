@@ -28,12 +28,14 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.william278.desertwell.about.AboutMenu;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public final class VelocitabCommand {
 
@@ -100,7 +102,6 @@ public final class VelocitabCommand {
                                     return Command.SINGLE_SUCCESS;
                                 })
                         )
-                        .requires(src -> src instanceof Player)
                         .executes(ctx -> {
                             final Player player = (Player) ctx.getSource();
                             final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
@@ -134,22 +135,58 @@ public final class VelocitabCommand {
                             return Command.SINGLE_SUCCESS;
                         })
                 )
-                .then(LiteralArgumentBuilder.<CommandSource>literal("update")
-                        .requires(src -> hasPermission(src, "update"))
-                        .executes(ctx -> {
-                            plugin.getUpdateChecker().check().thenAccept(checked -> {
-                                if (checked.isUpToDate()) {
-                                    ctx.getSource().sendMessage(Component.text("Velocitab is up to date! (Running v%s)"
-                                            .formatted(plugin.getVersion()), MAIN_COLOR));
-                                    return;
-                                }
-                                ctx.getSource().sendMessage(Component
-                                        .text("An update for Velocitab is available. Please update to %s"
-                                                .formatted(checked.getLatestVersion()), MAIN_COLOR));
-                            });
-                            return Command.SINGLE_SUCCESS;
-                        })
-                );
+                //debug
+                .then(LiteralArgumentBuilder.<CommandSource>literal("debug")
+                        .requires(src -> hasPermission(src, "debug"))
+                        .then(LiteralArgumentBuilder.<CommandSource>literal("tablist")
+                                .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.string())
+                                        .suggests((ctx, builder1) -> {
+                                            final String input = ctx.getInput();
+                                            if (input.isEmpty()) {
+                                                return builder1.buildFuture();
+                                            }
+                                            plugin.getServer().getAllPlayers().stream()
+                                                    .map(Player::getUsername)
+                                                    .filter(s -> s.toLowerCase().startsWith(input.toLowerCase()))
+                                                    .forEach(builder1::suggest);
+                                            return builder1.buildFuture();
+                                        })
+                                        .executes(ctx -> {
+                                            final String input = ctx.getArgument("player", String.class);
+                                            final Optional<Player> player = plugin.getServer().getPlayer(input);
+                                            if (player.isEmpty()) {
+                                                ctx.getSource().sendMessage(Component.text("Player not found!", ERROR_COLOR));
+                                                return Command.SINGLE_SUCCESS;
+                                            }
+
+                                            player.get().getTabList().getEntries().forEach(entry -> {
+                                                final String name = entry.getProfile().getName();
+                                                final UUID uuid = entry.getProfile().getId();
+                                                final String unformattedDisplayName = entry.getDisplayNameComponent().map(c -> PlainTextComponentSerializer.plainText().serialize(c)).orElse("empty");
+
+                                                ctx.getSource().sendMessage(Component.text("Name: %s, UUID: %s, Unformatted display name: %s".formatted(name, uuid, unformattedDisplayName)));
+                                            });
+
+                                            return Command.SINGLE_SUCCESS;
+                                        })
+                                )
+                        ))
+                        .then(LiteralArgumentBuilder.<CommandSource>literal("update")
+                                .requires(src -> hasPermission(src, "update"))
+                                .executes(ctx -> {
+                                    plugin.getUpdateChecker().check().thenAccept(checked -> {
+                                        if (checked.isUpToDate()) {
+                                            ctx.getSource().sendMessage(Component.text("Velocitab is up to date! (Running v%s)"
+                                                    .formatted(plugin.getVersion()), MAIN_COLOR));
+                                            return;
+                                        }
+                                        ctx.getSource().sendMessage(Component
+                                                .text("An update for Velocitab is available. Please update to %s"
+                                                        .formatted(checked.getLatestVersion()), MAIN_COLOR));
+                                    });
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                        );
 
         return new BrigadierCommand(builder);
     }

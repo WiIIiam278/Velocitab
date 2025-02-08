@@ -72,6 +72,10 @@ public class PacketEventManager {
                 .addBefore(Connections.HANDLER, KEY, handler);
     }
 
+    public void removeAllPlayers() {
+        plugin.getServer().getAllPlayers().forEach(this::removePlayer);
+    }
+
     public void removePlayer(@NotNull Player player) {
         final ConnectedPlayer connectedPlayer = (ConnectedPlayer) player;
         final Channel channel = connectedPlayer.getConnection().getChannel();

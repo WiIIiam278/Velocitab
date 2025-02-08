@@ -157,7 +157,7 @@ public record Group(
     @NotNull
     public Set<TabPlayer> getTabPlayers(@NotNull Velocitab plugin) {
         if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
-            return Sets.newHashSet(plugin.getTabList().getPlayers().values());
+            return plugin.getTabList().getPlayers().values().stream().filter(TabPlayer::isLoaded).collect(Collectors.toSet());
         }
 
         return plugin.getTabList().getPlayers()
@@ -169,7 +169,7 @@ public record Group(
 
     public List<TabPlayer> getTabPlayersAsList(@NotNull Velocitab plugin) {
         if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
-            return Lists.newArrayList(plugin.getTabList().getPlayers().values());
+            return plugin.getTabList().getPlayers().values().stream().filter(TabPlayer::isLoaded).collect(Collectors.toList());
         }
 
         return plugin.getTabList().getPlayers()
@@ -182,7 +182,7 @@ public record Group(
     @NotNull
     public Set<TabPlayer> getTabPlayers(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {
         if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
-            return Sets.newHashSet(plugin.getTabList().getPlayers().values());
+            return plugin.getTabList().getPlayers().values().stream().filter(TabPlayer::isLoaded).collect(Collectors.toSet());
         }
 
         if (onlyListPlayersInSameServer) {

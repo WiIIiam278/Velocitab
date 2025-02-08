@@ -29,7 +29,6 @@ import com.velocitypowered.api.event.proxy.ProxyReloadEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.ServerInfo;
-import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
@@ -93,7 +92,8 @@ public class TabListListener {
                 .map(ServerInfo::getName)
                 .orElse("");
 
-        final Optional<Group> previousGroup = tabList.getTabPlayer(joined)
+        final Optional<TabPlayer> previousTabPlayer = tabList.getTabPlayer(joined);
+        final Optional<Group> previousGroup = previousTabPlayer
                 .map(TabPlayer::getGroup);
 
         // Get the group the player should now be in
@@ -104,17 +104,19 @@ public class TabListListener {
         plugin.getTabList().clearCachedData(joined);
         plugin.getPlaceholderManager().clearPlaceholders(joined.getUniqueId());
 
+        // Mark the previous tab player as unloaded
+        previousTabPlayer.ifPresent(player -> player.setLoaded(false));
+
         if (!plugin.getSettings().isShowAllPlayersFromAllGroups() && previousGroup.isPresent()
-                && (groupOptional.isPresent() && !previousGroup.get().equals(groupOptional.get())
-                || groupOptional.isEmpty())) {
+                && ((groupOptional.isPresent() && !previousGroup.get().equals(groupOptional.get())) || groupOptional.isEmpty())
+        ) {
             tabList.removeOldEntry(previousGroup.get(), joined.getUniqueId());
         }
 
         // If the server is not in a group, use fallback.
         // If fallback is disabled, permit the player to switch excluded servers without a header or footer override
         if (isDefault && !plugin.getSettings().isFallbackEnabled() && !groupOptional.map(g -> g.containsServer(plugin, serverName)).orElse(false)) {
-            final Optional<TabPlayer> tabPlayer = tabList.getTabPlayer(joined);
-            if (tabPlayer.isEmpty()) {
+            if (previousTabPlayer.isEmpty()) {
                 return;
             }
 
@@ -122,8 +124,8 @@ public class TabListListener {
                 return;
             }
 
-            final Component header = tabPlayer.get().getLastHeader();
-            final Component footer = tabPlayer.get().getLastFooter();
+            final Component header = previousTabPlayer.get().getLastHeader();
+            final Component footer = previousTabPlayer.get().getLastFooter();
 
             plugin.getServer().getScheduler().buildTask(plugin, () -> {
                 final Component currentHeader = joined.getPlayerListHeader();
@@ -153,23 +155,7 @@ public class TabListListener {
             plugin.getPlaceholderManager().unblockPlayer(joined.getUniqueId());
         }).delay(10, TimeUnit.MILLISECONDS).schedule();
 
-        final ScheduledTask task = plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> {
-                    plugin.getPlaceholderManager().fetchPlaceholders(joined.getUniqueId(), group.getTextsWithPlaceholders());
-                })
-                .delay(15, TimeUnit.MILLISECONDS)
-                .repeat(50, TimeUnit.MILLISECONDS)
-                .schedule();
-
-        //After updating papiproxybridge we can check if redis is used
-        final int delay = justQuit.contains(joined.getUniqueId()) ? 400 : 300;
-        plugin.getServer().getScheduler().buildTask(plugin,
-                        () -> {
-                            task.cancel();
-                            tabList.joinPlayer(joined, group);
-                        })
-                .delay(delay, TimeUnit.MILLISECONDS)
-                .schedule();
+        tabList.loadPlayer(joined, group, justQuit.contains(joined.getUniqueId()) ? 400 : 500);
     }
 
     @SuppressWarnings("deprecation")
@@ -178,10 +164,10 @@ public class TabListListener {
         if (event.getLoginStatus() == DisconnectEvent.LoginStatus.CONFLICTING_LOGIN) {
             return;
         }
-        if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) {
-            checkDelayedDisconnect(event);
-            return;
-        }
+//        if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) {
+//            checkDelayedDisconnect(event);
+//            return;
+//        }
 
         // Remove the player from the tab list of all other players
         tabList.removePlayer(event.getPlayer());
@@ -202,6 +188,7 @@ public class TabListListener {
 
             tabList.removeOfflinePlayer(player);
             tabList.removeTabListUUID(event.getPlayer().getUniqueId());
+            plugin.getLogger().info("Player {} has disconnected with delayed removal from tab list", player.getUsername());
         }).delay(750, TimeUnit.MILLISECONDS).schedule();
     }
 

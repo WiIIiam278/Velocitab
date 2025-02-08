@@ -103,7 +103,7 @@ public class ScoreboardManager {
     @NotNull
     public TeamsPacketAdapter getPacketAdapter(@NotNull ProtocolVersion version) {
         return Optional.ofNullable(versions.get(version))
-                .orElseThrow(() -> new IllegalArgumentException("No adapter found for protocol version " + version));
+                .orElseThrow(() -> new IllegalArgumentException("No adapter found for protocol version " + version + ". Are you sure you're using the latest version of Velocitab and latest build of Velocity?"));
     }
 
     public void close() {
@@ -180,10 +180,10 @@ public class ScoreboardManager {
         final Player player = tabPlayer.getPlayer();
         if (!player.isActive()) {
             plugin.getTabList().removeOfflinePlayer(player);
+            plugin.getLogger().info("Player {} is not active, removing from tab list", player.getUsername());
             return;
         }
         final String name = player.getUsername();
-//        final CompletableFuture<Void> future = new CompletableFuture<>();
         final Nametag nametag = tabPlayer.getNametag(plugin);
         if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
             if (createdTeams.containsKey(player.getUniqueId())) {

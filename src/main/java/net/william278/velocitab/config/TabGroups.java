@@ -154,6 +154,22 @@ public class TabGroups implements ConfigValidator {
             if (group.placeholderReplacements() == null) {
                 missingKeys.put(group, "placeholderReplacements");
             }
+
+            if (group.headerFooterUpdateRate() == 0) {
+                missingKeys.put(group, "headerFooterUpdateRate");
+            }
+
+            if (group.formatUpdateRate() == 0) {
+                missingKeys.put(group, "formatUpdateRate");
+            }
+
+            if (group.nametagUpdateRate() == 0) {
+                missingKeys.put(group, "nametagUpdateRate");
+            }
+
+            if (group.placeholderUpdateRate() == 0) {
+                missingKeys.put(group, "placeholderUpdateRate");
+            }
         }
 
         return missingKeys;
@@ -176,10 +192,10 @@ public class TabGroups implements ConfigValidator {
                     group.sortingPlaceholders() == null ? DEFAULT_GROUP.sortingPlaceholders() : group.sortingPlaceholders(),
                     group.placeholderReplacements() == null ? DEFAULT_GROUP.placeholderReplacements() : group.placeholderReplacements(),
                     group.collisions(),
-                    group.headerFooterUpdateRate(),
-                    group.formatUpdateRate(),
-                    group.nametagUpdateRate(),
-                    group.placeholderUpdateRate(),
+                    group.headerFooterUpdateRate() == 0 ? DEFAULT_GROUP.headerFooterUpdateRate() : group.headerFooterUpdateRate(),
+                    group.formatUpdateRate() == 0 ? DEFAULT_GROUP.formatUpdateRate() : group.formatUpdateRate(),
+                    group.nametagUpdateRate() == 0 ? DEFAULT_GROUP.nametagUpdateRate() : group.nametagUpdateRate(),
+                    group.placeholderUpdateRate() == 0 ? DEFAULT_GROUP.placeholderUpdateRate() : group.placeholderUpdateRate(),
                     group.onlyListPlayersInSameServer()
             );
 

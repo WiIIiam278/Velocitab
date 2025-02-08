@@ -48,7 +48,6 @@ public class TaskManager {
     }
 
     protected void updatePeriodically(@NotNull Group group) {
-
         if (group.headerFooterUpdateRate() > 0) {
             final ScheduledTask headerFooterTask = plugin.getServer().getScheduler()
                     .buildTask(plugin, () -> plugin.getTabList().updateHeaderFooter(group))
@@ -101,7 +100,7 @@ public class TaskManager {
         }
 
         final List<String> texts = group.getTextsWithPlaceholders();
-        players.forEach(player -> plugin.getPlaceholderManager().fetchPlaceholders(player.getPlayer().getUniqueId(), texts));
+        players.forEach(player -> plugin.getPlaceholderManager().fetchPlaceholders(player.getPlayer().getUniqueId(), texts, group));
     }
 
     private void updateLatency(@NotNull Group group) {
@@ -109,6 +108,7 @@ public class TaskManager {
         if (groupPlayers.isEmpty()) {
             return;
         }
+
         groupPlayers.stream()
                 .filter(player -> player.getPlayer().isActive())
                 .forEach(player -> {

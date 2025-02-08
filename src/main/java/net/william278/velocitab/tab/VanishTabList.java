@@ -93,6 +93,10 @@ public class VanishTabList {
                 return;
             }
 
+            if(!p.isActive() || !target.isLoaded()) {
+                return;
+            }
+
             final boolean canSee = !plugin.getVanishManager().isVanished(p.getUsername()) ||
                                    plugin.getVanishManager().canSee(player.getUsername(), p.getUsername());
 

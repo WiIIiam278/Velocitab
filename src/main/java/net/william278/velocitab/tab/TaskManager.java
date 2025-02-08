@@ -59,7 +59,7 @@ public class TaskManager {
 
         if (group.formatUpdateRate() > 0) {
             final ScheduledTask formatTask = plugin.getServer().getScheduler()
-                    .buildTask(plugin, () -> plugin.getTabList().updateDisplayNames(group))
+                    .buildTask(plugin, () -> plugin.getTabList().updateGroupNames(group))
                     .delay(1, TimeUnit.SECONDS)
                     .repeat(Math.max(200, group.formatUpdateRate()), TimeUnit.MILLISECONDS)
                     .schedule();

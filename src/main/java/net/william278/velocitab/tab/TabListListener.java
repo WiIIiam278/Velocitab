@@ -28,6 +28,7 @@ import com.velocitypowered.api.event.player.ServerPostConnectEvent;
 import com.velocitypowered.api.event.proxy.ProxyReloadEvent;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
@@ -35,10 +36,12 @@ import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * The TabListListener class is responsible for handling events related to the player tab list.
@@ -84,7 +87,7 @@ public class TabListListener {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    @Subscribe
+    @Subscribe(priority = Short.MIN_VALUE)
     public void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
         final Player joined = event.getPlayer();
         final String serverName = joined.getCurrentServer()
@@ -100,6 +103,15 @@ public class TabListListener {
         final @NotNull Optional<Group> groupOptional = tabList.getGroup(serverName);
         final boolean isDefault = groupOptional.map(g -> g.isDefault(plugin)).orElse(true);
 
+        if (joined.getCurrentServer().isPresent()) {
+            final RegisteredServer server = joined.getCurrentServer().get().getServer();
+            final Set<UUID> players = server.getPlayersConnected().stream()
+                    .map(Player::getUniqueId).collect(Collectors.toSet());
+            List.copyOf(event.getPlayer().getTabList().getEntries()).stream()
+                    .filter(entry -> !players.contains(entry.getProfile().getId()))
+                    .forEach(entry -> event.getPlayer().getTabList().removeEntry(entry.getProfile().getId()));
+        }
+
         // Removes cached relational data of the joined player from all other players
         plugin.getTabList().clearCachedData(joined);
         plugin.getPlaceholderManager().clearPlaceholders(joined.getUniqueId());
@@ -107,11 +119,15 @@ public class TabListListener {
         // Mark the previous tab player as unloaded
         previousTabPlayer.ifPresent(player -> player.setLoaded(false));
 
+        // If the player was in a group and the new group is different or not set, remove the old entry
         if (!plugin.getSettings().isShowAllPlayersFromAllGroups() && previousGroup.isPresent()
                 && ((groupOptional.isPresent() && !previousGroup.get().equals(groupOptional.get())) || groupOptional.isEmpty())
         ) {
-            plugin.getServer().getScheduler().buildTask(plugin, () -> tabList.removeOldEntry(previousGroup.get(), joined.getUniqueId()))
-                    .delay(250, TimeUnit.MILLISECONDS)
+            tabList.getPlayers().remove(joined.getUniqueId());
+            plugin.getServer().getScheduler().buildTask(plugin, () -> {
+                        tabList.removeOldEntry(previousGroup.get(), joined.getUniqueId());
+                    })
+                    .delay(100, TimeUnit.MILLISECONDS)
                     .schedule();
         }
 
@@ -190,7 +206,6 @@ public class TabListListener {
 
             tabList.removeOfflinePlayer(player);
             tabList.removeTabListUUID(event.getPlayer().getUniqueId());
-            plugin.getLogger().info("Player {} has disconnected with delayed removal from tab list", player.getUsername());
         }).delay(750, TimeUnit.MILLISECONDS).schedule();
     }
 

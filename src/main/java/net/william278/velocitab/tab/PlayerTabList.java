@@ -142,7 +142,6 @@ public class PlayerTabList {
     }
 
     protected void loadPlayer(@NotNull Player player, @NotNull Group group, int delay) {
-        plugin.getLogger().info("Loading player {}", player.getUsername());
         final ScheduledTask task = plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> plugin.getPlaceholderManager().fetchPlaceholders(player.getUniqueId(), group.getTextsWithPlaceholders(), group))
                 .delay(15, TimeUnit.MILLISECONDS)
@@ -152,10 +151,6 @@ public class PlayerTabList {
         //After updating papiproxybridge we can check if redis is used
         plugin.getServer().getScheduler().buildTask(plugin, () -> {
                     task.cancel();
-                    final Optional<TabPlayer> tabPlayerOptional = getTabPlayer(player);
-                    final boolean alreadyPresent = tabPlayerOptional.isPresent();
-                    final boolean alreadyLoaded = tabPlayerOptional.map(TabPlayer::isLoaded).orElse(false);
-                    plugin.getLogger().info("Joining player {} (already present: {}, already loaded: {})", player.getUsername(), alreadyPresent, alreadyLoaded);
                     joinPlayer(player, group);
                 })
                 .delay(delay, TimeUnit.MILLISECONDS)

@@ -581,7 +581,7 @@ public class PlayerTabList {
     public void reloadUpdate() {
         taskManager.cancelAllTasks();
         plugin.getPlaceholderManager().reload();
-        plugin.getTabGroups().getGroups().forEach(g -> {
+        plugin.getTabGroupsManager().getGroups().forEach(g -> {
             plugin.getPlaceholderManager().fetchPlaceholders(g);
             taskManager.updatePeriodically(g);
         });
@@ -613,20 +613,19 @@ public class PlayerTabList {
 
     @NotNull
     public Optional<Group> getGroup(@NotNull String serverName) {
-        return plugin.getTabGroups().getGroupFromServer(serverName, plugin);
+        return plugin.getTabGroupsManager().getGroupFromServer(serverName, plugin);
     }
 
     @NotNull
     public Group getGroupOrDefault(@NotNull Player player) {
         final Optional<Group> group = getGroup(player.getCurrentServer().map(ServerConnection::getServerInfo).map(ServerInfo::getName).orElse(""));
-        return group.orElse(plugin.getTabGroups().getGroupFromName("default"));
+        return group.orElse(plugin.getTabGroupsManager().getGroup("default").orElseThrow());
     }
 
     public void removeOldEntry(@NotNull Group group, @NotNull UUID uuid) {
         final Set<TabPlayer> players = group.getTabPlayers(plugin);
         players.forEach(player -> {
             player.getPlayer().getTabList().removeEntry(uuid);
-//            plugin.getLogger().info("Removing old entry of {} from user {}", uuid, player.getPlayer().getUsername());
         });
     }
 

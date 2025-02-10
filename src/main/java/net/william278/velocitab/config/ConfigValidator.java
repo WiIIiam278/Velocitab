@@ -28,6 +28,6 @@ public interface ConfigValidator {
      * Validates the configuration settings.
      * @throws IllegalStateException if the configuration is invalid
      */
-    void validateConfig(@NotNull Velocitab plugin) throws IllegalStateException;
+    void validateConfig(@NotNull Velocitab plugin, @NotNull String name) throws IllegalStateException;
 
 }

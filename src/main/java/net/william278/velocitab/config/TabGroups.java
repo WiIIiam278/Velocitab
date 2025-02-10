@@ -111,18 +111,15 @@ public class TabGroups implements ConfigValidator {
         return defaultGroup;
     }
 
-    public int getPosition(@NotNull Group group) {
-        return groups.indexOf(group) + 1;
-    }
-
-
     @Override
-    public void validateConfig(@NotNull Velocitab plugin) {
-        if (groups.isEmpty()) {
-            throw new IllegalStateException("No tab groups defined in config");
-        }
-        if (groups.stream().noneMatch(group -> group.name().equals("default"))) {
-            throw new IllegalStateException("No default tab group defined in config");
+    public void validateConfig(@NotNull Velocitab plugin, @NotNull String name) {
+        if(name.equals("default")) {
+            if (groups.isEmpty()) {
+                throw new IllegalStateException("No tab groups defined in config " + name);
+            }
+            if (groups.stream().noneMatch(group -> group.name().equals("default"))) {
+                throw new IllegalStateException("No default tab group defined in config " + name);
+            }
         }
 
         final Multimap<Group, String> missingKeys = getMissingKeys();
@@ -130,7 +127,7 @@ public class TabGroups implements ConfigValidator {
             return;
         }
 
-        fixMissingKeys(plugin, missingKeys);
+        fixMissingKeys(plugin, missingKeys, name);
     }
 
     @NotNull
@@ -175,7 +172,7 @@ public class TabGroups implements ConfigValidator {
         return missingKeys;
     }
 
-    private void fixMissingKeys(@NotNull Velocitab plugin, @NotNull Multimap<Group, String> missingKeys) {
+    private void fixMissingKeys(@NotNull Velocitab plugin, @NotNull Multimap<Group, String> missingKeys, @NotNull String name) {
         missingKeys.forEach((group, keys) -> {
             plugin.log("Missing required key(s) " + keys + " for group " + group.name());
             plugin.log("Using default values for group " + group.name());
@@ -202,6 +199,6 @@ public class TabGroups implements ConfigValidator {
             groups.add(group);
         });
 
-        plugin.saveTabGroups();
+        plugin.getTabGroupsManager().saveGroup(this);
     }
 }

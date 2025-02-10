@@ -51,7 +51,7 @@ public enum Placeholder {
         if (param.isEmpty()) {
             return Integer.toString(player.getGroup().getPlayers(plugin).size());
         }
-        return plugin.getTabGroups().getGroup(param)
+        return plugin.getTabGroupsManager().getGroup(param)
                 .map(group -> Integer.toString(group.getPlayers(plugin).size()))
                 .orElse("Group " + param + " not found");
     }),

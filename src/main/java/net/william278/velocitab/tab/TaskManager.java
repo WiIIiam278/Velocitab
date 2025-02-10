@@ -29,68 +29,105 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class TaskManager {
 
     private final Velocitab plugin;
-    private final Map<Group, List<ScheduledTask>> groupTasks;
+    private final Map<Group, List<ScheduledFuture<?>>> groupTasks;
+    private final Map<Group, List<ScheduledTask>> groupTasksOld;
+    private final ScheduledExecutorService processThread;
 
     public TaskManager(@NotNull Velocitab plugin) {
         this.plugin = plugin;
+        this.groupTasksOld = Maps.newConcurrentMap();
         this.groupTasks = Maps.newConcurrentMap();
+        this.processThread = Executors.newSingleThreadScheduledExecutor();
     }
 
     protected void cancelAllTasks() {
-        groupTasks.values().forEach(c -> c.forEach(ScheduledTask::cancel));
+        groupTasksOld.values().forEach(c -> c.forEach(ScheduledTask::cancel));
+        groupTasksOld.clear();
+        groupTasks.values().forEach(c -> c.forEach(t -> t.cancel(false)));
         groupTasks.clear();
     }
 
     protected void updatePeriodically(@NotNull Group group) {
+        final List<ScheduledFuture<?>> tasks = groupTasks.computeIfAbsent(group, g -> Lists.newArrayList());
         if (group.headerFooterUpdateRate() > 0) {
-            final ScheduledTask headerFooterTask = plugin.getServer().getScheduler()
-                    .buildTask(plugin, () -> plugin.getTabList().updateHeaderFooter(group))
-                    .delay(1, TimeUnit.SECONDS)
-                    .repeat(Math.max(200, group.headerFooterUpdateRate()), TimeUnit.MILLISECONDS)
-                    .schedule();
-            groupTasks.computeIfAbsent(group, g -> Lists.newArrayList()).add(headerFooterTask);
+//            final ScheduledTask headerFooterTask = plugin.getServer().getScheduler()
+//                    .buildTask(plugin, () -> plugin.getTabList().updateHeaderFooter(group))
+//                    .delay(1, TimeUnit.SECONDS)
+//                    .repeat(Math.max(200, group.headerFooterUpdateRate()), TimeUnit.MILLISECONDS)
+//                    .schedule();
+            final ScheduledFuture<?> headerFooterTask = processThread.scheduleAtFixedRate(() -> plugin.getTabList().updateHeaderFooter(group),
+                    1000,
+                    Math.max(200, group.headerFooterUpdateRate()),
+                    TimeUnit.MILLISECONDS);
+//            groupTasksOld.computeIfAbsent(group, g -> Lists.newArrayList()).add(headerFooterTask);
+            tasks.add(headerFooterTask);
         }
 
         if (group.formatUpdateRate() > 0) {
-            final ScheduledTask formatTask = plugin.getServer().getScheduler()
-                    .buildTask(plugin, () -> plugin.getTabList().updateGroupNames(group))
-                    .delay(1, TimeUnit.SECONDS)
-                    .repeat(Math.max(200, group.formatUpdateRate()), TimeUnit.MILLISECONDS)
-                    .schedule();
-            groupTasks.computeIfAbsent(group, g -> Lists.newArrayList()).add(formatTask);
+//            final ScheduledTask formatTask = plugin.getServer().getScheduler()
+//                    .buildTask(plugin, () -> plugin.getTabList().updateGroupNames(group))
+//                    .delay(1, TimeUnit.SECONDS)
+//                    .repeat(Math.max(200, group.formatUpdateRate()), TimeUnit.MILLISECONDS)
+//                    .schedule();
+//            groupTasksOld.computeIfAbsent(group, g -> Lists.newArrayList()).add(formatTask);
+            final ScheduledFuture<?> formatTask = processThread.scheduleAtFixedRate(() -> plugin.getTabList().updateGroupNames(group),
+                    1000,
+                    Math.max(200, group.formatUpdateRate()),
+                    TimeUnit.MILLISECONDS);
+            tasks.add(formatTask);
         }
 
         if (group.nametagUpdateRate() > 0) {
-            final ScheduledTask nametagTask = plugin.getServer().getScheduler()
-                    .buildTask(plugin, () -> plugin.getTabList().updateSorting(group))
-                    .delay(1, TimeUnit.SECONDS)
-                    .repeat(Math.max(200, group.nametagUpdateRate()), TimeUnit.MILLISECONDS)
-                    .schedule();
-            groupTasks.computeIfAbsent(group, g -> Lists.newArrayList()).add(nametagTask);
+//            final ScheduledTask nametagTask = plugin.getServer().getScheduler()
+//                    .buildTask(plugin, () -> plugin.getTabList().updateSorting(group))
+//                    .delay(1, TimeUnit.SECONDS)
+//                    .repeat(Math.max(200, group.nametagUpdateRate()), TimeUnit.MILLISECONDS)
+//                    .schedule();
+//            groupTasksOld.computeIfAbsent(group, g -> Lists.newArrayList()).add(nametagTask);
+            final ScheduledFuture<?> nametagTask = processThread.scheduleAtFixedRate(() -> plugin.getTabList().updateSorting(group),
+                    1000,
+                    Math.max(200, group.nametagUpdateRate()),
+                    TimeUnit.MILLISECONDS);
+            tasks.add(nametagTask);
         }
 
         if (group.placeholderUpdateRate() > 0) {
-            final ScheduledTask updateTask = plugin.getServer().getScheduler()
-                    .buildTask(plugin, () -> updatePlaceholders(group))
-                    .delay(1, TimeUnit.SECONDS)
-                    .repeat(Math.max(200, group.placeholderUpdateRate()), TimeUnit.MILLISECONDS)
-                    .schedule();
-            groupTasks.computeIfAbsent(group, g -> Lists.newArrayList()).add(updateTask);
+//            final ScheduledTask updateTask = plugin.getServer().getScheduler()
+//                    .buildTask(plugin, () -> updatePlaceholders(group))
+//                    .delay(1, TimeUnit.SECONDS)
+//                    .repeat(Math.max(200, group.placeholderUpdateRate()), TimeUnit.MILLISECONDS)
+//                    .schedule();
+//            groupTasksOld.computeIfAbsent(group, g -> Lists.newArrayList()).add(updateTask);
+            final ScheduledFuture<?> updateTask = processThread.scheduleAtFixedRate(() -> updatePlaceholders(group),
+                    1000,
+                    Math.max(200, group.placeholderUpdateRate()),
+                    TimeUnit.MILLISECONDS);
+            tasks.add(updateTask);
         }
 
-        final ScheduledTask latencyTask = plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> updateLatency(group))
-                .delay(1, TimeUnit.SECONDS)
-                .repeat(3, TimeUnit.SECONDS)
-                .schedule();
+//        final ScheduledTask latencyTask = plugin.getServer().getScheduler()
+//                .buildTask(plugin, () -> updateLatency(group))
+//                .delay(1, TimeUnit.SECONDS)
+//                .repeat(3, TimeUnit.SECONDS)
+//                .schedule();
 
-        groupTasks.computeIfAbsent(group, g -> Lists.newArrayList()).add(latencyTask);
+        final ScheduledFuture<?> latencyTask = processThread.scheduleAtFixedRate(() -> updateLatency(group),
+                1000,
+                3,
+                TimeUnit.SECONDS);
+
+//        groupTasks.computeIfAbsent(group, g -> Lists.newArrayList()).add(latencyTask);
+        tasks.add(latencyTask);
     }
 
     private void updatePlaceholders(@NotNull Group group) {

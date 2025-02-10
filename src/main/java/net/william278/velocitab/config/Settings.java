@@ -116,7 +116,7 @@ public class Settings implements ConfigValidator {
     }
 
     @Override
-    public void validateConfig(@NotNull Velocitab plugin) {
+    public void validateConfig(@NotNull Velocitab plugin, @NotNull String name) {
         if (papiCacheTime < 0) {
             throw new IllegalStateException("PAPI cache time must be greater than or equal to 0");
         }

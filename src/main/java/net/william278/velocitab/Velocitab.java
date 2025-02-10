@@ -36,10 +36,7 @@ import net.william278.desertwell.util.Version;
 import net.william278.velocitab.api.PluginMessageAPI;
 import net.william278.velocitab.api.VelocitabAPI;
 import net.william278.velocitab.commands.VelocitabCommand;
-import net.william278.velocitab.config.ConfigProvider;
-import net.william278.velocitab.config.Formatter;
-import net.william278.velocitab.config.Settings;
-import net.william278.velocitab.config.TabGroups;
+import net.william278.velocitab.config.*;
 import net.william278.velocitab.hook.Hook;
 import net.william278.velocitab.hook.LuckPermsHook;
 import net.william278.velocitab.hook.MiniPlaceholdersHook;
@@ -67,8 +64,9 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
 
     @Setter
     private Settings settings;
+    @Getter
     @Setter
-    private TabGroups tabGroups;
+    private TabGroupsManager tabGroupsManager;
 
     private final ProxyServer server;
     private final Logger logger;
@@ -104,12 +102,12 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
         loadHooks();
         preparePlaceholderManager();
         prepareVanishManager();
-        prepareChannelManager();
         prepareScoreboard();
         registerCommands();
         registerMetrics();
         checkForUpdates();
         prepareAPI();
+        prepareChannelManager();
         logger.info("Successfully enabled Velocitab");
     }
 

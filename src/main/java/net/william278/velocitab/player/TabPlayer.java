@@ -107,7 +107,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
      * @return The ordinal position of the server group
      */
     public int getServerGroupPosition(@NotNull Velocitab plugin) {
-        return plugin.getTabGroups().getPosition(group);
+        return plugin.getTabGroupsManager().getGroupPosition(group);
     }
 
     public Nametag getNametag(@NotNull Velocitab plugin) {

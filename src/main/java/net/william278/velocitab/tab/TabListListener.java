@@ -30,17 +30,19 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
+import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -107,9 +109,9 @@ public class TabListListener {
             final RegisteredServer server = joined.getCurrentServer().get().getServer();
             final Set<UUID> players = server.getPlayersConnected().stream()
                     .map(Player::getUniqueId).collect(Collectors.toSet());
-            List.copyOf(event.getPlayer().getTabList().getEntries()).stream()
-                    .filter(entry -> !players.contains(entry.getProfile().getId()))
-                    .forEach(entry -> event.getPlayer().getTabList().removeEntry(entry.getProfile().getId()));
+            final Set<UUID> tabPlayers = Sets.newHashSet(tabList.getPlayers().keySet());
+            tabPlayers.removeAll(players);
+            tabPlayers.forEach(u -> joined.getTabList().removeEntry(u));
         }
 
         // Removes cached relational data of the joined player from all other players
@@ -124,11 +126,7 @@ public class TabListListener {
                 && ((groupOptional.isPresent() && !previousGroup.get().equals(groupOptional.get())) || groupOptional.isEmpty())
         ) {
             tabList.getPlayers().remove(joined.getUniqueId());
-            plugin.getServer().getScheduler().buildTask(plugin, () -> {
-                        tabList.removeOldEntry(previousGroup.get(), joined.getUniqueId());
-                    })
-                    .delay(100, TimeUnit.MILLISECONDS)
-                    .schedule();
+            removeOldEntry(previousGroup.get(), joined.getUniqueId());
         }
 
         // If the server is not in a group, use fallback.
@@ -142,22 +140,7 @@ public class TabListListener {
                 return;
             }
 
-            final Component header = previousTabPlayer.get().getLastHeader();
-            final Component footer = previousTabPlayer.get().getLastFooter();
-
-            plugin.getServer().getScheduler().buildTask(plugin, () -> {
-                final Component currentHeader = joined.getPlayerListHeader();
-                final Component currentFooter = joined.getPlayerListFooter();
-                if ((header.equals(currentHeader) && footer.equals(currentFooter)) ||
-                        (currentHeader.equals(Component.empty()) && currentFooter.equals(Component.empty()))
-                ) {
-                    joined.sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
-                    joined.getCurrentServer().ifPresent(serverConnection -> serverConnection.getServer().getPlayersConnected().forEach(player ->
-                            player.getTabList().getEntry(joined.getUniqueId())
-                                    .ifPresent(entry -> entry.setDisplayName(Component.text(joined.getUsername())))));
-                }
-            }).delay(500, TimeUnit.MILLISECONDS).schedule();
-
+            cleanOldHeadersAndFooters(previousTabPlayer.get());
             tabList.getPlayers().remove(event.getPlayer().getUniqueId());
             return;
         }
@@ -193,6 +176,46 @@ public class TabListListener {
         plugin.getPlaceholderManager().unblockPlayer(event.getPlayer().getUniqueId());
     }
 
+    @Subscribe
+    public void proxyReload(@NotNull ProxyReloadEvent event) {
+        plugin.loadConfigs();
+        tabList.reloadUpdate();
+        plugin.log("Velocitab has been reloaded!");
+    }
+
+    private void removeOldEntry(@NotNull Group group, @NotNull UUID uuid) {
+        final AtomicInteger count = new AtomicInteger();
+        final AtomicReference<ScheduledTask> task = new AtomicReference<>();
+        task.set(plugin.getServer().getScheduler().buildTask(plugin, () -> {
+                    if (count.get() > 5) {
+                        task.get().cancel();
+                        return;
+                    }
+                    tabList.removeOldEntry(group, uuid);
+                })
+                .delay(100, TimeUnit.MILLISECONDS)
+                .repeat(count.getAndIncrement(), TimeUnit.MILLISECONDS)
+                .schedule());
+    }
+
+    private void cleanOldHeadersAndFooters(@NotNull TabPlayer tabPlayer) {
+        final Component header = tabPlayer.getLastHeader();
+        final Component footer = tabPlayer.getLastFooter();
+
+        plugin.getServer().getScheduler().buildTask(plugin, () -> {
+            final Component currentHeader = tabPlayer.getPlayer().getPlayerListHeader();
+            final Component currentFooter = tabPlayer.getPlayer().getPlayerListFooter();
+            if ((header.equals(currentHeader) && footer.equals(currentFooter)) ||
+                    (currentHeader.equals(Component.empty()) && currentFooter.equals(Component.empty()))
+            ) {
+                tabPlayer.getPlayer().sendPlayerListHeaderAndFooter(Component.empty(), Component.empty());
+                tabPlayer.getPlayer().getCurrentServer().ifPresent(serverConnection -> serverConnection.getServer().getPlayersConnected().forEach(player ->
+                        player.getTabList().getEntry(tabPlayer.getPlayer().getUniqueId())
+                                .ifPresent(entry -> entry.setDisplayName(Component.text(tabPlayer.getPlayer().getUsername())))));
+            }
+        }).delay(500, TimeUnit.MILLISECONDS).schedule();
+    }
+
     private void checkDelayedDisconnect(@NotNull DisconnectEvent event) {
         final Player player = event.getPlayer();
         plugin.getServer().getScheduler().buildTask(plugin, () -> {
@@ -209,11 +232,5 @@ public class TabListListener {
         }).delay(750, TimeUnit.MILLISECONDS).schedule();
     }
 
-    @Subscribe
-    public void proxyReload(@NotNull ProxyReloadEvent event) {
-        plugin.loadConfigs();
-        tabList.reloadUpdate();
-        plugin.log("Velocitab has been reloaded!");
-    }
 
 }

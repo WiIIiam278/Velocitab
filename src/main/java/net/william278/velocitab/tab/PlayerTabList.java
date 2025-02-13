@@ -60,6 +60,7 @@ public class PlayerTabList {
     private final VanishTabList vanishTabList;
     @Getter(value = AccessLevel.PUBLIC)
     private final Map<UUID, TabPlayer> players;
+    @Getter(value = AccessLevel.PROTECTED)
     private final TaskManager taskManager;
     private final Map<Class<?>, Field> entriesFields;
 

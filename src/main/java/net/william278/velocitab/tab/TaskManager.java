@@ -60,26 +60,16 @@ public class TaskManager {
     protected void updatePeriodically(@NotNull Group group) {
         final List<ScheduledFuture<?>> tasks = groupTasks.computeIfAbsent(group, g -> Lists.newArrayList());
         if (group.headerFooterUpdateRate() > 0) {
-//            final ScheduledTask headerFooterTask = plugin.getServer().getScheduler()
-//                    .buildTask(plugin, () -> plugin.getTabList().updateHeaderFooter(group))
-//                    .delay(1, TimeUnit.SECONDS)
-//                    .repeat(Math.max(200, group.headerFooterUpdateRate()), TimeUnit.MILLISECONDS)
-//                    .schedule();
+
             final ScheduledFuture<?> headerFooterTask = processThread.scheduleAtFixedRate(() -> plugin.getTabList().updateHeaderFooter(group),
                     1000,
                     Math.max(200, group.headerFooterUpdateRate()),
                     TimeUnit.MILLISECONDS);
-//            groupTasksOld.computeIfAbsent(group, g -> Lists.newArrayList()).add(headerFooterTask);
             tasks.add(headerFooterTask);
         }
 
         if (group.formatUpdateRate() > 0) {
-//            final ScheduledTask formatTask = plugin.getServer().getScheduler()
-//                    .buildTask(plugin, () -> plugin.getTabList().updateGroupNames(group))
-//                    .delay(1, TimeUnit.SECONDS)
-//                    .repeat(Math.max(200, group.formatUpdateRate()), TimeUnit.MILLISECONDS)
-//                    .schedule();
-//            groupTasksOld.computeIfAbsent(group, g -> Lists.newArrayList()).add(formatTask);
+
             final ScheduledFuture<?> formatTask = processThread.scheduleAtFixedRate(() -> plugin.getTabList().updateGroupNames(group),
                     1000,
                     Math.max(200, group.formatUpdateRate()),
@@ -88,12 +78,6 @@ public class TaskManager {
         }
 
         if (group.nametagUpdateRate() > 0) {
-//            final ScheduledTask nametagTask = plugin.getServer().getScheduler()
-//                    .buildTask(plugin, () -> plugin.getTabList().updateSorting(group))
-//                    .delay(1, TimeUnit.SECONDS)
-//                    .repeat(Math.max(200, group.nametagUpdateRate()), TimeUnit.MILLISECONDS)
-//                    .schedule();
-//            groupTasksOld.computeIfAbsent(group, g -> Lists.newArrayList()).add(nametagTask);
             final ScheduledFuture<?> nametagTask = processThread.scheduleAtFixedRate(() -> plugin.getTabList().updateSorting(group),
                     1000,
                     Math.max(200, group.nametagUpdateRate()),
@@ -102,12 +86,6 @@ public class TaskManager {
         }
 
         if (group.placeholderUpdateRate() > 0) {
-//            final ScheduledTask updateTask = plugin.getServer().getScheduler()
-//                    .buildTask(plugin, () -> updatePlaceholders(group))
-//                    .delay(1, TimeUnit.SECONDS)
-//                    .repeat(Math.max(200, group.placeholderUpdateRate()), TimeUnit.MILLISECONDS)
-//                    .schedule();
-//            groupTasksOld.computeIfAbsent(group, g -> Lists.newArrayList()).add(updateTask);
             final ScheduledFuture<?> updateTask = processThread.scheduleAtFixedRate(() -> updatePlaceholders(group),
                     1000,
                     Math.max(200, group.placeholderUpdateRate()),
@@ -115,18 +93,12 @@ public class TaskManager {
             tasks.add(updateTask);
         }
 
-//        final ScheduledTask latencyTask = plugin.getServer().getScheduler()
-//                .buildTask(plugin, () -> updateLatency(group))
-//                .delay(1, TimeUnit.SECONDS)
-//                .repeat(3, TimeUnit.SECONDS)
-//                .schedule();
 
         final ScheduledFuture<?> latencyTask = processThread.scheduleAtFixedRate(() -> updateLatency(group),
                 1000,
                 3,
                 TimeUnit.SECONDS);
 
-//        groupTasks.computeIfAbsent(group, g -> Lists.newArrayList()).add(latencyTask);
         tasks.add(latencyTask);
     }
 
@@ -154,6 +126,14 @@ public class TaskManager {
                     players.forEach(p -> p.getPlayer().getTabList().getEntry(player.getPlayer().getUniqueId())
                             .ifPresent(entry -> entry.setLatency(Math.max(latency, 0))));
                 });
+    }
+
+    public void run(@NotNull Runnable runnable) {
+        processThread.execute(runnable);
+    }
+
+    public void runDelayed(@NotNull Runnable runnable, long delay, TimeUnit timeUnit) {
+        processThread.schedule(runnable, delay, timeUnit);
     }
 
 }

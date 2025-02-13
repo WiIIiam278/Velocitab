@@ -64,7 +64,12 @@ public class TabListListener {
     }
 
     @Subscribe
-    public void onKick(@NotNull KickedFromServerEvent event) {
+    private void onKick(@NotNull KickedFromServerEvent event) {
+        plugin.getTabList().getTaskManager().run(() -> handleKick(event));
+//        handleKick(event);
+    }
+
+    private void handleKick(@NotNull KickedFromServerEvent event) {
         event.getPlayer().getTabList().getEntries().stream()
                 .filter(entry -> entry.getProfile() != null && !entry.getProfile().getId().equals(event.getPlayer().getUniqueId()))
                 .forEach(entry -> event.getPlayer().getTabList().removeEntry(entry.getProfile().getId()));
@@ -88,9 +93,16 @@ public class TabListListener {
                 .schedule();
     }
 
+
     @SuppressWarnings("UnstableApiUsage")
     @Subscribe(priority = Short.MIN_VALUE)
-    public void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
+    private void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
+        plugin.getTabList().getTaskManager().run(() -> handlePlayerJoin(event));
+//        handlePlayerJoin(event);
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    private void handlePlayerJoin(@NotNull ServerPostConnectEvent event) {
         final Player joined = event.getPlayer();
         final String serverName = joined.getCurrentServer()
                 .map(ServerConnection::getServerInfo)
@@ -105,15 +117,6 @@ public class TabListListener {
         final @NotNull Optional<Group> groupOptional = tabList.getGroup(serverName);
         final boolean isDefault = groupOptional.map(g -> g.isDefault(plugin)).orElse(true);
 
-        if (joined.getCurrentServer().isPresent()) {
-            final RegisteredServer server = joined.getCurrentServer().get().getServer();
-            final Set<UUID> players = server.getPlayersConnected().stream()
-                    .map(Player::getUniqueId).collect(Collectors.toSet());
-            final Set<UUID> tabPlayers = Sets.newHashSet(tabList.getPlayers().keySet());
-            tabPlayers.removeAll(players);
-            tabPlayers.forEach(u -> joined.getTabList().removeEntry(u));
-        }
-
         // Removes cached relational data of the joined player from all other players
         plugin.getTabList().clearCachedData(joined);
         plugin.getPlaceholderManager().clearPlaceholders(joined.getUniqueId());
@@ -127,6 +130,18 @@ public class TabListListener {
         ) {
             tabList.getPlayers().remove(joined.getUniqueId());
             removeOldEntry(previousGroup.get(), joined.getUniqueId());
+
+            // If a player moved to a server without a group, remove possible entries
+            if (groupOptional.isEmpty() &&joined.getCurrentServer().isPresent()) {
+                plugin.getTabList().getTaskManager().runDelayed(() -> {
+                    final RegisteredServer server = joined.getCurrentServer().get().getServer();
+                    final Set<UUID> players = server.getPlayersConnected().stream()
+                            .map(Player::getUniqueId).collect(Collectors.toSet());
+                    final Set<UUID> tabPlayers = Sets.newHashSet(tabList.getPlayers().keySet());
+                    tabPlayers.removeAll(players);
+                    tabPlayers.forEach(u -> joined.getTabList().removeEntry(u));
+                }, 250, TimeUnit.MILLISECONDS);
+            }
         }
 
         // If the server is not in a group, use fallback.
@@ -161,14 +176,15 @@ public class TabListListener {
 
     @SuppressWarnings("deprecation")
     @Subscribe(order = PostOrder.CUSTOM, priority = Short.MIN_VALUE)
-    public void onPlayerQuit(@NotNull DisconnectEvent event) {
+    private void onPlayerQuit(@NotNull DisconnectEvent event) {
+        plugin.getTabList().getTaskManager().run(() -> handlePlayerQuit(event));
+//        handlePlayerQuit(event);
+    }
+
+    private void handlePlayerQuit(@NotNull DisconnectEvent event) {
         if (event.getLoginStatus() == DisconnectEvent.LoginStatus.CONFLICTING_LOGIN) {
             return;
         }
-//        if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) {
-//            checkDelayedDisconnect(event);
-//            return;
-//        }
 
         // Remove the player from the tab list of all other players
         tabList.removePlayer(event.getPlayer());
@@ -177,7 +193,7 @@ public class TabListListener {
     }
 
     @Subscribe
-    public void proxyReload(@NotNull ProxyReloadEvent event) {
+    private void proxyReload(@NotNull ProxyReloadEvent event) {
         plugin.loadConfigs();
         tabList.reloadUpdate();
         plugin.log("Velocitab has been reloaded!");

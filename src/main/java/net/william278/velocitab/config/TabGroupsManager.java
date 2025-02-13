@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
@@ -49,10 +50,11 @@ public class TabGroupsManager {
         groups.clear();
         groupsFiles.clear();
         final Path configDirectory = plugin.getConfigDirectory();
+        final YamlConfigurationProperties properties = ConfigProvider.YAML_CONFIGURATION_PROPERTIES.header(TabGroups.CONFIG_HEADER).build();
         final TabGroups defaultFile = YamlConfigurations.update(
                 configDirectory.resolve("tab_groups.yml"),
                 TabGroups.class,
-                ConfigProvider.YAML_CONFIGURATION_PROPERTIES.header(TabGroups.CONFIG_HEADER).build()
+                properties
         );
 
         if (!validateGroups(defaultFile, "default")) {
@@ -61,15 +63,19 @@ public class TabGroupsManager {
 
         final File folder = plugin.getConfigDirectory().resolve("tab_groups").toFile();
         if (folder.exists()) {
-            final List<File> files = findAllFilesRecursively(folder);
+            final File[] filesArray = folder.listFiles();
+            final List<File> files = filesArray == null ? List.of() : Arrays.asList(filesArray);
             for (File file : files) {
                 if (!file.getName().endsWith(".yml")) {
                     continue;
                 }
+                final TabGroups preCheck = YamlConfigurations.load(file.toPath(), TabGroups.class, properties);
+                preCheck.groups.removeIf(g -> g.name().equals("default"));
+                YamlConfigurations.save(file.toPath(), TabGroups.class, preCheck, properties);
                 final TabGroups group = YamlConfigurations.update(
                         file.toPath(),
                         TabGroups.class,
-                        ConfigProvider.YAML_CONFIGURATION_PROPERTIES.header(TabGroups.CONFIG_HEADER).build()
+                        properties
                 );
                 final String name = folder.getAbsoluteFile() + "/" + file.getName().replace(".yml", "");
                 if (!validateGroups(group, name)) {

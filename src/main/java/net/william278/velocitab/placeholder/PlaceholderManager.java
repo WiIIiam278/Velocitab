@@ -25,9 +25,7 @@ import com.google.common.collect.Sets;
 import com.velocitypowered.api.proxy.Player;
 import lombok.Setter;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.config.Formatter;
 import net.william278.velocitab.config.Group;
-import net.william278.velocitab.hook.miniconditions.MiniConditionManager;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +33,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,27 +42,16 @@ public class PlaceholderManager {
     private boolean debug = false;
 
     private static final String ELSE_PLACEHOLDER = "ELSE";
-    private static final Pattern VELOCITAB_PATTERN = Pattern.compile("<velocitab_.*?>");
-    private static final Pattern TEST = Pattern.compile("<.*?>");
-    private static final Pattern CONDITION_REPLACER = Pattern.compile("<velocitab_rel_condition:[^:]*:");
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%.*?%", Pattern.DOTALL);
-    private static final Map<String, String> SYMBOL_SUBSTITUTES = Map.of(
-            "<", "*LESS*",
-            ">", "*GREATER*"
-    );
-    private static final Map<String, String> SYMBOL_SUBSTITUTES_2 = Map.of(
-            "*LESS*", "*LESS2*",
-            "*GREATER*", "*GREATER2*"
-    );
-    private static final String VEL_PLACEHOLDER = "<vel";
-    private static final String VELOCITAB_PLACEHOLDER = "<velocitab_rel";
+    private static final Pattern VELOCITAB_CORRECT_PATTERN = Pattern.compile("<velocitab[^<>]*(?:<(?!velocitab)[^<>]*>[^<>]*)*>");
 
     private final Velocitab plugin;
     private final Map<UUID, Map<String, String>> placeholders;
     private final Map<UUID, Set<CompletableFuture<?>>> requests;
     private final Map<Group, List<String>> cachedTexts;
     private final Set<UUID> blocked;
-    private final Map<String, String> cache;
+    private final ConditionManager conditionManager;
+    private Map<Group, Map<String, Map<String, String>>> placeholdersReplacements;
 
     public PlaceholderManager(Velocitab plugin) {
         this.plugin = plugin;
@@ -73,15 +59,24 @@ public class PlaceholderManager {
         this.requests = Maps.newConcurrentMap();
         this.blocked = Sets.newConcurrentHashSet();
         this.cachedTexts = Maps.newConcurrentMap();
-        this.cache = Maps.newConcurrentMap();
-        clearCacheTask();
+        this.conditionManager = new ConditionManager(plugin);
+        this.placeholdersReplacements = Maps.newConcurrentMap();
+        this.preparePlaceholdersReplacements();
     }
 
-    private void clearCacheTask() {
-        plugin.getServer().getScheduler().buildTask(plugin, cache::clear)
-                .delay(1000, TimeUnit.MILLISECONDS)
-                .repeat(200, TimeUnit.MILLISECONDS)
-                .schedule();
+    public void preparePlaceholdersReplacements() {
+        placeholdersReplacements = Maps.newConcurrentMap();
+        for (Group group : plugin.getTabGroupsManager().getGroups()) {
+            final Map<String, Map<String, String>> map = Maps.newHashMap();
+            placeholdersReplacements.put(group, map);
+            for (String placeholder : group.placeholderReplacements().keySet()) {
+                final Map<String, String> repMap = Maps.newHashMap();
+                map.put(placeholder, repMap);
+                for (PlaceholderReplacement replacement : group.placeholderReplacements().get(placeholder)) {
+                    repMap.put(replacement.placeholder(), replacement.replacement());
+                }
+            }
+        }
     }
 
     public void fetchPlaceholders(@NotNull Group group) {
@@ -155,19 +150,16 @@ public class PlaceholderManager {
     @NotNull
     public String applyPlaceholders(@NotNull TabPlayer player, @NotNull String text) {
         final Map<String, String> parsed = placeholders.computeIfAbsent(player.getPlayer().getUniqueId(), uuid -> Maps.newConcurrentMap());
-        final String applied = applyPlaceholderReplacements(text, player, parsed);
-        return processRelationalPlaceholders(applied, plugin);
+        return applyPlaceholderReplacements(text, player, parsed);
     }
 
     @NotNull
-    public String applyPlaceholders(@NotNull TabPlayer player, @NotNull String text, @NotNull TabPlayer target) {
+    public String applyPlaceholders(@NotNull TabPlayer player, @NotNull String text, @NotNull TabPlayer viewer) {
         final Map<String, String> parsed = placeholders.computeIfAbsent(player.getPlayer().getUniqueId(), uuid -> Maps.newConcurrentMap());
         final String applied = applyPlaceholderReplacements(text, player, parsed);
-        final String relational = processRelationalPlaceholders(applied, plugin);
 
-        final Map<String, String> targetParsed = placeholders.computeIfAbsent(target.getPlayer().getUniqueId(), uuid -> Maps.newConcurrentMap());
-        final String targetApplied = applyPlaceholderReplacements(relational.replace("%target_", "%"), target, targetParsed);
-        return processRelationalPlaceholders(targetApplied, plugin);
+        final Map<String, String> targetParsed = placeholders.computeIfAbsent(viewer.getPlayer().getUniqueId(), uuid -> Maps.newConcurrentMap());
+        return applyPlaceholderReplacements(applied.replace("%target_", "%"), viewer, targetParsed);
     }
 
     public void clearPlaceholders(@NotNull UUID uuid) {
@@ -192,24 +184,33 @@ public class PlaceholderManager {
         return placeholders;
     }
 
+
+
+    private Optional<String> getReplacement(@NotNull Group group, @NotNull String placeholder, @NotNull String text) {
+        final Map<String, Map<String, String>> replacements = placeholdersReplacements.get(group);
+        if (replacements == null) {
+            return Optional.empty();
+        }
+        final Map<String, String> replacementMap = replacements.get(placeholder);
+        if (replacementMap == null) {
+            return Optional.empty();
+        }
+        final String replacement = replacementMap.get(text);
+        if (replacement == null) {
+            return Optional.ofNullable(replacementMap.get(ELSE_PLACEHOLDER));
+        }
+
+        return Optional.of(replacement);
+    }
+
     @NotNull
     private String applyPlaceholderReplacements(@NotNull String text, @NotNull TabPlayer player,
                                                 @NotNull Map<String, String> parsed) {
         for (final Map.Entry<String, List<PlaceholderReplacement>> entry : player.getGroup().placeholderReplacements().entrySet()) {
             final String replaced = parsed.get(entry.getKey());
-            final Optional<PlaceholderReplacement> replacement = entry.getValue().stream()
-                    .filter(r -> r.placeholder().equalsIgnoreCase(replaced))
-                    .findFirst();
-
+            final Optional<String> replacement = getReplacement(player.getGroup(), entry.getKey(), replaced);
             if (replacement.isPresent()) {
-                text = text.replace(entry.getKey(), replacement.get().replacement());
-            } else {
-                final Optional<PlaceholderReplacement> elseReplacement = entry.getValue().stream()
-                        .filter(r -> r.placeholder().equalsIgnoreCase(ELSE_PLACEHOLDER))
-                        .findFirst();
-                if (elseReplacement.isPresent()) {
-                    text = text.replace(entry.getKey(), elseReplacement.get().replacement());
-                }
+                text = text.replace(entry.getKey(), replacement.get());
             }
         }
 
@@ -257,63 +258,19 @@ public class PlaceholderManager {
         return Optional.of(placeholderType.getReplacer().apply(null, plugin, player));
     }
 
-    private String processRelationalPlaceholders(@NotNull String format, @NotNull Velocitab plugin) {
-        if (cache.containsKey(format)) {
-            return cache.get(format);
-        }
-        if (plugin.getFormatter().equals(Formatter.MINIMESSAGE) && format.contains(VEL_PLACEHOLDER)) {
-            final Matcher conditionReplacer = CONDITION_REPLACER.matcher(format);
-            while (conditionReplacer.find()) {
-
-                final String search = conditionReplacer.group().split(":")[1];
-                String condition = search;
-                for (Map.Entry<String, String> entry : MiniConditionManager.REPLACE.entrySet()) {
-                    condition = condition.replace(entry.getKey(), entry.getValue());
-                }
-                for (Map.Entry<String, String> entry : MiniConditionManager.REPLACE_2.entrySet()) {
-                    condition = condition.replace(entry.getValue(), entry.getKey());
-                }
-                format = format.replace(search, condition);
+    public String formatVelocitabPlaceholders(@NotNull String text, @NotNull TabPlayer player, @NotNull TabPlayer viewer) {
+        final Matcher matcher = VELOCITAB_CORRECT_PATTERN.matcher(text);
+        while (matcher.find()) {
+            final String replacement = matcher.group().substring(1, matcher.group().length() - 1);
+            try {
+                final String to = conditionManager.handleVelocitabPlaceholders(replacement, player, viewer);
+                final String toReplaced = "<" + replacement + ">";
+                text = text.replace(toReplaced, to);
+            } catch (Exception e) {
+                plugin.getLogger().warn("Failed to calculate condition for {}", replacement, e);
             }
-
-            final Matcher testMatcher = TEST.matcher(format);
-            while (testMatcher.find()) {
-                if (testMatcher.group().startsWith(VELOCITAB_PLACEHOLDER)) {
-                    final Matcher second = TEST.matcher(testMatcher.group().substring(1));
-                    while (second.find()) {
-                        String s = second.group();
-                        for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES.entrySet()) {
-                            s = s.replace(entry.getKey(), entry.getValue());
-                        }
-                        format = format.replace(second.group(), s);
-                    }
-                    continue;
-                }
-                String s = testMatcher.group();
-                for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES.entrySet()) {
-                    s = s.replace(entry.getKey(), entry.getValue());
-                }
-                format = format.replace(testMatcher.group(), s);
-            }
-
-            final Matcher velocitabRelationalMatcher = VELOCITAB_PATTERN.matcher(format);
-            while (velocitabRelationalMatcher.find()) {
-                final String relationalPlaceholder = velocitabRelationalMatcher.group().substring(1, velocitabRelationalMatcher.group().length() - 1);
-                String fixedString = relationalPlaceholder;
-                for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES_2.entrySet()) {
-                    fixedString = fixedString.replace(entry.getKey(), entry.getValue());
-                }
-                format = format.replace(relationalPlaceholder, fixedString);
-            }
-
-            for (Map.Entry<String, String> entry : SYMBOL_SUBSTITUTES.entrySet()) {
-                format = format.replace(entry.getValue(), entry.getKey());
-            }
-
         }
 
-        final String finalFormat = format;
-        return cache.computeIfAbsent(format, k -> finalFormat);
-//        return finalFormat;
+        return text;
     }
 }

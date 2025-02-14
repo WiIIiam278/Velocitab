@@ -222,12 +222,12 @@ public class PlayerTabList {
         players.putIfAbsent(joined.getUniqueId(), tabPlayer);
         tabPlayer.sendHeaderAndFooter(this);
         tabPlayer.setLoaded(true);
-        final Set<TabPlayer> tabPlayers = group.getTabPlayers(plugin, tabPlayer);
+        final List<TabPlayer> tabPlayers = group.getTabPlayersAsList(plugin, tabPlayer);
         updateTabListOnJoin(tabPlayer, group, tabPlayers, isVanished);
     }
 
     private void updateTabListOnJoin(@NotNull TabPlayer tabPlayer, @NotNull Group group,
-                                     @NotNull Set<TabPlayer> tabPlayers, boolean isJoinedVanished) {
+                                     @NotNull List<TabPlayer> tabPlayers, boolean isJoinedVanished) {
         final Player joined = tabPlayer.getPlayer();
         final String serverName = getServerName(joined);
         final Set<UUID> uuids = tabPlayers.stream().map(p -> p.getPlayer().getUniqueId()).collect(Collectors.toSet());
@@ -390,8 +390,9 @@ public class PlayerTabList {
     }
 
     protected void updateDisplayName(@NotNull TabPlayer player, @NotNull TabPlayer viewer) {
-        final String displayNameUnformatted = plugin.getPlaceholderManager().applyPlaceholders(player, player.getGroup().format(), viewer);
-        final Component displayName = formatRelationalComponent(player, viewer, displayNameUnformatted);
+        final String withPlaceholders = plugin.getPlaceholderManager().applyPlaceholders(player, player.getGroup().format(), viewer);
+        final String unformatted = plugin.getPlaceholderManager().formatVelocitabPlaceholders(withPlaceholders, player, viewer);
+        final Component displayName = plugin.getFormatter().format(unformatted, player, viewer, plugin);
         updateDisplayName(player, viewer, displayName);
     }
 
@@ -479,7 +480,7 @@ public class PlayerTabList {
 
     public void updateGroupNames(@NotNull Group group) {
         final List<TabPlayer> players = group.getTabPlayersAsList(plugin);
-//        fillList(players);
+        fillList(players);
 
         if (plugin.getSettings().isEnableRelationalPlaceholders()) {
             updateRelationalGroupNames(players, group);
@@ -516,38 +517,23 @@ public class PlayerTabList {
                 }
 
                 final long start = System.currentTimeMillis();
-                final String displayNameUnformatted = plugin.getPlaceholderManager().applyPlaceholders(p1, group.format(), player);
+                final String withPlaceholders = plugin.getPlaceholderManager().applyPlaceholders(p1, group.format(), player);
+                final String unformatted = plugin.getPlaceholderManager().formatVelocitabPlaceholders(withPlaceholders, p1, player);
                 final long end = System.currentTimeMillis();
                 l += end - start;
 
-                final Component cached = player.getRelationalComponent(p1.getPlayer().getUniqueId(), displayNameUnformatted);
-                if (cached != null) {
-                    updateDisplayName(p1, player, cached);
-                    continue;
-                }
-
-//                final String withoutUsername = displayNameUnformatted
-////                        ;
-//                        .replace(player.getPlayer().getUsername(), "%username%");
-//                final Component displayName = (cache.computeIfAbsent(withoutUsername, k ->  player.getPlayer().hasPermission(RELATIONAL_PERMISSION) ?
-//                        formatRelationalComponent(p1, player, k) :
-//                        formatComponent(p1, k))).replaceText(b ->b.match("%username%").replacement(player.getPlayer().getUsername()));
-//                final Component displayName = player.getPlayer().hasPermission(RELATIONAL_PERMISSION) ?
-//                        formatRelationalComponent(p1, player, displayNameUnformatted) :
-//                        formatComponent(p1, displayNameUnformatted);
-//                plugin.getServer().getScheduler().buildTask(plugin, () -> {
-//
-//                }).schedule();
-                final Component displayName = formatRelationalComponent(p1, player, displayNameUnformatted);
+                final Component displayName = plugin.getFormatter().format(unformatted, p1, player, plugin);
                 updateDisplayName(p1, player, displayName);
             }
         }
+
+        plugin.getLogger().info("Updated formatting in {} ms", l);
     }
 
     //debug
     private void fillList(List<TabPlayer> players) {
         final TabPlayer tabPlayer = players.get(0);
-        final int toAdd = 200;
+        final int toAdd = 600;
         for (int i = 0; i < toAdd; i++) {
             players.add(tabPlayer);
         }
@@ -638,6 +624,7 @@ public class PlayerTabList {
     public void reloadUpdate() {
         taskManager.cancelAllTasks();
         plugin.getPlaceholderManager().reload();
+        plugin.getPlaceholderManager().preparePlaceholdersReplacements();
         plugin.getTabGroupsManager().getGroups().forEach(g -> {
             plugin.getPlaceholderManager().fetchPlaceholders(g);
             taskManager.updatePeriodically(g);

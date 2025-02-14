@@ -97,10 +97,6 @@ public class TabGroupsManager {
         outer:
         for (Group group1 : group.groups) {
             final Set<RegisteredServer> current = group1.registeredServers(plugin, false);
-//            if (current.isEmpty() && !group1.name().equals(plugin.getSettings().getFallbackGroup()) && !plugin.getSettings().isFallbackEnabled()) {
-//                plugin.getLogger().warn("No servers found for group {}", group1.name());
-//                continue;
-//            }
 
             if (groups.containsKey(group1.name())) {
                 plugin.getLogger().warn("Group {} is already defined in {} tab groups file. Skipping.", group1.name(), name);
@@ -177,22 +173,6 @@ public class TabGroupsManager {
 
     public int getGroupPosition(@NotNull Group group) {
         return groupsList.indexOf(group) + 1;
-    }
-
-    private List<File> findAllFilesRecursively(@NotNull File folder) {
-        final File[] filesInFolder = folder.listFiles();
-        if (filesInFolder == null) {
-            return Collections.emptyList();
-        }
-        final List<File> files = new ArrayList<>();
-        for (File file : filesInFolder) {
-            if (file.isDirectory()) {
-                files.addAll(findAllFilesRecursively(file));
-            } else {
-                files.add(file);
-            }
-        }
-        return files;
     }
 
     @NotNull

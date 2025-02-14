@@ -26,20 +26,11 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.event.Level;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MiniPlaceholdersHook extends Hook {
 
-    private final VelocitabMiniExpansion expansion;
-
-
     public MiniPlaceholdersHook(@NotNull Velocitab plugin) {
         super(plugin);
-        this.expansion = new VelocitabMiniExpansion(plugin);
-        expansion.registerExpansion();
     }
 
     @NotNull
@@ -48,10 +39,6 @@ public class MiniPlaceholdersHook extends Hook {
             return MiniMessage.miniMessage().deserialize(text, MiniPlaceholders.getAudienceGlobalPlaceholders(player));
         }
         return MiniMessage.miniMessage().deserialize(text, MiniPlaceholders.getRelationalGlobalPlaceholders(player, viewer));
-    }
-
-    public void unregisterExpansion() {
-        expansion.unregisterExpansion();
     }
 
 }

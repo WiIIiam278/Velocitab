@@ -46,11 +46,23 @@ public class VanishManager {
     }
 
     public boolean canSee(@NotNull String name, @NotNull String otherName) {
-        return integration.canSee(name, otherName);
+        final long start = System.currentTimeMillis();
+        final boolean result = integration.canSee(name, otherName);
+        final long end = System.currentTimeMillis();
+        if (end - start > 2) {
+            plugin.log("Vanish canSee check took " + (end - start) + "ms");
+        }
+        return result;
     }
 
     public boolean isVanished(@NotNull String name) {
-        return integration.isVanished(name);
+        final long start = System.currentTimeMillis();
+        final boolean result = integration.isVanished(name);
+        final long end = System.currentTimeMillis();
+        if (end - start > 2) {
+            plugin.log("Vanish isVanished check took " + (end - start) + "ms");
+        }
+        return result;
     }
 
     public void vanishPlayer(@NotNull Player player) {

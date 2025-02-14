@@ -34,6 +34,7 @@ import com.velocitypowered.proxy.tablist.VelocityTabList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.api.PlayerAddedToTabEvent;
 import net.william278.velocitab.config.Group;
@@ -54,6 +55,8 @@ import java.util.stream.Collectors;
  * The main class for tracking the server TAB list for a map of {@link TabPlayer}s
  */
 public class PlayerTabList {
+
+    private static final String RELATIONAL_PERMISSION = "velocitab.relational";
 
     private final Velocitab plugin;
     @Getter
@@ -286,9 +289,14 @@ public class PlayerTabList {
     }
 
     @NotNull
-    public Component getRelationalPlaceholder(@NotNull TabPlayer player, @NotNull TabPlayer viewer,
-                                              @NotNull String toParse) {
+    public Component formatRelationalComponent(@NotNull TabPlayer player, @NotNull TabPlayer viewer,
+                                               @NotNull String toParse) {
         return plugin.getFormatter().format(toParse, player, viewer, plugin);
+    }
+
+    @NotNull
+    public Component formatComponent(@NotNull TabPlayer player, @NotNull String toParse) {
+        return plugin.getFormatter().format(toParse, player, plugin);
     }
 
     @SuppressWarnings("unchecked")
@@ -371,7 +379,7 @@ public class PlayerTabList {
         }
 
         final String displayNameUnformatted = plugin.getPlaceholderManager().applyPlaceholders(player, player.getGroup().format(), viewer);
-        final Component displayName = getRelationalPlaceholder(player, viewer, displayNameUnformatted);
+        final Component displayName = formatRelationalComponent(player, viewer, displayNameUnformatted);
         player.setRelationalDisplayName(viewer.getPlayer().getUniqueId(), displayName);
         return TabListEntry.builder()
                 .profile(player.getPlayer().getGameProfile())
@@ -383,7 +391,7 @@ public class PlayerTabList {
 
     protected void updateDisplayName(@NotNull TabPlayer player, @NotNull TabPlayer viewer) {
         final String displayNameUnformatted = plugin.getPlaceholderManager().applyPlaceholders(player, player.getGroup().format(), viewer);
-        final Component displayName = getRelationalPlaceholder(player, viewer, displayNameUnformatted);
+        final Component displayName = formatRelationalComponent(player, viewer, displayNameUnformatted);
         updateDisplayName(player, viewer, displayName);
     }
 
@@ -471,7 +479,26 @@ public class PlayerTabList {
 
     public void updateGroupNames(@NotNull Group group) {
         final List<TabPlayer> players = group.getTabPlayersAsList(plugin);
+//        fillList(players);
 
+        if (plugin.getSettings().isEnableRelationalPlaceholders()) {
+            updateRelationalGroupNames(players, group);
+            return;
+        }
+
+        updateNormalGroupNames(players, group);
+    }
+
+    private void updateNormalGroupNames(List<TabPlayer> players, @NotNull Group group) {
+        for (TabPlayer player : players) {
+            final String displayName = plugin.getPlaceholderManager().applyPlaceholders(player, group.format());
+            final Component relationalPlaceholder = formatComponent(player, displayName);
+            updateDisplayName(player, player, relationalPlaceholder);
+        }
+    }
+
+    private void updateRelationalGroupNames(@NotNull List<TabPlayer> players, @NotNull Group group) {
+        long l = 0;
         for (TabPlayer p1 : players) {
             if (!p1.getPlayer().isActive() || !p1.isLoaded()) {
                 return;
@@ -479,7 +506,7 @@ public class PlayerTabList {
 
             final boolean isVanished = plugin.getVanishManager().isVanished(p1.getPlayer().getUsername());
 
-            players.forEach(player -> {
+            for (TabPlayer player : players) {
                 if (isVanished && !plugin.getVanishManager().canSee(player.getPlayer().getUsername(), p1.getPlayer().getUsername())) {
                     return;
                 }
@@ -488,13 +515,42 @@ public class PlayerTabList {
                     return;
                 }
 
+                final long start = System.currentTimeMillis();
                 final String displayNameUnformatted = plugin.getPlaceholderManager().applyPlaceholders(p1, group.format(), player);
-                final Component relationalPlaceholder = getRelationalPlaceholder(p1, player, displayNameUnformatted);
-                updateDisplayName(p1, player, relationalPlaceholder);
-            });
+                final long end = System.currentTimeMillis();
+                l += end - start;
 
+                final Component cached = player.getRelationalComponent(p1.getPlayer().getUniqueId(), displayNameUnformatted);
+                if (cached != null) {
+                    updateDisplayName(p1, player, cached);
+                    continue;
+                }
+
+//                final String withoutUsername = displayNameUnformatted
+////                        ;
+//                        .replace(player.getPlayer().getUsername(), "%username%");
+//                final Component displayName = (cache.computeIfAbsent(withoutUsername, k ->  player.getPlayer().hasPermission(RELATIONAL_PERMISSION) ?
+//                        formatRelationalComponent(p1, player, k) :
+//                        formatComponent(p1, k))).replaceText(b ->b.match("%username%").replacement(player.getPlayer().getUsername()));
+//                final Component displayName = player.getPlayer().hasPermission(RELATIONAL_PERMISSION) ?
+//                        formatRelationalComponent(p1, player, displayNameUnformatted) :
+//                        formatComponent(p1, displayNameUnformatted);
+//                plugin.getServer().getScheduler().buildTask(plugin, () -> {
+//
+//                }).schedule();
+                final Component displayName = formatRelationalComponent(p1, player, displayNameUnformatted);
+                updateDisplayName(p1, player, displayName);
+            }
         }
+    }
 
+    //debug
+    private void fillList(List<TabPlayer> players) {
+        final TabPlayer tabPlayer = players.get(0);
+        final int toAdd = 200;
+        for (int i = 0; i < toAdd; i++) {
+            players.add(tabPlayer);
+        }
     }
 
     public void updatePlayerDisplayName(@NotNull TabPlayer tabPlayer) {
@@ -515,7 +571,7 @@ public class PlayerTabList {
             }
 
             final String displayNameUnformatted = plugin.getPlaceholderManager().applyPlaceholders(tabPlayer, tabPlayer.getGroup().format(), player);
-            final Component relationalPlaceholder = getRelationalPlaceholder(tabPlayer, player, displayNameUnformatted);
+            final Component relationalPlaceholder = formatRelationalComponent(tabPlayer, player, displayNameUnformatted);
             updateDisplayName(tabPlayer, player, relationalPlaceholder);
         });
     }

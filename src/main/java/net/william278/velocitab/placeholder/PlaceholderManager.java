@@ -35,6 +35,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,6 +65,7 @@ public class PlaceholderManager {
     private final Map<UUID, Set<CompletableFuture<?>>> requests;
     private final Map<Group, List<String>> cachedTexts;
     private final Set<UUID> blocked;
+    private final Map<String, String> cache;
 
     public PlaceholderManager(Velocitab plugin) {
         this.plugin = plugin;
@@ -71,6 +73,15 @@ public class PlaceholderManager {
         this.requests = Maps.newConcurrentMap();
         this.blocked = Sets.newConcurrentHashSet();
         this.cachedTexts = Maps.newConcurrentMap();
+        this.cache = Maps.newConcurrentMap();
+        clearCacheTask();
+    }
+
+    private void clearCacheTask() {
+        plugin.getServer().getScheduler().buildTask(plugin, cache::clear)
+                .delay(1000, TimeUnit.MILLISECONDS)
+                .repeat(200, TimeUnit.MILLISECONDS)
+                .schedule();
     }
 
     public void fetchPlaceholders(@NotNull Group group) {
@@ -185,10 +196,6 @@ public class PlaceholderManager {
     private String applyPlaceholderReplacements(@NotNull String text, @NotNull TabPlayer player,
                                                 @NotNull Map<String, String> parsed) {
         for (final Map.Entry<String, List<PlaceholderReplacement>> entry : player.getGroup().placeholderReplacements().entrySet()) {
-            if (!parsed.containsKey(entry.getKey())) {
-                continue;
-            }
-
             final String replaced = parsed.get(entry.getKey());
             final Optional<PlaceholderReplacement> replacement = entry.getValue().stream()
                     .filter(r -> r.placeholder().equalsIgnoreCase(replaced))
@@ -205,6 +212,7 @@ public class PlaceholderManager {
                 }
             }
         }
+
         return applyPlaceholders(text, parsed);
     }
 
@@ -250,6 +258,9 @@ public class PlaceholderManager {
     }
 
     private String processRelationalPlaceholders(@NotNull String format, @NotNull Velocitab plugin) {
+        if (cache.containsKey(format)) {
+            return cache.get(format);
+        }
         if (plugin.getFormatter().equals(Formatter.MINIMESSAGE) && format.contains(VEL_PLACEHOLDER)) {
             final Matcher conditionReplacer = CONDITION_REPLACER.matcher(format);
             while (conditionReplacer.find()) {
@@ -300,6 +311,9 @@ public class PlaceholderManager {
             }
 
         }
-        return format;
+
+        final String finalFormat = format;
+        return cache.computeIfAbsent(format, k -> finalFormat);
+//        return finalFormat;
     }
 }

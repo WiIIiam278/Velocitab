@@ -51,6 +51,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     // Each TabPlayer contains the components for each TabPlayer it's currently viewing this player
     private final Map<UUID, Component> relationalDisplayNames;
     private final Map<UUID, Component[]> relationalNametags;
+    private final Map<UUID, Map<String, Component>> relationalCache;
     private String lastDisplayName;
     private Component lastHeader;
     private Component lastFooter;
@@ -80,6 +81,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         this.group = group;
         this.relationalDisplayNames = Maps.newConcurrentMap();
         this.relationalNametags = Maps.newConcurrentMap();
+        this.relationalCache = Maps.newConcurrentMap();
     }
 
     @NotNull
@@ -185,6 +187,12 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         lastFooter = null;
         role = Role.DEFAULT_ROLE;
         teamName = null;
+        relationalCache.clear();
+    }
+
+    @Nullable
+    public Component getRelationalComponent(@NotNull UUID player, @NotNull String text) {
+        return relationalCache.computeIfAbsent(player, k -> Maps.newConcurrentMap()).get(text);
     }
 
     /**

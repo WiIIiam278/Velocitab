@@ -97,7 +97,6 @@ public class MiniConditionManager {
             return Component.empty();
         }
 
-
         String condition = decodeCondition(parameters.get(0));
         if (parameters.size() < 3) {
             plugin.getLogger().warn("Invalid condition: Missing true/false values for condition: {}", condition);
@@ -113,7 +112,9 @@ public class MiniConditionManager {
         condition = plugin.getPlaceholderManager().applyPlaceholders(tabPlayer.get(), condition);
         final String falseValue = processFalseValue(parameters.get(2));
         final String expression = buildExpression(condition);
-        return evaluateAndFormatCondition(expression, target, audience, parameters.get(1), falseValue);
+//        return evaluateAndFormatCondition(expression, target, audience, parameters.get(1), falseValue);
+        final Component finalComponent = evaluateAndFormatCondition(expression, target, audience, parameters.get(1), falseValue);
+        return finalComponent;
     }
 
     @NotNull

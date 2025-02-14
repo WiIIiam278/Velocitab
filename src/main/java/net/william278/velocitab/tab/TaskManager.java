@@ -29,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -53,40 +52,70 @@ public class TaskManager {
     protected void cancelAllTasks() {
         groupTasksOld.values().forEach(c -> c.forEach(ScheduledTask::cancel));
         groupTasksOld.clear();
-        groupTasks.values().forEach(c -> c.forEach(t -> t.cancel(false)));
+        groupTasks.values().forEach(c -> c.forEach(t -> t.cancel(true)));
         groupTasks.clear();
     }
 
     protected void updatePeriodically(@NotNull Group group) {
         final List<ScheduledFuture<?>> tasks = groupTasks.computeIfAbsent(group, g -> Lists.newArrayList());
         if (group.headerFooterUpdateRate() > 0) {
-
-            final ScheduledFuture<?> headerFooterTask = processThread.scheduleAtFixedRate(() -> plugin.getTabList().updateHeaderFooter(group),
-                    1000,
+            final ScheduledFuture<?> headerFooterTask = processThread.scheduleAtFixedRate(() -> {
+                        final long startTime = System.currentTimeMillis();
+                        plugin.getTabList().updateHeaderFooter(group);
+                        final long endTime = System.currentTimeMillis();
+                        final long time = endTime - startTime;
+                        if (time > 2) {
+                            plugin.getLogger().info("Updated header/footer for group {} took {}ms", group.name(), time);
+                        }
+                    },
+                    250,
                     Math.max(200, group.headerFooterUpdateRate()),
                     TimeUnit.MILLISECONDS);
             tasks.add(headerFooterTask);
         }
 
         if (group.formatUpdateRate() > 0) {
-
-            final ScheduledFuture<?> formatTask = processThread.scheduleAtFixedRate(() -> plugin.getTabList().updateGroupNames(group),
-                    1000,
+            final ScheduledFuture<?> formatTask = processThread.scheduleAtFixedRate(() -> {
+                        final long startTime = System.currentTimeMillis();
+                        plugin.getTabList().updateGroupNames(group);
+                        final long endTime = System.currentTimeMillis();
+                        final long time = endTime - startTime;
+                        if (time > 50) {
+                            plugin.getLogger().info("Updated format for group {} took {}ms", group.name(), time);
+                        }
+                    },
+                    500,
                     Math.max(200, group.formatUpdateRate()),
                     TimeUnit.MILLISECONDS);
             tasks.add(formatTask);
         }
 
         if (group.nametagUpdateRate() > 0) {
-            final ScheduledFuture<?> nametagTask = processThread.scheduleAtFixedRate(() -> plugin.getTabList().updateSorting(group),
-                    1000,
+            final ScheduledFuture<?> nametagTask = processThread.scheduleAtFixedRate(() -> {
+                        final long startTime = System.currentTimeMillis();
+                        plugin.getTabList().updateSorting(group);
+                        final long endTime = System.currentTimeMillis();
+                        final long time = endTime - startTime;
+                        if (time > 2) {
+                            plugin.getLogger().info("Updated nametags for group {} took {}ms", group.name(), time);
+                        }
+                    },
+                    750,
                     Math.max(200, group.nametagUpdateRate()),
                     TimeUnit.MILLISECONDS);
             tasks.add(nametagTask);
         }
 
         if (group.placeholderUpdateRate() > 0) {
-            final ScheduledFuture<?> updateTask = processThread.scheduleAtFixedRate(() -> updatePlaceholders(group),
+            final ScheduledFuture<?> updateTask = processThread.scheduleAtFixedRate(() -> {
+                        final long startTime = System.currentTimeMillis();
+                        updatePlaceholders(group);
+                        final long endTime = System.currentTimeMillis();
+                        final long time = endTime - startTime;
+                        if (time > 2) {
+                            plugin.getLogger().info("Updated placeholders for group {} took {}ms", group.name(), time);
+                        }
+                    },
                     1000,
                     Math.max(200, group.placeholderUpdateRate()),
                     TimeUnit.MILLISECONDS);
@@ -94,10 +123,18 @@ public class TaskManager {
         }
 
 
-        final ScheduledFuture<?> latencyTask = processThread.scheduleAtFixedRate(() -> updateLatency(group),
-                1000,
-                3,
-                TimeUnit.SECONDS);
+        final ScheduledFuture<?> latencyTask = processThread.scheduleAtFixedRate(() -> {
+                    final long startTime = System.currentTimeMillis();
+                    updateLatency(group);
+                    final long endTime = System.currentTimeMillis();
+                    final long time = endTime - startTime;
+                    if (time > 2) {
+                        plugin.getLogger().debug("Updated latency for group {} took {}ms", group.name(), time);
+                    }
+                },
+                1250,
+                2500,
+                TimeUnit.MILLISECONDS);
 
         tasks.add(latencyTask);
     }

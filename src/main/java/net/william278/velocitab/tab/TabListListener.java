@@ -132,7 +132,7 @@ public class TabListListener {
             removeOldEntry(previousGroup.get(), joined.getUniqueId());
 
             // If a player moved to a server without a group, remove possible entries
-            if (groupOptional.isEmpty() &&joined.getCurrentServer().isPresent()) {
+            if (groupOptional.isEmpty() && joined.getCurrentServer().isPresent()) {
                 plugin.getTabList().getTaskManager().runDelayed(() -> {
                     final RegisteredServer server = joined.getCurrentServer().get().getServer();
                     final Set<UUID> players = server.getPlayersConnected().stream()

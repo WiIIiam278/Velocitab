@@ -56,6 +56,15 @@ public class TaskManager {
         groupTasks.clear();
     }
 
+    public void close() {
+        try {
+            cancelAllTasks();
+            processThread.shutdownNow();
+        } catch (Throwable e) {
+            plugin.getLogger().error("Failed to close task manager", e);
+        }
+    }
+
     protected void updatePeriodically(@NotNull Group group) {
         final List<ScheduledFuture<?>> tasks = groupTasks.computeIfAbsent(group, g -> Lists.newArrayList());
         if (group.headerFooterUpdateRate() > 0) {

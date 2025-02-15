@@ -137,32 +137,21 @@ public class ConditionManager {
         });
     }
 
-    @SuppressWarnings("unused")
-    private static class StartsWith {
-        public boolean startsWith(String str, String prefix) {
-            return str != null && str.startsWith(prefix);
-        }
-    }
-
-    @SuppressWarnings("unused")
-    private static class EndsWith {
-        public boolean endsWith(String str, String suffix) {
-            return str != null && str.endsWith(suffix);
-        }
-    }
-
-    private final static String VELOCITAB_REL_CONDITION = "velocitab_rel_condition:";
-    private final static String VELOCITAB_REL_PLACEHOLDER_PERM = "velocitab_rel_perm:";
-    private final static String VELOCITAB_REL_WHO_IS_SEEING = "velocitab_rel_who-is-seeing";
-    private final static String VELOCITAB_REL_VANISH = "velocitab_rel_vanish";
+    private static final String VELOCITAB_REL_CONDITION = "velocitab_rel_condition:";
+    private static final String VELOCITAB_REL_PLACEHOLDER_PERM = "velocitab_rel_perm:";
+    private static final String VELOCITAB_REL_WHO_IS_SEEING = "velocitab_rel_who-is-seeing";
+    private static final String VELOCITAB_REL_VANISH = "velocitab_rel_vanish";
 
     public String handleVelocitabPlaceholders(@NotNull String text, @NotNull TabPlayer player, @NotNull TabPlayer viewer) {
-        if (text.equals(VELOCITAB_REL_WHO_IS_SEEING)) {
-            return viewer.getPlayer().getUsername();
-        }
+        switch (text) {
+            case VELOCITAB_REL_WHO_IS_SEEING -> viewer.getPlayer().getUsername();
 
-        if (text.equals(VELOCITAB_REL_VANISH)) {
-            return plugin.getVanishManager().isVanished(viewer.getPlayer().getUsername()) ? "true" : "false";
+            case VELOCITAB_REL_VANISH -> {
+                if (plugin.getVanishManager().isVanished(viewer.getPlayer().getUsername())) {
+                    return "true";
+                }
+                return "false";
+            }
         }
 
         if (text.length() < VELOCITAB_REL_CONDITION.length()) {
@@ -174,18 +163,22 @@ public class ConditionManager {
         }
 
         if (text.startsWith(VELOCITAB_REL_PLACEHOLDER_PERM)) {
-            final String cleaned = text.substring(VELOCITAB_REL_PLACEHOLDER_PERM.length());
-            final int firstSeparator = cleaned.indexOf(':');
-            if (firstSeparator == -1) return "";
+            String cleaned = text.substring(VELOCITAB_REL_PLACEHOLDER_PERM.length());
+            int firstSeparator = cleaned.indexOf(':');
 
-            final String permission = cleaned.substring(0, firstSeparator);
-            final String trueValue = cleaned.substring(firstSeparator + 1);
+            if (firstSeparator == -1) {
+                return "";
+            }
+
+            String permission = cleaned.substring(0, firstSeparator);
+            String trueValue = cleaned.substring(firstSeparator + 1);
 
             return viewer.getPlayer().hasPermission(permission) ? trueValue : "";
         }
 
         return text;
     }
+
 
 
 }

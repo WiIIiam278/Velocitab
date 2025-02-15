@@ -19,26 +19,50 @@
 
 package net.william278.velocitab.hook;
 
+import com.velocitypowered.api.proxy.Player;
 import io.github.miniplaceholders.api.MiniPlaceholders;
-import net.kyori.adventure.audience.Audience;
+import net.jodah.expiringmap.ExpiringMap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 public class MiniPlaceholdersHook extends Hook {
+
+    private final Map<UUID, TagResolver> cache;
 
     public MiniPlaceholdersHook(@NotNull Velocitab plugin) {
         super(plugin);
+        this.cache = ExpiringMap.builder()
+                .expiration(5, TimeUnit.MINUTES)
+                .build();
     }
 
     @NotNull
-    public Component format(@NotNull String text, @NotNull Audience player, @Nullable Audience viewer) {
+    private TagResolver getResolver(@NotNull Player player, @Nullable Player viewer) {
         if (viewer == null) {
-            return MiniMessage.miniMessage().deserialize(text, MiniPlaceholders.getAudienceGlobalPlaceholders(player));
+            return cache.computeIfAbsent(player.getUniqueId(), u -> MiniPlaceholders.getAudienceGlobalPlaceholders(player));
         }
-        return MiniMessage.miniMessage().deserialize(text, MiniPlaceholders.getRelationalGlobalPlaceholders(player, viewer));
+        final UUID merged = new UUID(player.getUniqueId().getMostSignificantBits(), viewer.getUniqueId().getMostSignificantBits());
+        return cache.computeIfAbsent(merged, u -> MiniPlaceholders.getRelationalGlobalPlaceholders(player, viewer));
+    }
+
+    public void clearCache() {
+        cache.clear();
+    }
+
+    @NotNull
+    public Component format(@NotNull String text, @NotNull Player player, @Nullable Player viewer) {
+        if (viewer == null) {
+            return MiniMessage.miniMessage().deserialize(text, getResolver(player, null));
+        }
+        return MiniMessage.miniMessage().deserialize(text, getResolver(player, viewer));
     }
 
 }

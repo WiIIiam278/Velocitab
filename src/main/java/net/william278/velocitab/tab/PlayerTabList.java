@@ -34,7 +34,6 @@ import com.velocitypowered.proxy.tablist.VelocityTabList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.api.PlayerAddedToTabEvent;
 import net.william278.velocitab.config.Group;
@@ -166,7 +165,7 @@ public class PlayerTabList {
      * Removes the player's entry from the tab list of all other players on the same group servers.
      */
     public void close() {
-        taskManager.cancelAllTasks();
+        taskManager.close();
         plugin.getServer().getAllPlayers().forEach(p -> {
             final Optional<ServerConnection> server = p.getCurrentServer();
             if (server.isEmpty()) return;
@@ -480,7 +479,7 @@ public class PlayerTabList {
 
     public void updateGroupNames(@NotNull Group group) {
         final List<TabPlayer> players = group.getTabPlayersAsList(plugin);
-        fillList(players);
+//        fillList(players);
 
         if (plugin.getSettings().isEnableRelationalPlaceholders()) {
             updateRelationalGroupNames(players, group);
@@ -500,12 +499,16 @@ public class PlayerTabList {
 
     private void updateRelationalGroupNames(@NotNull List<TabPlayer> players, @NotNull Group group) {
         long l = 0;
+        final String withoutVelocityPlaceholders = plugin.getPlaceholderManager().formatWithoutVelocitabPlaceholders(group.format());
         for (TabPlayer p1 : players) {
             if (!p1.getPlayer().isActive() || !p1.isLoaded()) {
                 return;
             }
 
             final boolean isVanished = plugin.getVanishManager().isVanished(p1.getPlayer().getUsername());
+            final String formatPlaceholders = plugin.getPlaceholderManager().applyPlaceholders(p1, group.format());
+            final String formatNoRelationalWithPlaceholders = plugin.getPlaceholderManager().applyPlaceholders(p1, withoutVelocityPlaceholders);
+            final Component relationalPlaceholder = formatComponent(p1, formatNoRelationalWithPlaceholders);
 
             for (TabPlayer player : players) {
                 if (isVanished && !plugin.getVanishManager().canSee(player.getPlayer().getUsername(), p1.getPlayer().getUsername())) {
@@ -516,23 +519,28 @@ public class PlayerTabList {
                     return;
                 }
 
+                if (!player.getPlayer().hasPermission(RELATIONAL_PERMISSION)) {
+                    updateDisplayName(p1, player, relationalPlaceholder);
+                    continue;
+                }
+
+                final String withPlaceholders = plugin.getPlaceholderManager().applyViewerPlaceholders(player, formatPlaceholders);
                 final long start = System.currentTimeMillis();
-                final String withPlaceholders = plugin.getPlaceholderManager().applyPlaceholders(p1, group.format(), player);
                 final String unformatted = plugin.getPlaceholderManager().formatVelocitabPlaceholders(withPlaceholders, p1, player);
                 final long end = System.currentTimeMillis();
                 l += end - start;
 
-                final Component displayName = plugin.getFormatter().format(unformatted, p1, player, plugin);
+                final Component displayName = formatRelationalComponent(p1, player, unformatted);
                 updateDisplayName(p1, player, displayName);
             }
         }
 
-        plugin.getLogger().info("Updated formatting in {} ms", l);
+//        plugin.getLogger().info("Updated formatting in {} ms", l);
     }
 
     //debug
     private void fillList(List<TabPlayer> players) {
-        final TabPlayer tabPlayer = players.get(0);
+        final TabPlayer tabPlayer = players.stream().filter(t -> t.getPlayer().hasPermission(RELATIONAL_PERMISSION)).findFirst().orElse(players.get(0));
         final int toAdd = 600;
         for (int i = 0; i < toAdd; i++) {
             players.add(tabPlayer);

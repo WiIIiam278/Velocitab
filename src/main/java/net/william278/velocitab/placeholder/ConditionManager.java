@@ -24,6 +24,7 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.mvel2.MVEL;
 
 
@@ -42,7 +43,7 @@ public class ConditionManager {
     private final Pattern miniEscapeEndTags;
     private final Map<String, Object> cachedExpressions;
 
-    private static final Map<String, String> REPLACE_3 = Map.of(
+    private static final Map<String, String> REPLACE_CHARS = Map.of(
             "?dp?", ":"
     );
 
@@ -77,7 +78,7 @@ public class ConditionManager {
 
     @NotNull
     private List<String> collectParameters(@NotNull String argument) {
-        for (Map.Entry<String, String> entry : REPLACE_3.entrySet()) {
+        for (Map.Entry<String, String> entry : REPLACE_CHARS.entrySet()) {
             argument = argument.replace(entry.getKey(), entry.getValue());
         }
         return Arrays.stream(argument.split(":"))
@@ -138,11 +139,21 @@ public class ConditionManager {
     }
 
     private static final String VELOCITAB_REL_CONDITION = "velocitab_rel_condition:";
+    private static final String VELOCITAB_CONDITION = "velocitab_condition:";
     private static final String VELOCITAB_REL_PLACEHOLDER_PERM = "velocitab_rel_perm:";
     private static final String VELOCITAB_REL_WHO_IS_SEEING = "velocitab_rel_who-is-seeing";
     private static final String VELOCITAB_REL_VANISH = "velocitab_rel_vanish";
 
-    public String handleVelocitabPlaceholders(@NotNull String text, @NotNull TabPlayer player, @NotNull TabPlayer viewer) {
+    public String handleVelocitabPlaceholders(@NotNull String text, @NotNull TabPlayer player, @Nullable TabPlayer viewer) {
+        if (viewer == null) {
+            return handleConditionPlaceholders(text, player);
+        }
+
+        return handleRelPlaceholders(text, player, viewer);
+    }
+
+    @NotNull
+    private String handleRelPlaceholders(@NotNull String text, @NotNull TabPlayer player, @NotNull TabPlayer viewer) {
         switch (text) {
             case VELOCITAB_REL_WHO_IS_SEEING -> viewer.getPlayer().getUsername();
 
@@ -174,6 +185,15 @@ public class ConditionManager {
             String trueValue = cleaned.substring(firstSeparator + 1);
 
             return viewer.getPlayer().hasPermission(permission) ? trueValue : "";
+        }
+
+        return text;
+    }
+
+    @NotNull
+    private String handleConditionPlaceholders(@NotNull String text, @NotNull TabPlayer player) {
+        if (text.startsWith(VELOCITAB_CONDITION)) {
+            return checkConditions(player, text.substring(VELOCITAB_CONDITION.length()));
         }
 
         return text;

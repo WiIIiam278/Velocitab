@@ -45,8 +45,8 @@ public class PlaceholderManager {
 
     private static final String ELSE_PLACEHOLDER = "ELSE";
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%.*?%", Pattern.DOTALL);
-    private static final Pattern VELOCITAB_CORRECT_PATTERN = Pattern.compile("<velocitab[^<>]*(?:<(?!v)[^<>]*>[^<>]*)*>");
-//    private static final Pattern VELOCITAB_CORRECT_PATTERN = Pattern.compile("<velocitab[^>]*>[^<]*(?:<[^>]+>[^<]*)*?");
+    private static final Pattern VELOCITAB_PLACEHOLDERS = Pattern.compile("<velocitab[^<>]*(?:<(?!v)[^<>]*>[^<>]*)*>");
+    private static final Pattern VELOCITAB_REL_PLACEHOLDERS = Pattern.compile("<velocitab_rel[^<>]*(?:<(?!v)[^<>]*>[^<>]*)*>");
 
     private final Velocitab plugin;
     private final Map<UUID, Map<String, String>> placeholders;
@@ -267,14 +267,14 @@ public class PlaceholderManager {
         return Optional.of(placeholderType.getReplacer().apply(null, plugin, player));
     }
 
-    public String formatVelocitabPlaceholders(@NotNull String text, @NotNull TabPlayer player, @NotNull TabPlayer viewer) {
-        Matcher matcher = VELOCITAB_CORRECT_PATTERN.matcher(text);
-
+    @NotNull
+    public String formatVelocitabPlaceholders(@NotNull String text, @NotNull TabPlayer player, @Nullable TabPlayer viewer) {
+        final Matcher matcher = VELOCITAB_PLACEHOLDERS.matcher(text);
         if (!matcher.find()) {
             return text;
         }
 
-        StringBuilder result = new StringBuilder(text.length());
+        final StringBuilder result = new StringBuilder(text.length());
         int lastEnd = 0;
 
         do {
@@ -284,6 +284,9 @@ public class PlaceholderManager {
             String replacement;
             try {
                 replacement = conditionManager.handleVelocitabPlaceholders(cleanedPlaceholder, player, viewer);
+                if (replacement.equals(cleanedPlaceholder)) {
+                    continue;
+                }
             } catch (Exception e) {
                 plugin.getLogger().warn("Failed to calculate condition for {}", cleanedPlaceholder, e);
                 replacement = placeholder;
@@ -297,34 +300,9 @@ public class PlaceholderManager {
         return result.toString();
     }
 
-//    public String formatVelocitabPlaceholders(@NotNull String text, @NotNull TabPlayer player, @NotNull TabPlayer viewer) {
-//        Matcher matcher = VELOCITAB_CORRECT_PATTERN.matcher(text);
-//        StringBuilder result = new StringBuilder();
-//        int lastEnd = 0;
-//
-//        while (matcher.find()) {
-//            String placeholder = matcher.group();
-//            String cleanedPlaceholder = placeholder.substring(1, placeholder.length() - 1);
-//
-//            String replacement;
-//            try {
-//                replacement = conditionManager.handleVelocitabPlaceholders(cleanedPlaceholder, player, viewer);
-//            } catch (Exception e) {
-//                plugin.getLogger().warn("Failed to calculate condition for {}", cleanedPlaceholder, e);
-//                replacement = placeholder;
-//            }
-//
-//            result.append(text, lastEnd, matcher.start()).append(replacement);
-//            lastEnd = matcher.end();
-//        }
-//
-//        result.append(text.substring(lastEnd));
-//
-//        return result.toString();
-//    }
-
-    public String formatWithoutVelocitabPlaceholders(@NotNull String text) {
-        final Matcher matcher = VELOCITAB_CORRECT_PATTERN.matcher(text);
+    @NotNull
+    public String stripVelocitabRelPlaceholders(@NotNull String text) {
+        final Matcher matcher = VELOCITAB_REL_PLACEHOLDERS.matcher(text);
         final StringBuilder result = new StringBuilder();
         int lastEnd = 0;
         while (matcher.find()) {
@@ -341,20 +319,4 @@ public class PlaceholderManager {
         result.append(text.substring(lastEnd));
         return result.toString();
     }
-
-//    public String formatVelocitabPlaceholders(@NotNull String text, @NotNull TabPlayer player, @NotNull TabPlayer viewer) {
-//        final Matcher matcher = VELOCITAB_CORRECT_PATTERN.matcher(text);
-//        while (matcher.find()) {
-//            final String replacement = matcher.group().substring(1, matcher.group().length() - 1);
-//            try {
-//                final String to = conditionManager.handleVelocitabPlaceholders(replacement, player, viewer);
-//                final String toReplaced = "<" + replacement + ">";
-//                text = text.replace(toReplaced, to);
-//            } catch (Exception e) {
-//                plugin.getLogger().warn("Failed to calculate condition for {}", replacement, e);
-//            }
-//        }
-//
-//        return text;
-//    }
 }

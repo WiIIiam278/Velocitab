@@ -49,12 +49,9 @@ public class MiniPlaceholdersHook extends Hook {
         if (viewer == null) {
             return cache.computeIfAbsent(player.getUniqueId(), u -> MiniPlaceholders.getAudienceGlobalPlaceholders(player));
         }
+
         final UUID merged = new UUID(player.getUniqueId().getMostSignificantBits(), viewer.getUniqueId().getMostSignificantBits());
         return cache.computeIfAbsent(merged, u -> MiniPlaceholders.getRelationalGlobalPlaceholders(player, viewer));
-    }
-
-    public void clearCache() {
-        cache.clear();
     }
 
     @NotNull
@@ -62,6 +59,7 @@ public class MiniPlaceholdersHook extends Hook {
         if (viewer == null) {
             return MiniMessage.miniMessage().deserialize(text, getResolver(player, null));
         }
+
         return MiniMessage.miniMessage().deserialize(text, getResolver(player, viewer));
     }
 

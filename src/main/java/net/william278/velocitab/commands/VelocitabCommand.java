@@ -95,7 +95,7 @@ public final class VelocitabCommand {
                                     }
 
                                     tabPlayer.get().setCustomName(name);
-                                    plugin.getTabList().updatePlayerDisplayName(tabPlayer.get());
+                                    plugin.getTabList().updateDisplayName(tabPlayer.get());
 
                                     ctx.getSource().sendMessage(Component
                                             .text("Your TAB name has been updated!", MAIN_COLOR));
@@ -120,7 +120,7 @@ public final class VelocitabCommand {
                             }
 
                             tabPlayer.get().setCustomName(null);
-                            plugin.getTabList().updatePlayerDisplayName(tabPlayer.get());
+                            plugin.getTabList().updateDisplayName(tabPlayer.get());
                             player.sendMessage(Component.text("Your name has been reset!", MAIN_COLOR));
                             return Command.SINGLE_SUCCESS;
                         })

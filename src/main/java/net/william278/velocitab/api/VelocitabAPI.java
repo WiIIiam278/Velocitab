@@ -111,7 +111,7 @@ public class VelocitabAPI {
     public void setCustomPlayerName(@NotNull Player player, @Nullable String name) {
         getUser(player).ifPresent(tabPlayer -> {
             tabPlayer.setCustomName(name);
-            plugin.getTabList().updatePlayerDisplayName(tabPlayer);
+            plugin.getTabList().updateDisplayName(tabPlayer);
         });
     }
 

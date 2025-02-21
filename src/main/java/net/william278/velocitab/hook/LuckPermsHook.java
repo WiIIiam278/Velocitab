@@ -116,7 +116,7 @@ public class LuckPermsHook extends Hook {
                             }
 
                             tabPlayer.setRole(newRole);
-                            tabList.updatePlayerDisplayName(tabPlayer);
+                            tabList.updateDisplayName(tabPlayer);
                             tabList.getVanishTabList().recalculateVanishForPlayer(tabPlayer);
                             checkRoleUpdate(tabPlayer, oldRole);
                         })

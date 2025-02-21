@@ -342,7 +342,6 @@ public class PlayerTabList {
                     list.forEach(player -> {
                         player.getPlayer().getTabList().removeEntry(uuid);
                         player.sendHeaderAndFooter(this);
-                        updatePlayerDisplayName(player);
                     });
                 })
                 .delay(250, TimeUnit.MILLISECONDS)
@@ -386,8 +385,6 @@ public class PlayerTabList {
     protected void updateDisplayName(@NotNull TabPlayer player, @NotNull TabPlayer viewer) {
         final String withPlaceholders = plugin.getPlaceholderManager().applyPlaceholders(player, player.getGroup().format());
         final String unformatted = plugin.getPlaceholderManager().formatVelocitabPlaceholders(withPlaceholders, player, null);
-//        final Component displayName = plugin.getFormatter().format(unformatted, player, viewer, plugin);
-//        updateDisplayName(player, viewer, displayName);
         if (!plugin.getSettings().isEnableRelationalPlaceholders()) {
             final String stripped = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(unformatted);
             final Component displayName = plugin.getFormatter().format(stripped, player, plugin);
@@ -521,9 +518,8 @@ public class PlayerTabList {
 
     private void updateNormalGroupNames(List<TabPlayer> players, @NotNull Group group) {
         final String stripped = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(group.format());
-        if (plugin.getSettings().isDebug() && stripped.length() != group.format().length()) {
-            plugin.getLogger().warn("Found relational placeholder in group {} format even though relational placeholders are disabled", group.name());
-        }
+        checkStrippedString(stripped, group);
+
         for (TabPlayer player : players) {
             final String displayName = plugin.getPlaceholderManager().applyPlaceholders(player, stripped);
             final String displayNameConditional = plugin.getPlaceholderManager().formatVelocitabPlaceholders(displayName, player, null);
@@ -569,6 +565,49 @@ public class PlayerTabList {
         }
     }
 
+    public void updateDisplayName(@NotNull TabPlayer tabPlayer) {
+        if (plugin.getSettings().isEnableRelationalPlaceholders()) {
+            updateRelationalDisplayName(tabPlayer);
+            return;
+        }
+
+        updateNormalDisplayName(tabPlayer);
+    }
+
+    private void updateNormalDisplayName(@NotNull TabPlayer tabPlayer) {
+        final Group group = tabPlayer.getGroup();
+        final String stripped = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(group.format());
+        checkStrippedString(stripped, group);
+
+        final List<TabPlayer> players = group.getTabPlayersAsList(plugin, tabPlayer);
+        players.forEach(player -> {
+            final String displayName = plugin.getPlaceholderManager().applyPlaceholders(player, stripped);
+            final String displayNameConditional = plugin.getPlaceholderManager().formatVelocitabPlaceholders(displayName, player, null);
+            final Component displayNameComponent = formatComponent(player, displayNameConditional);
+            updateDisplayName(player, tabPlayer, displayNameComponent);
+        });
+    }
+
+    private void updateRelationalDisplayName(@NotNull TabPlayer tabPlayer) {
+        final Group group = tabPlayer.getGroup();
+        final String stripped = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(group.format());
+        checkStrippedString(stripped, group);
+
+        final List<TabPlayer> players = group.getTabPlayersAsList(plugin, tabPlayer);
+        players.forEach(player -> {
+            final String displayName = plugin.getPlaceholderManager().applyPlaceholders(player, stripped);
+            final String displayNameConditional = plugin.getPlaceholderManager().formatVelocitabPlaceholders(displayName, player, null);
+            final Component displayNameComponent = formatRelationalComponent(player, tabPlayer, displayNameConditional);
+            updateDisplayName(player, tabPlayer, displayNameComponent);
+        });
+    }
+
+    private void checkStrippedString(@NotNull String text, @NotNull Group group) {
+        if (plugin.getSettings().isDebug() && text.length() != group.format().length()) {
+            plugin.getLogger().warn("Found relational placeholder in group {} format even though relational placeholders are disabled", group.name());
+        }
+    }
+
     //debug
     private void fillList(List<TabPlayer> players) {
         final TabPlayer tabPlayer = players.stream().filter(t -> t.getPlayer().hasPermission(RELATIONAL_PERMISSION)).findFirst().orElse(players.get(0));
@@ -576,45 +615,6 @@ public class PlayerTabList {
         for (int i = 0; i < toAdd; i++) {
             players.add(tabPlayer);
         }
-    }
-
-    public void updatePlayerDisplayName(@NotNull TabPlayer tabPlayer) {
-        if (!tabPlayer.getPlayer().isActive() || !tabPlayer.isLoaded()) {
-            return;
-        }
-
-        final boolean isVanished = plugin.getVanishManager().isVanished(tabPlayer.getPlayer().getUsername());
-        final List<TabPlayer> players = tabPlayer.getGroup().getTabPlayersAsList(plugin, tabPlayer);
-        final String withoutVelocityPlaceholders = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(tabPlayer.getGroup().format());
-
-        players.forEach(player -> {
-            if (isVanished && !plugin.getVanishManager().canSee(player.getPlayer().getUsername(), tabPlayer.getPlayer().getUsername())) {
-                return;
-            }
-
-            if (!player.getPlayer().isActive() || !player.isLoaded()) {
-                return;
-            }
-
-            if (!player.getPlayer().isActive() || !player.isLoaded()) {
-                return;
-            }
-
-            final String formatPlaceholders = plugin.getPlaceholderManager().applyPlaceholders(player, tabPlayer.getGroup().format());
-            final String formatNoRelationalWithPlaceholders = plugin.getPlaceholderManager().applyPlaceholders(player, withoutVelocityPlaceholders);
-            final Component relationalPlaceholder = formatComponent(player, formatNoRelationalWithPlaceholders);
-
-            if (!player.getPlayer().hasPermission(RELATIONAL_PERMISSION)) {
-                updateDisplayName(player, tabPlayer, relationalPlaceholder);
-                return;
-            }
-
-            final String withPlaceholders = plugin.getPlaceholderManager().applyViewerPlaceholders(tabPlayer, formatPlaceholders);
-            final String unformatted = plugin.getPlaceholderManager().formatVelocitabPlaceholders(withPlaceholders, player, tabPlayer);
-
-            final Component displayName = formatRelationalComponent(player, tabPlayer, unformatted);
-            updateDisplayName(player, tabPlayer, displayName);
-        });
     }
 
     public void checkCorrectDisplayName(@NotNull TabPlayer tabPlayer) {
@@ -637,12 +637,6 @@ public class PlayerTabList {
                                 entry.setDisplayName(lastDisplayName);
                             }
                         }));
-    }
-
-
-    // Update the display names of all listed players
-    public void updateDisplayNames() {
-        players.values().forEach(this::updatePlayerDisplayName);
     }
 
     public void checkCorrectDisplayNames() {

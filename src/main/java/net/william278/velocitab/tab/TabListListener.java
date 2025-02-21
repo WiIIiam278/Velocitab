@@ -66,7 +66,6 @@ public class TabListListener {
     @Subscribe
     private void onKick(@NotNull KickedFromServerEvent event) {
         plugin.getTabList().getTaskManager().run(() -> handleKick(event));
-//        handleKick(event);
     }
 
     private void handleKick(@NotNull KickedFromServerEvent event) {
@@ -78,7 +77,7 @@ public class TabListListener {
         if (event.getResult() instanceof KickedFromServerEvent.DisconnectPlayer) {
             tabList.removePlayer(event.getPlayer());
         } else if (event.getResult() instanceof KickedFromServerEvent.RedirectPlayer redirectPlayer) {
-            tabList.removePlayer(event.getPlayer(), redirectPlayer.getServer());
+            tabList.removePlayer(event.getPlayer());
         } else if (event.getResult() instanceof KickedFromServerEvent.Notify notify) {
             return;
         }
@@ -98,7 +97,6 @@ public class TabListListener {
     @Subscribe(priority = Short.MIN_VALUE)
     private void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
         plugin.getTabList().getTaskManager().run(() -> handlePlayerJoin(event));
-//        handlePlayerJoin(event);
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -200,18 +198,9 @@ public class TabListListener {
     }
 
     private void removeOldEntry(@NotNull Group group, @NotNull UUID uuid) {
-        final AtomicInteger count = new AtomicInteger();
-        final AtomicReference<ScheduledTask> task = new AtomicReference<>();
-        task.set(plugin.getServer().getScheduler().buildTask(plugin, () -> {
-                    if (count.get() > 5) {
-                        task.get().cancel();
-                        return;
-                    }
-                    tabList.removeOldEntry(group, uuid);
-                })
+        plugin.getServer().getScheduler().buildTask(plugin, () -> tabList.removeOldEntry(group, uuid))
                 .delay(100, TimeUnit.MILLISECONDS)
-                .repeat(count.getAndIncrement(), TimeUnit.MILLISECONDS)
-                .schedule());
+                .schedule();
     }
 
     private void cleanOldHeadersAndFooters(@NotNull TabPlayer tabPlayer) {

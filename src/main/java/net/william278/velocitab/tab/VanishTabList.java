@@ -61,7 +61,7 @@ public class VanishTabList {
             if (!p.getPlayer().getTabList().containsEntry(uuid)) {
                 tabList.createEntry(tabPlayer, p.getPlayer().getTabList(), p);
             } else {
-                tabList.updateDisplayName(tabPlayer, p);
+                tabList.calculateAndSetDisplayName(tabPlayer, p);
             }
         });
 

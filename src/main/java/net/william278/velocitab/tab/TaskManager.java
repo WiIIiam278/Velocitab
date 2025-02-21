@@ -131,7 +131,6 @@ public class TaskManager {
             tasks.add(updateTask);
         }
 
-
         final ScheduledFuture<?> latencyTask = processThread.scheduleAtFixedRate(() -> {
                     final long startTime = System.currentTimeMillis();
                     updateLatency(group);
@@ -181,5 +180,4 @@ public class TaskManager {
     public void runDelayed(@NotNull Runnable runnable, long delay, TimeUnit timeUnit) {
         processThread.schedule(runnable, delay, timeUnit);
     }
-
 }

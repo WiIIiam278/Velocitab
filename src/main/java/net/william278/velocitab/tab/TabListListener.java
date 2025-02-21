@@ -30,7 +30,6 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
-import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
@@ -41,8 +40,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -176,7 +173,6 @@ public class TabListListener {
     @Subscribe(order = PostOrder.CUSTOM, priority = Short.MIN_VALUE)
     private void onPlayerQuit(@NotNull DisconnectEvent event) {
         plugin.getTabList().getTaskManager().run(() -> handlePlayerQuit(event));
-//        handlePlayerQuit(event);
     }
 
     private void handlePlayerQuit(@NotNull DisconnectEvent event) {

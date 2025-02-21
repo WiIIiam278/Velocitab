@@ -22,11 +22,9 @@ package net.william278.velocitab.placeholder;
 import net.jodah.expiringmap.ExpiringMap;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mvel2.MVEL;
-
 
 import java.util.Arrays;
 import java.util.List;

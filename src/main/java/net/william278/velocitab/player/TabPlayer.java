@@ -51,7 +51,6 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     // Each TabPlayer contains the components for each TabPlayer it's currently viewing this player
     private final Map<UUID, Component> relationalDisplayNames;
     private final Map<UUID, Component[]> relationalNametags;
-    private String lastDisplayName;
     private Component lastHeader;
     private Component lastFooter;
     private String teamName;

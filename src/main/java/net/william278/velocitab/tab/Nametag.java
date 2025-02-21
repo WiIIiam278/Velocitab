@@ -21,7 +21,6 @@ package net.william278.velocitab.tab;
 
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.placeholder.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 

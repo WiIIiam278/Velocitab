@@ -23,13 +23,11 @@ import com.google.common.collect.Lists;
 import com.velocitypowered.api.util.ServerLink;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.placeholder.Placeholder;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 public record ServerUrl(
         @NotNull String label,

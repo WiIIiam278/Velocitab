@@ -23,7 +23,6 @@ import com.google.common.collect.Maps;
 
 import java.util.Comparator;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 public class SortedSet {

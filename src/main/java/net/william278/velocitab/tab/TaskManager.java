@@ -177,7 +177,7 @@ public class TaskManager {
         processThread.execute(runnable);
     }
 
-    public void runDelayed(@NotNull Runnable runnable, long delay, TimeUnit timeUnit) {
+    public void runDelayed(@NotNull Runnable runnable, long delay, @NotNull TimeUnit timeUnit) {
         processThread.schedule(runnable, delay, timeUnit);
     }
 }

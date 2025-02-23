@@ -87,30 +87,6 @@ public class TabGroups implements ConfigValidator {
                 .findFirst();
     }
 
-    public Optional<Group> getGroupFromServer(@NotNull String server, @NotNull Velocitab plugin) {
-        final List<Group> groups = new ArrayList<>(this.groups);
-        final Optional<Group> defaultGroup = getGroup("default");
-        if (defaultGroup.isEmpty()) {
-            throw new IllegalStateException("No default group found");
-        }
-        // Ensure the default group is always checked last
-        groups.remove(defaultGroup.get());
-        groups.add(defaultGroup.get());
-        for (Group group : groups) {
-            if (group.registeredServers(plugin, false)
-                    .stream()
-                    .anyMatch(s -> s.getServerInfo().getName().equalsIgnoreCase(server))) {
-                return Optional.of(group);
-            }
-        }
-
-        if (!plugin.getSettings().isFallbackEnabled()) {
-            return Optional.empty();
-        }
-
-        return defaultGroup;
-    }
-
     @Override
     public void validateConfig(@NotNull Velocitab plugin, @NotNull String name) {
         if(name.equals("default")) {

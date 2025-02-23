@@ -69,9 +69,11 @@ public class TabGroupsManager {
                 if (!file.getName().endsWith(".yml")) {
                     continue;
                 }
+
                 final TabGroups preCheck = YamlConfigurations.load(file.toPath(), TabGroups.class, properties);
                 preCheck.groups.removeIf(g -> g.name().equals("default"));
                 YamlConfigurations.save(file.toPath(), TabGroups.class, preCheck, properties);
+
                 final TabGroups group = YamlConfigurations.update(
                         file.toPath(),
                         TabGroups.class,
@@ -103,7 +105,6 @@ public class TabGroupsManager {
                 continue;
             }
 
-
             for (RegisteredServer registeredServer : current) {
                 if (registeredServers.contains(registeredServer)) {
                     plugin.getLogger().warn("Server {} is already registered for group {} in {}, the same tabgroups file. Skipping.", registeredServer.getServerInfo().getName(), group1.name(), name);
@@ -121,6 +122,7 @@ public class TabGroupsManager {
 
             for (Group loadingGroup : eligibleGroups) {
                 final Set<RegisteredServer> loadingGroupServers = loadingGroup.registeredServers(plugin, false);
+
                 for (RegisteredServer registeredServer : loadingGroupServers) {
                     if (current.contains(registeredServer)) {
                         plugin.getLogger().warn("Server {} in {} tab groups file is already registered for group {}. Skipping.", registeredServer.getServerInfo().getName(), name, group1.name());
@@ -164,6 +166,7 @@ public class TabGroupsManager {
                 return Optional.of(group);
             }
         }
+
         return Optional.empty();
     }
 
@@ -179,6 +182,4 @@ public class TabGroupsManager {
     public Collection<Group> getGroups() {
         return groups.values();
     }
-
-
 }

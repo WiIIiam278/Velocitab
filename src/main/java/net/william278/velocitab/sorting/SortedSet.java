@@ -20,21 +20,26 @@
 package net.william278.velocitab.sorting;
 
 import com.google.common.collect.Maps;
+import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+@ToString
 public class SortedSet {
+
     private final ConcurrentSkipListSet<String> sortedTeams;
     private final Map<String, Integer> positionMap;
 
-    public SortedSet(Comparator<String> comparator) {
+    public SortedSet(@NotNull Comparator<String> comparator) {
         sortedTeams = new ConcurrentSkipListSet<>(comparator);
         positionMap = Maps.newConcurrentMap();
     }
 
-    public boolean addTeam(String teamName) {
+    public boolean addTeam(@NotNull String teamName) {
         if (!sortedTeams.add(teamName)) {
             return false;
         }
@@ -42,7 +47,7 @@ public class SortedSet {
         return true;
     }
 
-    public boolean removeTeam(String teamName) {
+    public boolean removeTeam(@NotNull String teamName) {
         if (!sortedTeams.remove(teamName)) {
             return false;
         }
@@ -50,7 +55,7 @@ public class SortedSet {
         return true;
     }
 
-    private void updatePositions(String newTeam) {
+    private void updatePositions(@Nullable String newTeam) {
         if (newTeam != null) {
             int newPosition = sortedTeams.headSet(newTeam).size();
             positionMap.put(newTeam, newPosition);
@@ -64,12 +69,7 @@ public class SortedSet {
         }
     }
 
-    public int getPosition(String teamName) {
+    public int getPosition(@NotNull String teamName) {
         return positionMap.getOrDefault(teamName, -1);
-    }
-
-    @Override
-    public String toString() {
-        return sortedTeams.toString();
     }
 }

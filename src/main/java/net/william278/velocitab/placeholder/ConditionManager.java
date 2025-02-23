@@ -36,6 +36,12 @@ import java.util.regex.Pattern;
 
 public class ConditionManager {
 
+    private static final String VELOCITAB_REL_CONDITION = "velocitab_rel_condition:";
+    private static final String VELOCITAB_CONDITION = "velocitab_condition:";
+    private static final String VELOCITAB_REL_PLACEHOLDER_PERM = "velocitab_rel_perm:";
+    private static final String VELOCITAB_REL_WHO_IS_SEEING = "velocitab_rel_who-is-seeing";
+    private static final String VELOCITAB_REL_VANISH = "velocitab_rel_vanish";
+
     private final Velocitab plugin;
     private final Pattern targetPlaceholderPattern;
     private final Pattern miniEscapeEndTags;
@@ -103,7 +109,8 @@ public class ConditionManager {
     }
 
     @NotNull
-    private String evaluateAndFormatCondition(@NotNull String expression, @NotNull TabPlayer target, @NotNull String trueValue, @NotNull String falseValue) {
+    private String evaluateAndFormatCondition(@NotNull String expression, @NotNull TabPlayer target,
+                                              @NotNull String trueValue, @NotNull String falseValue) {
         final String targetString = parseTargetPlaceholders(expression, target).trim();
         try {
             final Object result = evaluateExpression(targetString);
@@ -135,12 +142,6 @@ public class ConditionManager {
             return placeholderValue.orElse(text);
         });
     }
-
-    private static final String VELOCITAB_REL_CONDITION = "velocitab_rel_condition:";
-    private static final String VELOCITAB_CONDITION = "velocitab_condition:";
-    private static final String VELOCITAB_REL_PLACEHOLDER_PERM = "velocitab_rel_perm:";
-    private static final String VELOCITAB_REL_WHO_IS_SEEING = "velocitab_rel_who-is-seeing";
-    private static final String VELOCITAB_REL_VANISH = "velocitab_rel_vanish";
 
     public String handleVelocitabPlaceholders(@NotNull String text, @NotNull TabPlayer player, @Nullable TabPlayer viewer) {
         if (viewer == null) {
@@ -196,7 +197,4 @@ public class ConditionManager {
 
         return text;
     }
-
-
-
 }

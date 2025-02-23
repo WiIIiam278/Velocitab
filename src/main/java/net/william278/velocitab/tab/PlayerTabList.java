@@ -569,10 +569,19 @@ public class PlayerTabList {
 
         final List<TabPlayer> players = group.getTabPlayersAsList(plugin, tabPlayer);
         players.forEach(player -> {
-            final String displayName = plugin.getPlaceholderManager().applyPlaceholders(player, stripped);
-            final String displayNameConditional = plugin.getPlaceholderManager().formatVelocitabPlaceholders(displayName, player, null);
-            final Component displayNameComponent = formatComponent(player, displayNameConditional);
-            updateEntryDisplayName(player, tabPlayer, displayNameComponent);
+            if (!player.getPlayer().hasPermission(RELATIONAL_PERMISSION)) {
+                final String displayName = plugin.getPlaceholderManager().applyPlaceholders(player, stripped);
+                final String displayNameConditional = plugin.getPlaceholderManager().formatVelocitabPlaceholders(displayName, player, null);
+                final Component displayNameComponent = formatComponent(player, displayNameConditional);
+                updateEntryDisplayName(player, tabPlayer, displayNameComponent);
+                return;
+            }
+
+            final String withPlaceholders = plugin.getPlaceholderManager().applyViewerPlaceholders(player, stripped);
+            final String unformatted = plugin.getPlaceholderManager().formatVelocitabPlaceholders(withPlaceholders, tabPlayer, player);
+
+            final Component displayName = formatRelationalComponent(tabPlayer, player, unformatted);
+            updateEntryDisplayName(tabPlayer, player, displayName);
         });
     }
 

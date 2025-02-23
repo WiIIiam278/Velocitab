@@ -85,6 +85,7 @@ public class ConditionManager {
         for (Map.Entry<String, String> entry : REPLACE_CHARS.entrySet()) {
             argument = argument.replace(entry.getKey(), entry.getValue());
         }
+
         return Arrays.stream(argument.split(":"))
                 .map(s -> s.replace("''", "\""))
                 .toList();
@@ -155,11 +156,11 @@ public class ConditionManager {
     private String handleRelPlaceholders(@NotNull String text, @NotNull TabPlayer player, @NotNull TabPlayer viewer) {
         switch (text) {
             case VELOCITAB_REL_WHO_IS_SEEING -> viewer.getPlayer().getUsername();
-
             case VELOCITAB_REL_VANISH -> {
                 if (plugin.getVanishManager().isVanished(viewer.getPlayer().getUsername())) {
                     return "true";
                 }
+
                 return "false";
             }
         }
@@ -173,16 +174,14 @@ public class ConditionManager {
         }
 
         if (text.startsWith(VELOCITAB_REL_PLACEHOLDER_PERM)) {
-            String cleaned = text.substring(VELOCITAB_REL_PLACEHOLDER_PERM.length());
-            int firstSeparator = cleaned.indexOf(':');
-
+            final String cleaned = text.substring(VELOCITAB_REL_PLACEHOLDER_PERM.length());
+            final int firstSeparator = cleaned.indexOf(':');
             if (firstSeparator == -1) {
                 return "";
             }
 
-            String permission = cleaned.substring(0, firstSeparator);
-            String trueValue = cleaned.substring(firstSeparator + 1);
-
+            final String permission = cleaned.substring(0, firstSeparator);
+            final String trueValue = cleaned.substring(firstSeparator + 1);
             return viewer.getPlayer().hasPermission(permission) ? trueValue : "";
         }
 

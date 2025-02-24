@@ -39,7 +39,8 @@ public class Settings implements ConfigValidator {
     public static final String CONFIG_HEADER = """
             ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
             ┃       Velocitab Config       ┃
-            ┃    Developed by William278   ┃
+            ┃         Developed by         ┃
+            ┃   William278 & AlexDev03     ┃
             ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
             ┣╸ Information: https://william278.net/project/velocitab
             ┗╸ Documentation: https://william278.net/docs/velocitab""";

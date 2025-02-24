@@ -29,6 +29,7 @@ import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.william278.desertwell.about.AboutMenu;
 import net.william278.velocitab.Velocitab;
@@ -177,16 +178,23 @@ public final class VelocitabCommand {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("dump")
                         .requires(src -> hasPermission(src, "dump"))
                         .executes(ctx -> {
-                            plugin.getServer().getScheduler().buildTask(plugin, () -> {
-                                final String dumpUrl = plugin.createDump(ctx.getSource());
-                                final Component dumpUrlComponent = ctx.getSource() instanceof Player
-                                        ? Component.text("Click to open dump", MAIN_COLOR).clickEvent(ClickEvent.openUrl(dumpUrl))
-                                        : Component.text("Dump URL: " + dumpUrl, MAIN_COLOR);
-                                ctx.getSource().sendMessage(dumpUrlComponent);
-                            }).schedule();
+                            ctx.getSource().sendRichMessage(plugin.getLocales().getSystemDumpConfirm().trim());
                             return Command.SINGLE_SUCCESS;
                         })
-                )
+                        .then(LiteralArgumentBuilder.<CommandSource>literal("confirm")
+                                .executes(ctx -> {
+                                    ctx.getSource().sendRichMessage(plugin.getLocales().getSystemDumpStarted());
+                                    plugin.getServer().getScheduler().buildTask(plugin, () -> {
+                                        final String dumpUrl = plugin.createDump(ctx.getSource());
+                                        final Component component = ctx.getSource() instanceof Player
+                                                ? MiniMessage.miniMessage().deserialize(plugin.getLocales().getSystemDumpReady())
+                                                .clickEvent(ClickEvent.openUrl(dumpUrl))
+                                                : MiniMessage.miniMessage().deserialize(plugin.getLocales().getSystemDumpReadyConsole().replace("%url%", dumpUrl));
+                                        ctx.getSource().sendMessage(component);
+                                    }).schedule();
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                ))
                 .then(LiteralArgumentBuilder.<CommandSource>literal("update")
                         .requires(src -> hasPermission(src, "update"))
                         .executes(ctx -> {

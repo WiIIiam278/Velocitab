@@ -37,10 +37,7 @@ import net.william278.toilet.Toilet;
 import net.william278.velocitab.api.PluginMessageAPI;
 import net.william278.velocitab.api.VelocitabAPI;
 import net.william278.velocitab.commands.VelocitabCommand;
-import net.william278.velocitab.config.ConfigProvider;
-import net.william278.velocitab.config.Formatter;
-import net.william278.velocitab.config.Settings;
-import net.william278.velocitab.config.TabGroupsManager;
+import net.william278.velocitab.config.*;
 import net.william278.velocitab.hook.Hook;
 import net.william278.velocitab.hook.LuckPermsHook;
 import net.william278.velocitab.packet.PacketEventManager;
@@ -65,7 +62,8 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
 
     @Setter
     private Settings settings;
-    @Getter
+    @Setter
+    private Locales locales;
     @Setter
     private TabGroupsManager tabGroupsManager;
 
@@ -88,7 +86,6 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
     private PacketEventManager packetEventManager;
     private PluginMessageAPI pluginMessageAPI;
     private PlaceholderManager placeholderManager;
-    @Getter
     @Setter
     private Toilet toilet;
 
@@ -132,6 +129,7 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
 
     public void loadConfigs() {
         loadSettings();
+        loadLocales();
         loadTabGroups();
     }
 

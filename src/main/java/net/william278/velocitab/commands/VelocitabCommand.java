@@ -180,7 +180,7 @@ public final class VelocitabCommand {
                             plugin.getServer().getScheduler().buildTask(plugin, () -> {
                                 final String dumpUrl = plugin.createDump(ctx.getSource());
                                 final Component dumpUrlComponent = ctx.getSource() instanceof Player
-                                        ? Component.text("Click to open dump: ", MAIN_COLOR).clickEvent(ClickEvent.openUrl(dumpUrl))
+                                        ? Component.text("Click to open dump", MAIN_COLOR).clickEvent(ClickEvent.openUrl(dumpUrl))
                                         : Component.text("Dump URL: " + dumpUrl, MAIN_COLOR);
                                 ctx.getSource().sendMessage(dumpUrlComponent);
                             }).schedule();

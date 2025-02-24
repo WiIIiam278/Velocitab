@@ -89,7 +89,7 @@ public class TabGroups implements ConfigValidator {
 
     @Override
     public void validateConfig(@NotNull Velocitab plugin, @NotNull String name) {
-        if(name.equals("default")) {
+        if(name.equals("tab_groups")) {
             if (groups.isEmpty()) {
                 throw new IllegalStateException("No tab groups defined in config " + name);
             }

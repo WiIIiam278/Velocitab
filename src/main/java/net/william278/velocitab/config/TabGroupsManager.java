@@ -51,14 +51,16 @@ public class TabGroupsManager {
         groups.clear();
         groupsFiles.clear();
         final Path configDirectory = plugin.getConfigDirectory();
+        final File defaultFile = configDirectory.resolve("tab_groups.yml").toFile();
         final YamlConfigurationProperties properties = ConfigProvider.YAML_CONFIGURATION_PROPERTIES.header(TabGroups.CONFIG_HEADER).build();
-        final TabGroups defaultFile = YamlConfigurations.update(
+        final TabGroups defaultTagGroupsFile = YamlConfigurations.update(
                 configDirectory.resolve("tab_groups.yml"),
                 TabGroups.class,
                 properties
         );
 
-        if (!validateGroups(defaultFile, "default")) {
+        final String defaultName = defaultFile.getAbsolutePath().replace(".yml", "");
+        if (!validateGroups(defaultTagGroupsFile, defaultName)) {
             throw new IllegalStateException("Failed to load default tab groups file");
         }
 
@@ -92,7 +94,7 @@ public class TabGroupsManager {
 
     @NotNull
     public List<File> getGroupsFiles() {
-        return groupsFiles.values().stream().map(File::new).collect(Collectors.toList());
+        return groupsFiles.values().stream().map(f -> new File(f+".yml")).collect(Collectors.toList());
     }
 
     private boolean validateGroups(@NotNull TabGroups group, @NotNull String name) {

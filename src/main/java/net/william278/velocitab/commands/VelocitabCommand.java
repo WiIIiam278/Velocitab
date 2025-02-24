@@ -27,9 +27,7 @@ import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.william278.desertwell.about.AboutMenu;
 import net.william278.velocitab.Velocitab;
@@ -41,20 +39,30 @@ import java.util.UUID;
 
 public final class VelocitabCommand {
 
-    private static final TextColor MAIN_COLOR = TextColor.color(0x00FB9A);
-    private static final TextColor ERROR_COLOR = TextColor.color(0xFF7E5E);
-
-    private static final String systemDumpConfirm = """
+    // System locales
+    private final String systemDumpConfirm = """
             <color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| Prepare a system dump? This will include:</color>
             <gray>• Your latest server logs and Velocitab config files</gray>
             <gray>• Current plugin system status information</gray>
             <gray>• Information about your Java & Minecraft server environment</gray>
             <gray>• A list of other currently installed plugins</gray>
-            <click:run_command:/velocitab dump confirm><hover:show_text:'<gray>Click to prepare dump'><color:#00fb9a>To confirm click here or use: <italic>/velocitab dump confirm</italic></color></click>
+            <click:run_command:/velocitab dump confirm><hover:show_text:'<gray>Click to prepare dump'><color:#00fb9a>To confirm, use: <italic>/velocitab dump confirm</italic></color></click>
             """;
-    private static final String systemDumpStarted = "<color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| Preparing system status dump, please wait…</color>";
-    private static final String systemDumpReady = "<click:open_url:%url%><color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| System status dump prepared! Click here to view</color></click>";
-    private static final String systemDumpReadyConsole = "<color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| System status dump prepared! Url: %url%</color>";
+    private final String systemDumpStarted = "<color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| Preparing system status dump, please wait…</color>";
+    private final String systemDumpReady = "<click:open_url:%url%><color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| System status dump prepared! Click to view:</color>\n<underlined><color:gray>%url%</color></underlined></click>";
+    private final String systemUpToDate = "<color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| You are running the latest version of Velocitab (v%ver%).</color>";
+    private final String systemUpdateAvailable = "<color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| A new version of HuskClaims is available: v%new% (running: v%ver%).</color>";
+    private final String systemReloaded = "<color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| Reloaded config and tab group files.</color>";
+
+    // Command locales
+    private final String tabNameUpdated = "<color:#00fb9a>Your TAB name has been updated!</color>";
+    private final String tabNameReset = "<color:#00fb9a>Your TAB name has been reset.</color>";
+
+    // Error locales
+    private final String errorPlayerNotFound = "<color:#ff3300>Error:</color> <color:#ff7e5e>Could not find the player %name%.</color>";
+    private final String errorTabNameChangeUntracked = "<color:#ff3300>Error:</color> <color:#ff7e5e>You cannot update your TAB name from an untracked server!</color>";
+    private final String errorTabNameResetUntracked = "<color:#ff3300>Error:</color> <color:#ff7e5e>You cannot reset your TAB name from an untracked server!</color>";
+    private final String errorTabNameResetUnchanged = "<color:#ff3300>Error:</color> <color:#ff7e5e>You do not have a custom TAB name!</color>";
 
     private final AboutMenu aboutMenu;
     private final Velocitab plugin;
@@ -103,16 +111,14 @@ public final class VelocitabCommand {
                                     final String name = StringArgumentType.getString(ctx, "name");
                                     final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
                                     if (tabPlayer.isEmpty()) {
-                                        ctx.getSource().sendMessage(Component
-                                                .text("You can't update your TAB name from an untracked server!", ERROR_COLOR));
+                                        ctx.getSource().sendRichMessage(errorTabNameChangeUntracked);
                                         return Command.SINGLE_SUCCESS;
                                     }
 
                                     tabPlayer.get().setCustomName(name);
                                     plugin.getTabList().updateDisplayName(tabPlayer.get());
 
-                                    ctx.getSource().sendMessage(Component
-                                            .text("Your TAB name has been updated!", MAIN_COLOR));
+                                    ctx.getSource().sendRichMessage(tabNameUpdated);
                                     return Command.SINGLE_SUCCESS;
                                 })
                         )
@@ -120,22 +126,20 @@ public final class VelocitabCommand {
                             final Player player = (Player) ctx.getSource();
                             final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
                             if (tabPlayer.isEmpty()) {
-                                ctx.getSource().sendMessage(Component
-                                        .text("You can't reset your TAB name from an untracked server!", ERROR_COLOR));
+                                ctx.getSource().sendRichMessage(errorTabNameResetUntracked);
                                 return Command.SINGLE_SUCCESS;
                             }
 
                             // If no custom name is applied, ask for argument
                             String customName = tabPlayer.get().getCustomName().orElse("");
                             if (customName.isEmpty() || customName.equals(player.getUsername())) {
-                                ctx.getSource().sendMessage(Component
-                                        .text("You aren't using a custom name in TAB!", ERROR_COLOR));
+                                ctx.getSource().sendRichMessage(errorTabNameResetUnchanged);
                                 return Command.SINGLE_SUCCESS;
                             }
 
                             tabPlayer.get().setCustomName(null);
                             plugin.getTabList().updateDisplayName(tabPlayer.get());
-                            player.sendMessage(Component.text("Your name has been reset!", MAIN_COLOR));
+                            ctx.getSource().sendRichMessage(tabNameReset);
                             return Command.SINGLE_SUCCESS;
                         })
                 )
@@ -144,8 +148,7 @@ public final class VelocitabCommand {
                         .executes(ctx -> {
                             plugin.loadConfigs();
                             plugin.getTabList().reloadUpdate();
-                            ctx.getSource().sendMessage(Component.text("Velocitab has been reloaded!",
-                                    MAIN_COLOR));
+                            ctx.getSource().sendRichMessage(systemReloaded);
                             return Command.SINGLE_SUCCESS;
                         })
                 )
@@ -168,16 +171,21 @@ public final class VelocitabCommand {
                                             final String input = ctx.getArgument("player", String.class);
                                             final Optional<Player> player = plugin.getServer().getPlayer(input);
                                             if (player.isEmpty()) {
-                                                ctx.getSource().sendMessage(Component.text("Player not found!", ERROR_COLOR));
+                                                ctx.getSource().sendRichMessage(errorPlayerNotFound
+                                                        .replaceAll("%name%", input));
                                                 return Command.SINGLE_SUCCESS;
                                             }
 
                                             player.get().getTabList().getEntries().forEach(entry -> {
                                                 final String name = entry.getProfile().getName();
                                                 final UUID uuid = entry.getProfile().getId();
-                                                final String unformattedDisplayName = entry.getDisplayNameComponent().map(c -> PlainTextComponentSerializer.plainText().serialize(c)).orElse("empty");
+                                                final String unformattedDisplayName = entry.getDisplayNameComponent()
+                                                        .map(c -> PlainTextComponentSerializer.plainText().serialize(c))
+                                                        .orElse("empty");
 
-                                                ctx.getSource().sendMessage(Component.text("Name: %s, UUID: %s, Unformatted display name: %s".formatted(name, uuid, unformattedDisplayName)));
+                                                ctx.getSource().sendMessage(Component.text(
+                                                        "Name: %s, UUID: %s, Unformatted display name: %s"
+                                                                .formatted(name, uuid, unformattedDisplayName)));
                                             });
 
                                             return Command.SINGLE_SUCCESS;
@@ -194,12 +202,8 @@ public final class VelocitabCommand {
                                 .executes(ctx -> {
                                     ctx.getSource().sendRichMessage(systemDumpStarted);
                                     plugin.getServer().getScheduler().buildTask(plugin, () -> {
-                                        final String dumpUrl = plugin.createDump(ctx.getSource());
-                                        final Component component = MiniMessage.miniMessage().deserialize((ctx.getSource() instanceof Player
-                                                ? systemDumpReady
-                                                : systemDumpReadyConsole)
-                                                .replace("%url%", dumpUrl));
-                                        ctx.getSource().sendMessage(component);
+                                        final String url = plugin.createDump(ctx.getSource());
+                                        ctx.getSource().sendRichMessage(systemDumpReady.replace("%url%", url));
                                     }).schedule();
                                     return Command.SINGLE_SUCCESS;
                                 })
@@ -209,13 +213,13 @@ public final class VelocitabCommand {
                         .executes(ctx -> {
                             plugin.getUpdateChecker().check().thenAccept(checked -> {
                                 if (checked.isUpToDate()) {
-                                    ctx.getSource().sendMessage(Component.text("Velocitab is up to date! (Running v%s)"
-                                            .formatted(plugin.getVersion()), MAIN_COLOR));
+                                    ctx.getSource().sendRichMessage(systemUpToDate
+                                            .replaceAll("%ver%", plugin.getVersion().toString()));
                                     return;
                                 }
-                                ctx.getSource().sendMessage(Component
-                                        .text("An update for Velocitab is available. Please update to %s"
-                                                .formatted(checked.getLatestVersion()), MAIN_COLOR));
+                                ctx.getSource().sendRichMessage(systemUpdateAvailable
+                                        .replaceAll("%new%", checked.getLatestVersion().toString())
+                                        .replaceAll("%ver%", plugin.getVersion().toString()));
                             });
                             return Command.SINGLE_SUCCESS;
                         })

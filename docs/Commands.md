@@ -42,11 +42,6 @@ This page contains the usage table and associated permissions for the `/velocita
             <td><code>velocitab.command.dump</code></td>
         </tr>
         <tr>
-            <td><code>/velocitab dump confirm</code></td>
-            <td>Confirm and execute the debug dump</td>
-            <td><code>velocitab.command.dump</code></td>
-        </tr>
-        <tr>
             <td><code>/velocitab debug tablist &lt;player&gt;</code></td>
             <td>Debug the TAB list for a specific player</td>
             <td><code>velocitab.command.debug</code></td>

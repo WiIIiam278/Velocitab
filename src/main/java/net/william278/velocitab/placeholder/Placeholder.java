@@ -100,7 +100,8 @@ public enum Placeholder {
             .orElse(getPlaceholderFallback(plugin, "%luckperms_primary_group_name%"))),
     ROLE_DISPLAY_NAME((plugin, player) -> player.getRole().getDisplayName()
             .orElse(getPlaceholderFallback(plugin, "%luckperms_primary_group_name%"))),
-    ROLE_WEIGHT((plugin, player) -> player.getRoleWeightString()
+    ROLE_WEIGHT((plugin, player) -> plugin.getLuckPermsHook()
+            .map(hook -> player.getRoleWeightString())
             .orElse(getPlaceholderFallback(plugin, "%luckperms_meta_weight%"))),
     SERVER_GROUP((plugin, player) -> player.getGroup().name()),
     SERVER_GROUP_INDEX((plugin, player) -> Integer.toString(player.getServerGroupPosition(plugin))),

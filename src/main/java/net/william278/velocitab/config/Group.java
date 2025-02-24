@@ -214,7 +214,7 @@ public record Group(
     }
 
     @NotNull
-    public List<String> getTextsWithPlaceholders() {
+    public List<String> getTextsWithPlaceholders(@NotNull Velocitab plugin) {
         final List<String> texts = Lists.newArrayList();
         texts.add(name);
         texts.add(format);
@@ -223,6 +223,11 @@ public record Group(
         texts.add(nametag.prefix());
         texts.add(nametag.suffix());
         texts.addAll(sortingPlaceholders);
+
+        if (plugin.getLuckPermsHook().isEmpty()) {
+            texts.add("%luckperms_meta_weight%");
+        }
+
         return texts;
     }
 

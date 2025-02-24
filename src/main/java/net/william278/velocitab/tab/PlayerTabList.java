@@ -146,7 +146,7 @@ public class PlayerTabList {
 
     protected void loadPlayer(@NotNull Player player, @NotNull Group group, int delay) {
         final ScheduledTask task = plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> plugin.getPlaceholderManager().fetchPlaceholders(player.getUniqueId(), group.getTextsWithPlaceholders(), group))
+                .buildTask(plugin, () -> plugin.getPlaceholderManager().fetchPlaceholders(player.getUniqueId(), group.getTextsWithPlaceholders(plugin), group))
                 .delay(150, TimeUnit.MILLISECONDS)
                 .repeat(50, TimeUnit.MILLISECONDS)
                 .schedule();

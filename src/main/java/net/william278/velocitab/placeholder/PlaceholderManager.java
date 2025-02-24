@@ -82,7 +82,7 @@ public class PlaceholderManager {
     }
 
     public void fetchPlaceholders(@NotNull Group group) {
-        final List<String> texts = cachedTexts.computeIfAbsent(group, Group::getTextsWithPlaceholders);
+        final List<String> texts = cachedTexts.computeIfAbsent(group, g -> g.getTextsWithPlaceholders(plugin));
         group.getPlayersAsList(plugin).forEach(player -> fetchPlaceholders(player.getUniqueId(), texts, group));
     }
 

@@ -81,7 +81,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     }
 
     @NotNull
-    public Optional<String> getRoleWeightString() {
+    public String getRoleWeightString() {
         return getRole().getWeightString();
     }
 

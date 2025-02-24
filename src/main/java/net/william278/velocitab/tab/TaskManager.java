@@ -154,7 +154,7 @@ public class TaskManager {
             return;
         }
 
-        final List<String> texts = group.getTextsWithPlaceholders();
+        final List<String> texts = group.getTextsWithPlaceholders(plugin);
         players.forEach(player -> plugin.getPlaceholderManager().fetchPlaceholders(player.getPlayer().getUniqueId(), texts, group));
     }
 

@@ -49,6 +49,7 @@ import net.william278.velocitab.placeholder.PlaceholderManager;
 import net.william278.velocitab.providers.*;
 import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
+import net.william278.velocitab.util.DebugSystem;
 import net.william278.velocitab.vanish.VanishManager;
 import org.bstats.velocity.Metrics;
 import org.jetbrains.annotations.NotNull;
@@ -112,6 +113,7 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
         prepareAPI();
         prepareChannelManager();
         initializeToilet();
+        DebugSystem.initializeTask(this);
         logger.info("Successfully enabled Velocitab");
     }
 

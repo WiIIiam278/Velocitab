@@ -41,6 +41,7 @@ import net.william278.velocitab.config.ServerUrl;
 import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.util.DebugSystem;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
@@ -460,7 +461,7 @@ public class PlayerTabList {
         plugin.getScoreboardManager().updateRole(tabPlayer, teamName, force);
         final int order = plugin.getScoreboardManager().getPosition(teamName);
         if (order == -1) {
-            plugin.log(Level.ERROR, "Failed to get position for " + tabPlayer.getPlayer().getUsername());
+            DebugSystem.log(DebugSystem.DebugLevel.ERROR, "Failed to get position for " + tabPlayer.getPlayer().getUsername());
             return;
         }
 
@@ -600,8 +601,8 @@ public class PlayerTabList {
     }
 
     private void checkStrippedString(@NotNull String text, @NotNull Group group) {
-        if (plugin.getSettings().isDebug() && text.length() != group.format().length()) {
-            plugin.getLogger().warn("Found relational placeholder in group {} format even though relational placeholders are disabled", group.name());
+        if (text.length() != group.format().length()) {
+            DebugSystem.log(DebugSystem.DebugLevel.WARNING, "Found relational placeholder in group {} format even though relational placeholders are disabled", group.name());
         }
     }
 

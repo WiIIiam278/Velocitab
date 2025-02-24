@@ -98,9 +98,6 @@ public class Settings implements ConfigValidator {
     @Comment("Whether to enable relational placeholders. With an high amount of players, this could cause lag.")
     private boolean enableRelationalPlaceholders = false;
 
-    @Comment("Whether to enable debug mode. This will log a lot of information to the console.")
-    private boolean debug = false;
-
     @Comment({"A list of links that will be sent to display on player pause menus (Minecraft 1.21+ clients only).",
             "• Labels can be fully custom or built-in (one of 'bug_report', 'community_guidelines', 'support', 'status',",
             "  'feedback', 'community', 'website', 'forums', 'news', or 'announcements').",

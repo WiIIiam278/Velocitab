@@ -26,14 +26,12 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import net.william278.toilet.DumpOptions;
 import net.william278.toilet.Toilet;
-import net.william278.toilet.dump.DumpUser;
-import net.william278.toilet.dump.PluginInfo;
-import net.william278.toilet.dump.PluginStatus;
-import net.william278.toilet.dump.ProjectMeta;
+import net.william278.toilet.dump.*;
 import net.william278.toilet.velocity.VelocityToilet;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.hook.Hook;
+import net.william278.velocitab.util.DebugSystem;
 import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.NotNull;
 
@@ -95,7 +93,7 @@ public interface DumpProvider {
     @Blocking
     default String createDump(@NotNull CommandSource u) {
         return getToilet().dump(getPluginStatus(), u instanceof Player o
-                ? new DumpUser(o.getUsername(), o.getUniqueId()) : null).toString();
+                ? new DumpUser(o.getUsername(), o.getUniqueId()) : null, getDebugLog()).toString();
     }
 
     @NotNull
@@ -119,6 +117,11 @@ public interface DumpProvider {
     }
 
     @NotNull
+    private ExtraFile getDebugLog() {
+        return new ExtraFile("debug-log", "Internal Debugger", DebugSystem.getLogsAsString());
+    }
+
+    @NotNull
     private List<FileInclusionRule> getFileInclusionRules() {
         final List<File> tabGroupsFiles = getPlugin().getTabGroupsManager().getGroupsFiles();
         final List<FileInclusionRule> rules = Lists.newArrayList();
@@ -126,7 +129,7 @@ public interface DumpProvider {
 
         for (File tabGroupsFile : tabGroupsFiles) {
             final boolean isDefault = tabGroupsFile.equals(getPlugin().getTabGroupsManager().getGroupsFiles().get(0));
-            final String name = "Tab Groups File : " + (isDefault ? "Default" : tabGroupsFile.getName());
+            final String name = "Tab Groups File : (" + (isDefault ? "default" : tabGroupsFile.getName()) + ")";
             rules.add(FileInclusionRule.configFile(tabGroupsFile.getAbsolutePath(), name));
         }
 
@@ -148,7 +151,7 @@ public interface DumpProvider {
     @Blocking
     private PluginStatus getPluginStatus() {
         return PluginStatus.builder()
-                .blocks(List.of(getSystemStatus(), getHookStatus(), getPlayersInEachGroup(), getServersInEachGroup()))
+                .blocks(List.of(getSystemStatus(), getServersInEachGroup(), getPlayersInEachGroup(), getHookStatus()))
                 .build();
     }
 

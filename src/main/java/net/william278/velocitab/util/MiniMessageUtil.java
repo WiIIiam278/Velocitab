@@ -21,9 +21,7 @@ package net.william278.velocitab.util;
 
 import com.google.common.collect.Lists;
 import lombok.Getter;
-import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.event.Level;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -38,13 +36,13 @@ public class MiniMessageUtil {
     private final Pattern legacyPattern = Pattern.compile("&[0-9a-fA-F]");
     private final Pattern legacySectionPattern = Pattern.compile("§[0-9a-fA-F]");
     private int errorsCount;
-    
+
     private MiniMessageUtil() {
         errorsCount = 0;
     }
 
     @NotNull
-    public String checkForErrors(@NotNull String text, @NotNull Velocitab plugin) {
+    public String checkForErrors(@NotNull String text) {
         final List<String> errors = Lists.newArrayList();
         String copy = text;
         copy = processLegacySections(errors, copy, legacyRGBPattern);
@@ -53,7 +51,7 @@ public class MiniMessageUtil {
 
         if (errorsCount > 0 && errorsCount % 10 == 0) {
             errorsCount++;
-            plugin.log(Level.WARN, "Found legacy formatting which is not supported if the formatter is set to MINIMESSAGE." +
+            DebugSystem.log(DebugSystem.DebugLevel.WARNING, "Found legacy formatting which is not supported if the formatter is set to MINIMESSAGE." +
                     " Remove the following characters from your config or make sure placeholders don't contain them: " + errors + ". & and § are replaced with * to prevent issues with MINIMESSAGE.");
             if(errorsCount > 100000) {
                 errorsCount = 0;

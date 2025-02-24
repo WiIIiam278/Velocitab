@@ -37,6 +37,7 @@ import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.sorting.SortedSet;
 import net.william278.velocitab.tab.Nametag;
+import net.william278.velocitab.util.DebugSystem;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
@@ -128,7 +129,7 @@ public class ScoreboardManager {
     private void removeSortedTeam(@NotNull String teamName) {
         final boolean result = sortedTeams.removeTeam(teamName);
         if (!result) {
-            plugin.log(Level.ERROR, "Failed to remove team " + teamName + " from sortedTeams");
+            DebugSystem.log(DebugSystem.DebugLevel.ERROR, "Failed to remove team " + teamName + " from sortedTeams");
         }
     }
 

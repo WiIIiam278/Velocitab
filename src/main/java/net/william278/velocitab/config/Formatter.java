@@ -50,9 +50,9 @@ public enum Formatter {
     MINIMESSAGE(
             (text, player, viewer, plugin) -> plugin.getMiniPlaceholdersHook()
                     .filter(hook -> player != null)
-                    .map(hook -> hook.format(MiniMessageUtil.getINSTANCE().checkForErrors(text, plugin),
+                    .map(hook -> hook.format(MiniMessageUtil.getINSTANCE().checkForErrors(text),
                             player.getPlayer(), viewer == null ? null : viewer.getPlayer()))
-                    .orElse(MiniMessage.miniMessage().deserialize(MiniMessageUtil.getINSTANCE().checkForErrors(text, plugin))),
+                    .orElse(MiniMessage.miniMessage().deserialize(MiniMessageUtil.getINSTANCE().checkForErrors(text))),
             (text) -> MiniMessage.miniMessage().escapeTags(text),
             "MiniMessage",
             (text) -> MiniMessage.miniMessage().deserialize(text),

@@ -25,6 +25,7 @@ import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.util.DebugSystem;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -73,8 +74,8 @@ public class TaskManager {
                         plugin.getTabList().updateHeaderFooter(group);
                         final long endTime = System.currentTimeMillis();
                         final long time = endTime - startTime;
-                        if (plugin.getSettings().isDebug()) {
-                            plugin.getLogger().info("Updated header/footer for group {} took {}ms", group.name(), time);
+                        if (time > 30) {
+                            DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated header/footer for group {} took {}ms", group.name(), time);
                         }
                     },
                     250,
@@ -89,8 +90,8 @@ public class TaskManager {
                         plugin.getTabList().updateGroupNames(group);
                         final long endTime = System.currentTimeMillis();
                         final long time = endTime - startTime;
-                        if (plugin.getSettings().isDebug()) {
-                            plugin.getLogger().info("Updated format for group {} took {}ms", group.name(), time);
+                        if (time > 50) {
+                            DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated format for group {} took {}ms", group.name(), time);
                         }
                     },
                     500,
@@ -105,8 +106,8 @@ public class TaskManager {
                         plugin.getTabList().updateSorting(group);
                         final long endTime = System.currentTimeMillis();
                         final long time = endTime - startTime;
-                        if (plugin.getSettings().isDebug()) {
-                            plugin.getLogger().info("Updated nametags/sorting for group {} took {}ms", group.name(), time);
+                        if (time > 50) {
+                            DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated nametags/sorting for group {} took {}ms", group.name(), time);
                         }
                     },
                     750,
@@ -121,8 +122,8 @@ public class TaskManager {
                         updatePlaceholders(group);
                         final long endTime = System.currentTimeMillis();
                         final long time = endTime - startTime;
-                        if (plugin.getSettings().isDebug()) {
-                            plugin.getLogger().info("Updated placeholders for group {} took {}ms", group.name(), time);
+                        if (time > 10) {
+                            DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated placeholders for group {} took {}ms", group.name(), time);
                         }
                     },
                     1000,
@@ -136,8 +137,8 @@ public class TaskManager {
                     updateLatency(group);
                     final long endTime = System.currentTimeMillis();
                     final long time = endTime - startTime;
-                    if (plugin.getSettings().isDebug()) {
-                        plugin.getLogger().debug("Updated latency for group {} took {}ms", group.name(), time);
+                    if (time > 10) {
+                        DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated latency for group {} took {}ms", group.name(), time);
                     }
                 },
                 1250,

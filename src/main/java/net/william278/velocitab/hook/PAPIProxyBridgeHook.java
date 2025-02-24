@@ -31,7 +31,7 @@ public class PAPIProxyBridgeHook extends Hook {
     private final PlaceholderAPI api;
 
     public PAPIProxyBridgeHook(@NotNull Velocitab plugin) {
-        super(plugin);
+        super(plugin, "PAPIProxyBridge");
         this.api = PlaceholderAPI.createInstance();
         this.api.setCacheExpiry(Math.max(0, plugin.getSettings().getPapiCacheTime()));
         this.api.setRequestTimeout(1500);

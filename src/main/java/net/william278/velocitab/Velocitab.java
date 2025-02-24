@@ -33,6 +33,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.william278.desertwell.util.UpdateChecker;
 import net.william278.desertwell.util.Version;
+import net.william278.toilet.Toilet;
 import net.william278.velocitab.api.PluginMessageAPI;
 import net.william278.velocitab.api.VelocitabAPI;
 import net.william278.velocitab.commands.VelocitabCommand;
@@ -45,10 +46,7 @@ import net.william278.velocitab.hook.LuckPermsHook;
 import net.william278.velocitab.packet.PacketEventManager;
 import net.william278.velocitab.packet.ScoreboardManager;
 import net.william278.velocitab.placeholder.PlaceholderManager;
-import net.william278.velocitab.providers.HookProvider;
-import net.william278.velocitab.providers.LoggerProvider;
-import net.william278.velocitab.providers.MetricProvider;
-import net.william278.velocitab.providers.ScoreboardProvider;
+import net.william278.velocitab.providers.*;
 import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
 import net.william278.velocitab.vanish.VanishManager;
@@ -62,7 +60,7 @@ import java.util.List;
 
 @Plugin(id = "velocitab")
 @Getter
-public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProvider, HookProvider, MetricProvider {
+public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProvider, HookProvider, MetricProvider, DumpProvider {
 
     @Setter
     private Settings settings;
@@ -89,6 +87,9 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
     private PacketEventManager packetEventManager;
     private PluginMessageAPI pluginMessageAPI;
     private PlaceholderManager placeholderManager;
+    @Getter
+    @Setter
+    private Toilet toilet;
 
     @Inject
     public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path configDirectory) {
@@ -110,6 +111,7 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
         checkForUpdates();
         prepareAPI();
         prepareChannelManager();
+        initializeToilet();
         logger.info("Successfully enabled Velocitab");
     }
 

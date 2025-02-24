@@ -48,7 +48,7 @@ public class LuckPermsHook extends Hook {
     private boolean enabled;
 
     public LuckPermsHook(@NotNull Velocitab plugin) throws IllegalStateException {
-        super(plugin);
+        super(plugin, "LuckPerms");
         this.api = LuckPermsProvider.get();
         this.lastUpdate = Maps.newConcurrentMap();
         this.event = api.getEventBus().subscribe(

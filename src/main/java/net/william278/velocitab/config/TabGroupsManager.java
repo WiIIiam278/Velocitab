@@ -31,6 +31,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TabGroupsManager {
 
@@ -87,6 +88,11 @@ public class TabGroupsManager {
         }
 
         this.groupsList = Lists.newArrayList(getGroups());
+    }
+
+    @NotNull
+    public List<File> getGroupsFiles() {
+        return groupsFiles.values().stream().map(File::new).collect(Collectors.toList());
     }
 
     private boolean validateGroups(@NotNull TabGroups group, @NotNull String name) {

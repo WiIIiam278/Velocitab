@@ -19,6 +19,7 @@
 
 package net.william278.velocitab.hook;
 
+import lombok.Getter;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
@@ -66,9 +67,12 @@ public abstract class Hook {
     );
 
     protected final Velocitab plugin;
+    @Getter
+    protected final String name;
 
-    public Hook(@NotNull Velocitab plugin) {
+    public Hook(@NotNull Velocitab plugin, @NotNull String name) {
         this.plugin = plugin;
+        this.name = name;
     }
 
     private static boolean isPluginAvailable(@NotNull Velocitab plugin, @NotNull String id) {

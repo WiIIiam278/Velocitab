@@ -27,6 +27,7 @@ import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.william278.desertwell.about.AboutMenu;
@@ -34,6 +35,7 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -171,22 +173,36 @@ public final class VelocitabCommand {
                                         })
                                 )
                         ))
-                        .then(LiteralArgumentBuilder.<CommandSource>literal("update")
-                                .requires(src -> hasPermission(src, "update"))
-                                .executes(ctx -> {
-                                    plugin.getUpdateChecker().check().thenAccept(checked -> {
-                                        if (checked.isUpToDate()) {
-                                            ctx.getSource().sendMessage(Component.text("Velocitab is up to date! (Running v%s)"
-                                                    .formatted(plugin.getVersion()), MAIN_COLOR));
-                                            return;
-                                        }
-                                        ctx.getSource().sendMessage(Component
-                                                .text("An update for Velocitab is available. Please update to %s"
-                                                        .formatted(checked.getLatestVersion()), MAIN_COLOR));
-                                    });
-                                    return Command.SINGLE_SUCCESS;
-                                })
-                        );
+                //dump
+                .then(LiteralArgumentBuilder.<CommandSource>literal("dump")
+                        .requires(src -> hasPermission(src, "dump"))
+                        .executes(ctx -> {
+                            plugin.getServer().getScheduler().buildTask(plugin, () -> {
+                                final String dumpUrl = plugin.createDump(ctx.getSource());
+                                final Component dumpUrlComponent = ctx.getSource() instanceof Player
+                                        ? Component.text("Click to open dump: ", MAIN_COLOR).clickEvent(ClickEvent.openUrl(dumpUrl))
+                                        : Component.text("Dump URL: " + dumpUrl, MAIN_COLOR);
+                                ctx.getSource().sendMessage(dumpUrlComponent);
+                            }).schedule();
+                            return Command.SINGLE_SUCCESS;
+                        })
+                )
+                .then(LiteralArgumentBuilder.<CommandSource>literal("update")
+                        .requires(src -> hasPermission(src, "update"))
+                        .executes(ctx -> {
+                            plugin.getUpdateChecker().check().thenAccept(checked -> {
+                                if (checked.isUpToDate()) {
+                                    ctx.getSource().sendMessage(Component.text("Velocitab is up to date! (Running v%s)"
+                                            .formatted(plugin.getVersion()), MAIN_COLOR));
+                                    return;
+                                }
+                                ctx.getSource().sendMessage(Component
+                                        .text("An update for Velocitab is available. Please update to %s"
+                                                .formatted(checked.getLatestVersion()), MAIN_COLOR));
+                            });
+                            return Command.SINGLE_SUCCESS;
+                        })
+                );
 
         return new BrigadierCommand(builder);
     }

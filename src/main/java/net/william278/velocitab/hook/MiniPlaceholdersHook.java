@@ -38,7 +38,7 @@ public class MiniPlaceholdersHook extends Hook {
     private final Map<UUID, TagResolver> cache;
 
     public MiniPlaceholdersHook(@NotNull Velocitab plugin) {
-        super(plugin);
+        super(plugin, "MiniPlaceholders");
         this.cache = ExpiringMap.builder()
                 .expiration(5, TimeUnit.MINUTES)
                 .build();

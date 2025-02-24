@@ -52,6 +52,7 @@ dependencies {
     implementation 'de.exlll:configlib-yaml:4.5.0'
     implementation 'org.mvel:mvel2:2.5.2.Final'
     implementation 'net.jodah:expiringmap:0.5.11'
+    implementation 'net.william278.toilet:toilet-velocity:1.0.7'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
 }
@@ -95,6 +96,7 @@ shadowJar {
     relocate 'de.themoep', 'net.william278.velocitab.libraries'
     relocate 'net.william278.annotaml', 'net.william278.velocitab.libraries.annotaml'
     relocate 'net.william278.desertwell', 'net.william278.velocitab.libraries.desertwell'
+    relocate 'net.william278.toilet', 'net.william278.velocitab.libraries.toilet'
     relocate 'org.bstats', 'net.william278.velocitab.libraries.bstats'
     relocate 'de.exlll.configlib', 'net.william278.velocitab.libraries.configlib'
     relocate 'org.snakeyaml', 'net.william278.velocitab.libraries.snakeyaml'

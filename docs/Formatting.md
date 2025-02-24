@@ -55,11 +55,11 @@ foo: "bar 1\nbar 2\nbar 3\n"
 ```yaml
     headers:
       - |
-        <rainbow:!2>Running Velocitab by William278 & AlexDev_</rainbow>
+        <rainbow:!2>Running Velocitab by William278 & AlexDev03</rainbow>
         <gray>Second line of the first element</gray>
         <yellow>Third line of the first element</yellow>
       - |
-        <rainbow:!4>Running Velocitab by William278 & AlexDev_</rainbow>
+        <rainbow:!4>Running Velocitab by William278 & AlexDev03</rainbow>
         <gray>Second line of the second element</gray>
         <yellow>Third line of the second element</yellow>
     footers:

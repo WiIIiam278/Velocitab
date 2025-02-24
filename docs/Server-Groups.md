@@ -20,7 +20,7 @@ rate to use for the group.
 
 ```yaml
   headers:
-    - '<rainbow>Running Velocitab by William278 & AlexDev_</rainbow>'
+    - '<rainbow>Running Velocitab by William278 & AlexDev03</rainbow>'
   footers:
     - '<gray>There are currently %players_online%/%max_players_online% players online</gray>'
 ```
@@ -179,7 +179,7 @@ placeholders in the TAB list will update. The default is 1000 milliseconds (1 se
 groups:
   - name: lobbies
     headers:
-      - '<rainbow:!2>Running Velocitab by William278 & AlexDev_ on Lobbies!</rainbow>'
+      - '<rainbow:!2>Running Velocitab by William278 & AlexDev03 on Lobbies!</rainbow>'
     footers:
       - '<gray>There are currently %players_online%/%max_players_online% players online</gray>'
     format: '<gray>[%server%] %prefix%%username%</gray>'
@@ -196,7 +196,7 @@ groups:
     placeholder_update_rate: 1000
   - name: creative
     headers:
-      - '<rainbow:!2>Running Velocitab by William278 & AlexDev_ on Creative!</rainbow>'
+      - '<rainbow:!2>Running Velocitab by William278 & AlexDev03 on Creative!</rainbow>'
     footers:
       - '<gray>There are currently %players_online%/%max_players_online% players online</gray>'
     format: '<gray>[%server%] %prefix%%username%</gray>'
@@ -211,7 +211,7 @@ groups:
     placeholder_update_rate: 1000
   - name: survival
     headers:
-      - '<rainbow:!2>Running Velocitab by William278 & AlexDev_ on Survival!</rainbow>'
+      - '<rainbow:!2>Running Velocitab by William278 & AlexDev03 on Survival!</rainbow>'
     footers:
       - '<gray>There are currently %players_online%/%max_players_online% players online</gray>'
     format: '<gray>[%server%] %prefix%%username%</gray>'

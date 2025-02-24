@@ -72,7 +72,7 @@ license {
     newLine = true
 }
 
-logger.lifecycle("Building Velocitab ${version} by William278 & Al3xDev03")
+logger.lifecycle("Building Velocitab ${version} by William278 & AlexDev03")
 version rootProject.version
 archivesBaseName = "${rootProject.name}"
 

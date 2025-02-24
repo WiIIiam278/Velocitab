@@ -79,7 +79,7 @@ server_links:
 groups:
   - name: default
     headers:
-      - <rainbow:!2>Running Velocitab by William278 & AlexDev_</rainbow>
+      - <rainbow:!2>Running Velocitab by William278 & AlexDev03</rainbow>
     footers:
       - <gray>There are currently %players_online%/%max_players_online% players online</gray>
     format: <gray>[%server%] %prefix%%username%</gray>

@@ -11,9 +11,9 @@ To add additional frames of animation to a header format for a [server group](se
 
 ```yaml
 headers:
-  - '<rainbow>Running Velocitab by William278 & AlexDev_</rainbow>'
-  - '<rainbow:10>Running Velocitab by William278 & AlexDev_</rainbow>'
-  - '<rainbow:20>Running Velocitab by William278 & AlexDev_</rainbow>'
+  - '<rainbow>Running Velocitab by William278 & AlexDev03</rainbow>'
+  - '<rainbow:10>Running Velocitab by William278 & AlexDev03</rainbow>'
+  - '<rainbow:20>Running Velocitab by William278 & AlexDev03</rainbow>'
 ```
 </details>
 

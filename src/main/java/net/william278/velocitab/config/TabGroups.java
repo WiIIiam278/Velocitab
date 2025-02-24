@@ -49,7 +49,7 @@ public class TabGroups implements ConfigValidator {
 
     private static final Group DEFAULT_GROUP = new Group(
             "default",
-            List.of("<rainbow:!2>Running Velocitab by William278 & AlexDev_</rainbow>"),
+            List.of("<rainbow:!2>Running Velocitab by William278 & AlexDev03</rainbow>"),
             List.of("<gray>There are currently %players_online%/%max_players_online% players online</gray>"),
             "<gray>[%server%] %prefix%%username%</gray>",
             new Nametag("", ""),

@@ -52,8 +52,7 @@ dependencies {
     implementation 'de.exlll:configlib-yaml:4.5.0'
     implementation 'org.mvel:mvel2:2.5.2.Final'
     implementation 'net.jodah:expiringmap:0.5.11'
-    implementation 'net.william278.toilet:toilet-velocity:1.0.10'
-    implementation 'commons-io:commons-io:2.18.0'
+    implementation 'net.william278.toilet:toilet-velocity:1.0.12'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
 }
@@ -90,8 +89,14 @@ java {
 }
 
 shadowJar {
+    dependencies {
+        exclude dependency(':slf4j-api')
+        exclude dependency('org.json:json')
+        exclude dependency('org.apache.commons:commons-lang3')
+    }
+
+
     relocate 'org.apache.commons.text', 'net.william278.velocitab.libraries.commons.text'
-    relocate 'org.apache.commons.lang3', 'net.william278.velocitab.libraries.commons.lang3'
     relocate 'org.jetbrains', 'net.william278.velocitab.libraries'
     relocate 'org.intellij', 'net.william278.velocitab.libraries'
     relocate 'de.themoep', 'net.william278.velocitab.libraries'
@@ -104,11 +109,7 @@ shadowJar {
     relocate 'org.apache.commons.jexl3', 'net.william278.velocitab.libraries.commons.jexl3'
     relocate 'org.apache.commons.logging', 'net.william278.velocitab.libraries.commons.logging'
     relocate 'net.jodah.expiringmap', 'net.william278.velocitab.libraries.expiringmap'
-
-    dependencies {
-        exclude dependency(':slf4j-api')
-        exclude dependency('org.json:json')
-    }
+    relocate 'org.mvel2', 'net.william278.velocitab.libraries.mvel2'
 
     destinationDirectory.set(file("$rootDir/target"))
     archiveClassifier.set('')

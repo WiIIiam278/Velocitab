@@ -28,7 +28,6 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -250,7 +249,7 @@ public class PlaceholderManager {
             for (Placeholder placeholderType : Placeholder.getPARAMETERISED()) {
                 final java.util.regex.Matcher matcher = placeholderType.getPattern().matcher(placeholder);
                 if (matcher.find()) {
-                    final String s = StringUtils.chop(matcher.group().replace("%" + placeholderType.name().toLowerCase(), "")
+                    final String s = chop(matcher.group().replace("%" + placeholderType.name().toLowerCase(), "")
                             .replaceFirst("_", ""));
                     return Optional.of(placeholderType.getReplacer().apply(s, plugin, player));
                 }
@@ -265,6 +264,19 @@ public class PlaceholderManager {
 
         final Placeholder placeholderType = optionalPlaceholder.get();
         return Optional.of(placeholderType.getReplacer().apply(null, plugin, player));
+    }
+
+    @NotNull
+    private String chop(@NotNull String text) {
+        int strLen = text.length();
+        if (strLen < 2) {
+            return "";
+        } else {
+            int lastIdx = strLen - 1;
+            String ret = text.substring(0, lastIdx);
+            char last = text.charAt(lastIdx);
+            return last == '\n' && ret.charAt(lastIdx - 1) == '\r' ? ret.substring(0, lastIdx - 1) : ret;
+        }
     }
 
     @NotNull

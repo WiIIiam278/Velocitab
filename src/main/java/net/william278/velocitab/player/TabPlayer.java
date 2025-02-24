@@ -30,7 +30,6 @@ import net.william278.velocitab.config.Group;
 import net.william278.velocitab.packet.UpdateTeamsPacket;
 import net.william278.velocitab.tab.Nametag;
 import net.william278.velocitab.tab.PlayerTabList;
-import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -96,7 +95,7 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     public String getServerName() {
         return player.getCurrentServer()
                 .map(serverConnection -> serverConnection.getServerInfo().getName())
-                .orElse(ObjectUtils.firstNonNull(lastServer, "unknown"));
+                .orElse(lastServer != null ? lastServer : "unknown");
     }
 
     /**

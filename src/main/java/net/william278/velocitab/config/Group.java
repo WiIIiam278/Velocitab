@@ -27,7 +27,7 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.placeholder.PlaceholderReplacement;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.tab.Nametag;
-import org.apache.commons.text.StringEscapeUtils;
+import net.william278.velocitab.util.GeneralUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.event.Level;
@@ -60,13 +60,13 @@ public record Group(
 
     @NotNull
     public String getHeader(int index) {
-        return headers.isEmpty() ? "" : StringEscapeUtils.unescapeJava(headers
+        return headers.isEmpty() ? "" : GeneralUtil.unescapeJava(headers
                 .get(Math.max(0, Math.min(index, headers.size() - 1))));
     }
 
     @NotNull
     public String getFooter(int index) {
-        return footers.isEmpty() ? "" : StringEscapeUtils.unescapeJava(footers
+        return footers.isEmpty() ? "" : GeneralUtil.unescapeJava(footers
                 .get(Math.max(0, Math.min(index, footers.size() - 1))));
     }
 

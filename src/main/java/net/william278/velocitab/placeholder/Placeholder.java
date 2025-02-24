@@ -24,7 +24,7 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import lombok.Getter;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
-import org.apache.commons.lang3.function.TriFunction;
+import net.william278.velocitab.util.TriFunction;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;

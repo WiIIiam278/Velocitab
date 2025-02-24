@@ -63,8 +63,6 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
     @Setter
     private Settings settings;
     @Setter
-    private Locales locales;
-    @Setter
     private TabGroupsManager tabGroupsManager;
 
     private final ProxyServer server;
@@ -129,7 +127,6 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
 
     public void loadConfigs() {
         loadSettings();
-        loadLocales();
         loadTabGroups();
     }
 

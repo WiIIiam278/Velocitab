@@ -86,36 +86,6 @@ public interface ConfigProvider {
     }
 
     /**
-     * Get the plugin locales, read from the locales file
-     *
-     * @return the plugin locales
-     * @since 1.7.4
-     */
-    @NotNull
-    Locales getLocales();
-
-    /**
-     * Set the plugin locales
-     *
-     * @param locales The locales to set
-     * @since 1.7.4
-     */
-    void setLocales(@NotNull Locales locales);
-
-    /**
-     * Load the plugin locales from the locales file
-     *
-     * @since 1.7.4
-     */
-    default void loadLocales() {
-        setLocales(YamlConfigurations.update(
-                getConfigDirectory().resolve("locales.yml"),
-                Locales.class,
-                YAML_CONFIGURATION_PROPERTIES.header(Locales.LOCALES_HEADER).build()
-        ));
-    }
-
-    /**
      * Get the tab groups
      *
      * @return the tab groups

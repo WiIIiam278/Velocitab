@@ -44,6 +44,18 @@ public final class VelocitabCommand {
     private static final TextColor MAIN_COLOR = TextColor.color(0x00FB9A);
     private static final TextColor ERROR_COLOR = TextColor.color(0xFF7E5E);
 
+    private static final String systemDumpConfirm = """
+            <color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| Prepare a system dump? This will include:</color>
+            <gray>• Your latest server logs and Velocitab config files</gray>
+            <gray>• Current plugin system status information</gray>
+            <gray>• Information about your Java & Minecraft server environment</gray>
+            <gray>• A list of other currently installed plugins</gray>
+            <click:run_command:/velocitab dump confirm><hover:show_text:'<gray>Click to prepare dump'><color:#00fb9a>To confirm click here or use: <italic>/velocitab dump confirm</italic></color></click>
+            """;
+    private static final String systemDumpStarted = "<color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| Preparing system status dump, please wait…</color>";
+    private static final String systemDumpReady = "<click:open_url:%url%><color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| System status dump prepared! Click here to view</color></click>";
+    private static final String systemDumpReadyConsole = "<color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| System status dump prepared! Url: %url%</color>";
+
     private final AboutMenu aboutMenu;
     private final Velocitab plugin;
 
@@ -177,23 +189,23 @@ public final class VelocitabCommand {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("dump")
                         .requires(src -> hasPermission(src, "dump"))
                         .executes(ctx -> {
-                            ctx.getSource().sendRichMessage(plugin.getLocales().getSystemDumpConfirm().trim());
+                            ctx.getSource().sendRichMessage(systemDumpConfirm.trim());
                             return Command.SINGLE_SUCCESS;
                         })
                         .then(LiteralArgumentBuilder.<CommandSource>literal("confirm")
                                 .executes(ctx -> {
-                                    ctx.getSource().sendRichMessage(plugin.getLocales().getSystemDumpStarted());
+                                    ctx.getSource().sendRichMessage(systemDumpStarted);
                                     plugin.getServer().getScheduler().buildTask(plugin, () -> {
                                         final String dumpUrl = plugin.createDump(ctx.getSource());
-                                        final Component component = ctx.getSource() instanceof Player
-                                                ? MiniMessage.miniMessage().deserialize(plugin.getLocales().getSystemDumpReady())
-                                                .clickEvent(ClickEvent.openUrl(dumpUrl))
-                                                : MiniMessage.miniMessage().deserialize(plugin.getLocales().getSystemDumpReadyConsole().replace("%url%", dumpUrl));
+                                        final Component component = MiniMessage.miniMessage().deserialize((ctx.getSource() instanceof Player
+                                                ? systemDumpReady
+                                                : systemDumpReadyConsole)
+                                                .replace("%url%", dumpUrl));
                                         ctx.getSource().sendMessage(component);
                                     }).schedule();
                                     return Command.SINGLE_SUCCESS;
                                 })
-                ))
+                        ))
                 .then(LiteralArgumentBuilder.<CommandSource>literal("update")
                         .requires(src -> hasPermission(src, "update"))
                         .executes(ctx -> {

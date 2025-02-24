@@ -95,7 +95,6 @@ shadowJar {
         exclude dependency('org.apache.commons:commons-lang3')
     }
 
-
     relocate 'org.apache.commons.text', 'net.william278.velocitab.libraries.commons.text'
     relocate 'org.jetbrains', 'net.william278.velocitab.libraries'
     relocate 'org.intellij', 'net.william278.velocitab.libraries'

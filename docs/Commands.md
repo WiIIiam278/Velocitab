@@ -11,7 +11,7 @@ This page contains the usage table and associated permissions for the `/velocita
     <tbody>
         <!-- /velocitab command -->
         <tr>
-            <td rowspan="8"><code>/velocitab</code></td>
+            <td rowspan="7"><code>/velocitab</code></td>
             <td><code>/velocitab</code></td>
             <td>View & manage plugin system information</td>
             <td><code>velocitab.command</code></td>

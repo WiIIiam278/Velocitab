@@ -32,6 +32,8 @@ import io.netty.channel.DefaultChannelPipeline;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.TimeUnit;
+
 public class PacketEventManager {
 
     private static final String KEY = "velocitab";
@@ -45,7 +47,10 @@ public class PacketEventManager {
     }
 
     private void loadPlayers() {
-        plugin.getServer().getAllPlayers().forEach(this::injectPlayer);
+        plugin.getServer().getScheduler()
+                .buildTask(plugin, () -> plugin.getServer().getAllPlayers().forEach(this::injectPlayer))
+                .delay(100, TimeUnit.MILLISECONDS)
+                .schedule();
     }
 
     private void loadListeners() {
@@ -70,6 +75,10 @@ public class PacketEventManager {
                 .getChannel()
                 .pipeline()
                 .addBefore(Connections.HANDLER, KEY, handler);
+    }
+
+    public void removeAllPlayers() {
+        plugin.getServer().getAllPlayers().forEach(this::removePlayer);
     }
 
     public void removePlayer(@NotNull Player player) {

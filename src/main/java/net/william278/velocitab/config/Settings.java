@@ -28,7 +28,6 @@ import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Map;
 
 
 @SuppressWarnings("FieldMayBeFinal")
@@ -40,7 +39,8 @@ public class Settings implements ConfigValidator {
     public static final String CONFIG_HEADER = """
             ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
             ┃       Velocitab Config       ┃
-            ┃    Developed by William278   ┃
+            ┃         Developed by         ┃
+            ┃   William278 & AlexDev03     ┃
             ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
             ┣╸ Information: https://william278.net/project/velocitab
             ┗╸ Documentation: https://william278.net/docs/velocitab""";
@@ -96,6 +96,9 @@ public class Settings implements ConfigValidator {
     @Comment("Whether to force sending tab list packets to all players, even if a packet for that action has already been sent. This could fix issues with some mods.")
     private boolean forceSendingTabListPackets = false;
 
+    @Comment("Whether to enable relational placeholders. With an high amount of players, this could cause lag.")
+    private boolean enableRelationalPlaceholders = false;
+
     @Comment({"A list of links that will be sent to display on player pause menus (Minecraft 1.21+ clients only).",
             "• Labels can be fully custom or built-in (one of 'bug_report', 'community_guidelines', 'support', 'status',",
             "  'feedback', 'community', 'website', 'forums', 'news', or 'announcements').",
@@ -116,7 +119,7 @@ public class Settings implements ConfigValidator {
     }
 
     @Override
-    public void validateConfig(@NotNull Velocitab plugin) {
+    public void validateConfig(@NotNull Velocitab plugin, @NotNull String name) {
         if (papiCacheTime < 0) {
             throw new IllegalStateException("PAPI cache time must be greater than or equal to 0");
         }

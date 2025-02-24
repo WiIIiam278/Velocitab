@@ -27,6 +27,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.placeholder.PlaceholderReplacement;
 import net.william278.velocitab.tab.Nametag;
 import org.jetbrains.annotations.NotNull;
 
@@ -64,6 +65,8 @@ public class TabGroups implements ConfigValidator {
             false,
             1000,
             1000,
+            1000,
+            1000,
             false
     );
 
@@ -84,42 +87,15 @@ public class TabGroups implements ConfigValidator {
                 .findFirst();
     }
 
-    public Optional<Group> getGroupFromServer(@NotNull String server, @NotNull Velocitab plugin) {
-        final List<Group> groups = new ArrayList<>(this.groups);
-        final Optional<Group> defaultGroup = getGroup("default");
-        if (defaultGroup.isEmpty()) {
-            throw new IllegalStateException("No default group found");
-        }
-        // Ensure the default group is always checked last
-        groups.remove(defaultGroup.get());
-        groups.add(defaultGroup.get());
-        for (Group group : groups) {
-            if (group.registeredServers(plugin, false)
-                    .stream()
-                    .anyMatch(s -> s.getServerInfo().getName().equalsIgnoreCase(server))) {
-                return Optional.of(group);
-            }
-        }
-
-        if (!plugin.getSettings().isFallbackEnabled()) {
-            return Optional.empty();
-        }
-
-        return defaultGroup;
-    }
-
-    public int getPosition(@NotNull Group group) {
-        return groups.indexOf(group) + 1;
-    }
-
-
     @Override
-    public void validateConfig(@NotNull Velocitab plugin) {
-        if (groups.isEmpty()) {
-            throw new IllegalStateException("No tab groups defined in config");
-        }
-        if (groups.stream().noneMatch(group -> group.name().equals("default"))) {
-            throw new IllegalStateException("No default tab group defined in config");
+    public void validateConfig(@NotNull Velocitab plugin, @NotNull String name) {
+        if(name.equals("tab_groups")) {
+            if (groups.isEmpty()) {
+                throw new IllegalStateException("No tab groups defined in config " + name);
+            }
+            if (groups.stream().noneMatch(group -> group.name().equals("default"))) {
+                throw new IllegalStateException("No default tab group defined in config " + name);
+            }
         }
 
         final Multimap<Group, String> missingKeys = getMissingKeys();
@@ -127,7 +103,7 @@ public class TabGroups implements ConfigValidator {
             return;
         }
 
-        fixMissingKeys(plugin, missingKeys);
+        fixMissingKeys(plugin, missingKeys, name);
     }
 
     @NotNull
@@ -151,12 +127,28 @@ public class TabGroups implements ConfigValidator {
             if (group.placeholderReplacements() == null) {
                 missingKeys.put(group, "placeholderReplacements");
             }
+
+            if (group.headerFooterUpdateRate() == 0) {
+                missingKeys.put(group, "headerFooterUpdateRate");
+            }
+
+            if (group.formatUpdateRate() == 0) {
+                missingKeys.put(group, "formatUpdateRate");
+            }
+
+            if (group.nametagUpdateRate() == 0) {
+                missingKeys.put(group, "nametagUpdateRate");
+            }
+
+            if (group.placeholderUpdateRate() == 0) {
+                missingKeys.put(group, "placeholderUpdateRate");
+            }
         }
 
         return missingKeys;
     }
 
-    private void fixMissingKeys(@NotNull Velocitab plugin, @NotNull Multimap<Group, String> missingKeys) {
+    private void fixMissingKeys(@NotNull Velocitab plugin, @NotNull Multimap<Group, String> missingKeys, @NotNull String name) {
         missingKeys.forEach((group, keys) -> {
             plugin.log("Missing required key(s) " + keys + " for group " + group.name());
             plugin.log("Using default values for group " + group.name());
@@ -173,14 +165,16 @@ public class TabGroups implements ConfigValidator {
                     group.sortingPlaceholders() == null ? DEFAULT_GROUP.sortingPlaceholders() : group.sortingPlaceholders(),
                     group.placeholderReplacements() == null ? DEFAULT_GROUP.placeholderReplacements() : group.placeholderReplacements(),
                     group.collisions(),
-                    group.headerFooterUpdateRate(),
-                    group.placeholderUpdateRate(),
+                    group.headerFooterUpdateRate() == 0 ? DEFAULT_GROUP.headerFooterUpdateRate() : group.headerFooterUpdateRate(),
+                    group.formatUpdateRate() == 0 ? DEFAULT_GROUP.formatUpdateRate() : group.formatUpdateRate(),
+                    group.nametagUpdateRate() == 0 ? DEFAULT_GROUP.nametagUpdateRate() : group.nametagUpdateRate(),
+                    group.placeholderUpdateRate() == 0 ? DEFAULT_GROUP.placeholderUpdateRate() : group.placeholderUpdateRate(),
                     group.onlyListPlayersInSameServer()
             );
 
             groups.add(group);
         });
 
-        plugin.saveTabGroups();
+        plugin.getTabGroupsManager().saveGroup(this);
     }
 }

@@ -6,6 +6,9 @@ the server a player is on. You can also set formatting to use for [[Nametags]] a
 
 Groups are defined in `tab_groups.yml`, as a list of TabGroup elements.
 
+You can also add more tab groups by creating a folder called `tab_groups` in the `plugins/velocitab` folder, and adding
+a `other_tab_groups.yml` (you can use a custom name, it needs to be .yml) file to it.
+
 Every group must have a unique name, and a list of servers to include in the group. You can also define a list of
 sorting placeholders to use when sorting players in the TAB list, and a header/footer update rate and placeholder update
 rate to use for the group.
@@ -123,6 +126,34 @@ information.
 You can define a header/footer update rate to use for each group, in milliseconds. This will determine how quickly the
 headers and footers will cycle through in the TAB list. The default is 1000 milliseconds (1 second).
 
+## Format update rate
+
+<details>
+<summary>Example of format update rate</summary>
+
+```yaml
+  format_update_rate: 1000
+```
+
+</details>
+
+You can define a format update rate to use for each group, in milliseconds. This will determine how quickly the
+formats will update in the TAB list.
+
+## Nametag update rate (sorting)
+
+<details>
+<summary>Example of nametag update rate</summary>
+
+```yaml
+  nametag_update_rate: 1000
+```
+
+</details>
+
+You can define a nametag update rate to use for each group, in milliseconds. This will determine how quickly the
+nametags will update in the TAB list. This will also determine how quickly the sorting will update.
+
 ## Placeholder update rate
 
 <details>
@@ -175,6 +206,8 @@ groups:
       - '%role_weight%'
       - '%username_lower%'
     header_footer_update_rate: 1000
+    format_update_rate: 1000
+    nametag_update_rate: 1000
     placeholder_update_rate: 1000
   - name: survival
     headers:
@@ -188,6 +221,8 @@ groups:
       - '%role_weight%'
       - '%username_lower%'
     header_footer_update_rate: 1000
+    format_update_rate: 1000
+    nametag_update_rate: 1000
     placeholder_update_rate: 1000
   ```
 

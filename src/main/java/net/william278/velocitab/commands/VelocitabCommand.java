@@ -27,18 +27,34 @@ import com.velocitypowered.api.command.BrigadierCommand;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.william278.desertwell.about.AboutMenu;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public final class VelocitabCommand {
 
     private static final TextColor MAIN_COLOR = TextColor.color(0x00FB9A);
     private static final TextColor ERROR_COLOR = TextColor.color(0xFF7E5E);
+
+    private static final String systemDumpConfirm = """
+            <color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| Prepare a system dump? This will include:</color>
+            <gray>• Your latest server logs and Velocitab config files</gray>
+            <gray>• Current plugin system status information</gray>
+            <gray>• Information about your Java & Minecraft server environment</gray>
+            <gray>• A list of other currently installed plugins</gray>
+            <click:run_command:/velocitab dump confirm><hover:show_text:'<gray>Click to prepare dump'><color:#00fb9a>To confirm click here or use: <italic>/velocitab dump confirm</italic></color></click>
+            """;
+    private static final String systemDumpStarted = "<color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| Preparing system status dump, please wait…</color>";
+    private static final String systemDumpReady = "<click:open_url:%url%><color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| System status dump prepared! Click here to view</color></click>";
+    private static final String systemDumpReadyConsole = "<color:#00fb9a><bold>Velocitab</bold></color> <color:#00fb9a>| System status dump prepared! Url: %url%</color>";
 
     private final AboutMenu aboutMenu;
     private final Velocitab plugin;
@@ -93,14 +109,13 @@ public final class VelocitabCommand {
                                     }
 
                                     tabPlayer.get().setCustomName(name);
-                                    plugin.getTabList().updatePlayerDisplayName(tabPlayer.get());
+                                    plugin.getTabList().updateDisplayName(tabPlayer.get());
 
                                     ctx.getSource().sendMessage(Component
                                             .text("Your TAB name has been updated!", MAIN_COLOR));
                                     return Command.SINGLE_SUCCESS;
                                 })
                         )
-                        .requires(src -> src instanceof Player)
                         .executes(ctx -> {
                             final Player player = (Player) ctx.getSource();
                             final Optional<TabPlayer> tabPlayer = plugin.getTabList().getTabPlayer(player);
@@ -119,7 +134,7 @@ public final class VelocitabCommand {
                             }
 
                             tabPlayer.get().setCustomName(null);
-                            plugin.getTabList().updatePlayerDisplayName(tabPlayer.get());
+                            plugin.getTabList().updateDisplayName(tabPlayer.get());
                             player.sendMessage(Component.text("Your name has been reset!", MAIN_COLOR));
                             return Command.SINGLE_SUCCESS;
                         })
@@ -134,6 +149,61 @@ public final class VelocitabCommand {
                             return Command.SINGLE_SUCCESS;
                         })
                 )
+                .then(LiteralArgumentBuilder.<CommandSource>literal("debug")
+                        .requires(src -> hasPermission(src, "debug"))
+                        .then(LiteralArgumentBuilder.<CommandSource>literal("tablist")
+                                .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.string())
+                                        .suggests((ctx, builder1) -> {
+                                            final String input = ctx.getInput();
+                                            if (input.isEmpty()) {
+                                                return builder1.buildFuture();
+                                            }
+                                            plugin.getServer().getAllPlayers().stream()
+                                                    .map(Player::getUsername)
+                                                    .filter(s -> s.toLowerCase().startsWith(input.toLowerCase()))
+                                                    .forEach(builder1::suggest);
+                                            return builder1.buildFuture();
+                                        })
+                                        .executes(ctx -> {
+                                            final String input = ctx.getArgument("player", String.class);
+                                            final Optional<Player> player = plugin.getServer().getPlayer(input);
+                                            if (player.isEmpty()) {
+                                                ctx.getSource().sendMessage(Component.text("Player not found!", ERROR_COLOR));
+                                                return Command.SINGLE_SUCCESS;
+                                            }
+
+                                            player.get().getTabList().getEntries().forEach(entry -> {
+                                                final String name = entry.getProfile().getName();
+                                                final UUID uuid = entry.getProfile().getId();
+                                                final String unformattedDisplayName = entry.getDisplayNameComponent().map(c -> PlainTextComponentSerializer.plainText().serialize(c)).orElse("empty");
+
+                                                ctx.getSource().sendMessage(Component.text("Name: %s, UUID: %s, Unformatted display name: %s".formatted(name, uuid, unformattedDisplayName)));
+                                            });
+
+                                            return Command.SINGLE_SUCCESS;
+                                        })
+                                )
+                        ))
+                .then(LiteralArgumentBuilder.<CommandSource>literal("dump")
+                        .requires(src -> hasPermission(src, "dump"))
+                        .executes(ctx -> {
+                            ctx.getSource().sendRichMessage(systemDumpConfirm.trim());
+                            return Command.SINGLE_SUCCESS;
+                        })
+                        .then(LiteralArgumentBuilder.<CommandSource>literal("confirm")
+                                .executes(ctx -> {
+                                    ctx.getSource().sendRichMessage(systemDumpStarted);
+                                    plugin.getServer().getScheduler().buildTask(plugin, () -> {
+                                        final String dumpUrl = plugin.createDump(ctx.getSource());
+                                        final Component component = MiniMessage.miniMessage().deserialize((ctx.getSource() instanceof Player
+                                                ? systemDumpReady
+                                                : systemDumpReadyConsole)
+                                                .replace("%url%", dumpUrl));
+                                        ctx.getSource().sendMessage(component);
+                                    }).schedule();
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                        ))
                 .then(LiteralArgumentBuilder.<CommandSource>literal("update")
                         .requires(src -> hasPermission(src, "update"))
                         .executes(ctx -> {

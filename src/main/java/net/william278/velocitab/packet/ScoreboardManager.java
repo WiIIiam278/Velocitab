@@ -37,11 +37,11 @@ import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.sorting.SortedSet;
 import net.william278.velocitab.tab.Nametag;
+import net.william278.velocitab.util.DebugSystem;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 import static com.velocitypowered.api.network.ProtocolVersion.*;
 
@@ -100,7 +100,7 @@ public class ScoreboardManager {
     @NotNull
     public TeamsPacketAdapter getPacketAdapter(@NotNull ProtocolVersion version) {
         return Optional.ofNullable(versions.get(version))
-                .orElseThrow(() -> new IllegalArgumentException("No adapter found for protocol version " + version));
+                .orElseThrow(() -> new IllegalArgumentException("No adapter found for protocol version " + version + ". Are you sure you're using the latest version of Velocitab and latest build of Velocity?"));
     }
 
     public void close() {
@@ -129,7 +129,7 @@ public class ScoreboardManager {
     private void removeSortedTeam(@NotNull String teamName) {
         final boolean result = sortedTeams.removeTeam(teamName);
         if (!result) {
-            plugin.log(Level.ERROR, "Failed to remove team " + teamName + " from sortedTeams");
+            DebugSystem.log(DebugSystem.DebugLevel.ERROR, "Failed to remove team " + teamName + " from sortedTeams");
         }
     }
 
@@ -173,46 +173,39 @@ public class ScoreboardManager {
      * @param role      The new role of the player. Must not be null.
      * @param force     Whether to force the update even if the player's nametag is the same.
      */
-    public CompletableFuture<Void> updateRole(@NotNull TabPlayer tabPlayer, @NotNull String role, boolean force) {
+    public void updateRole(@NotNull TabPlayer tabPlayer, @NotNull String role, boolean force) {
         final Player player = tabPlayer.getPlayer();
         if (!player.isActive()) {
             plugin.getTabList().removeOfflinePlayer(player);
-            return CompletableFuture.completedFuture(null);
+            plugin.getLogger().info("Player {} is not active, removing from tab list", player.getUsername());
+            return;
         }
         final String name = player.getUsername();
-        final CompletableFuture<Void> future = new CompletableFuture<>();
-        tabPlayer.getNametag(plugin).thenAccept(newTag -> {
-            if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
-                if (createdTeams.containsKey(player.getUniqueId())) {
-                    dispatchGroupPacket(
-                            UpdateTeamsPacket.removeTeam(plugin, createdTeams.get(player.getUniqueId())),
-                            tabPlayer
-                    );
-                }
-                final String oldRole = createdTeams.remove(player.getUniqueId());
-                if (oldRole != null) {
-                    removeSortedTeam(oldRole);
-                }
-                createdTeams.put(player.getUniqueId(), role);
-                final boolean a = sortedTeams.addTeam(role);
-                if (!a) {
-                    plugin.log(Level.ERROR, "Failed to add team " + role + " to sortedTeams");
-                }
-                this.nametags.put(role, newTag);
-                dispatchGroupCreatePacket(plugin, tabPlayer, role, newTag, name);
-            } else if (force || (this.nametags.containsKey(role) && !this.nametags.get(role).equals(newTag))) {
-                this.nametags.put(role, newTag);
-                dispatchGroupChangePacket(plugin, tabPlayer, role, newTag);
-            } else {
-                updatePlaceholders(tabPlayer);
+        final Nametag nametag = tabPlayer.getNametag(plugin);
+        if (!createdTeams.getOrDefault(player.getUniqueId(), "").equals(role)) {
+            if (createdTeams.containsKey(player.getUniqueId())) {
+                dispatchGroupPacket(
+                        UpdateTeamsPacket.removeTeam(plugin, createdTeams.get(player.getUniqueId())),
+                        tabPlayer
+                );
             }
-            future.complete(null);
-        }).exceptionally(e -> {
-            plugin.log(Level.ERROR, "Failed to update role for " + player.getUsername(), e);
-            return null;
-        });
-
-        return future;
+            final String oldRole = createdTeams.remove(player.getUniqueId());
+            if (oldRole != null) {
+                removeSortedTeam(oldRole);
+            }
+            createdTeams.put(player.getUniqueId(), role);
+            final boolean a = sortedTeams.addTeam(role);
+            if (!a) {
+                plugin.log(Level.ERROR, "Failed to add team " + role + " to sortedTeams");
+            }
+            this.nametags.put(role, nametag);
+            dispatchGroupCreatePacket(plugin, tabPlayer, role, nametag, name);
+        } else if (force || (this.nametags.containsKey(role) && !this.nametags.get(role).equals(nametag))) {
+            this.nametags.put(role, nametag);
+            dispatchGroupChangePacket(plugin, tabPlayer, role, nametag);
+        } else {
+            updatePlaceholders(tabPlayer);
+        }
     }
 
     public void updatePlaceholders(@NotNull TabPlayer tabPlayer) {

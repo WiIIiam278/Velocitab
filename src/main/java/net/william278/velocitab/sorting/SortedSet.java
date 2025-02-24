@@ -20,12 +20,15 @@
 package net.william278.velocitab.sorting;
 
 import com.google.common.collect.Maps;
+import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+@ToString
 public class SortedSet {
 
     private final ConcurrentSkipListSet<String> sortedTeams;
@@ -36,39 +39,37 @@ public class SortedSet {
         positionMap = Maps.newConcurrentMap();
     }
 
-    public synchronized boolean addTeam(@NotNull String teamName) {
-        final boolean result = sortedTeams.add(teamName);
-        if (!result) {
+    public boolean addTeam(@NotNull String teamName) {
+        if (!sortedTeams.add(teamName)) {
             return false;
         }
-        updatePositions();
+        updatePositions(teamName);
         return true;
     }
 
-    public synchronized boolean removeTeam(@NotNull String teamName) {
-        final boolean result = sortedTeams.remove(teamName);
-        if (!result) {
+    public boolean removeTeam(@NotNull String teamName) {
+        if (!sortedTeams.remove(teamName)) {
             return false;
         }
-        updatePositions();
+        updatePositions(null);
         return true;
     }
 
-    private synchronized void updatePositions() {
-        int index = 0;
-        positionMap.clear();
-        for (final String team : sortedTeams) {
-            positionMap.put(team, index);
-            index++;
+    private void updatePositions(@Nullable String newTeam) {
+        if (newTeam != null) {
+            int newPosition = sortedTeams.headSet(newTeam).size();
+            positionMap.put(newTeam, newPosition);
+            sortedTeams.tailSet(newTeam).forEach(team -> positionMap.put(team, sortedTeams.headSet(team).size()));
+        } else {
+            int index = 0;
+            positionMap.clear();
+            for (String team : sortedTeams) {
+                positionMap.put(team, index++);
+            }
         }
     }
 
-    public synchronized int getPosition(@NotNull String teamName) {
+    public int getPosition(@NotNull String teamName) {
         return positionMap.getOrDefault(teamName, -1);
-    }
-
-    @Override
-    public String toString() {
-        return sortedTeams.toString();
     }
 }

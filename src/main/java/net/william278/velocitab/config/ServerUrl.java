@@ -19,14 +19,15 @@
 
 package net.william278.velocitab.config;
 
+import com.google.common.collect.Lists;
 import com.velocitypowered.api.util.ServerLink;
+import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 public record ServerUrl(
         @NotNull String label,
@@ -40,26 +41,25 @@ public record ServerUrl(
 
     // Resolve the built-in label or format the custom label, then wrap as a Velocity ServerLink
     @NotNull
-    CompletableFuture<ServerLink> getServerLink(@NotNull Velocitab plugin, @NotNull TabPlayer player) {
+    ServerLink getServerLink(@NotNull Velocitab plugin, @NotNull TabPlayer player) {
         return getBuiltInLabel().map(
-                (type) -> CompletableFuture.completedFuture(ServerLink.serverLink(type, url()))
+                (type) -> ServerLink.serverLink(type, url())
         ).orElseGet(
-                () -> Placeholder.replace(label(), plugin, player)
-                        .thenApply(replaced -> plugin.getFormatter().format(replaced, player, plugin))
-                        .thenApply(formatted -> ServerLink.serverLink(formatted, url()))
-        );
+                () -> {
+                    final String replaced = plugin.getPlaceholderManager().applyPlaceholders(player, label());
+                    final Component formatted = plugin.getFormatter().format(replaced, player, plugin);
+                    return ServerLink.serverLink(formatted, url());
+                });
     }
 
     @NotNull
-    public static CompletableFuture<List<ServerLink>> resolve(@NotNull Velocitab plugin, @NotNull TabPlayer player,
-                                                              @NotNull List<ServerUrl> urls) {
-        final List<CompletableFuture<ServerLink>> futures = new ArrayList<>();
+    public static List<ServerLink> resolve(@NotNull Velocitab plugin, @NotNull TabPlayer player,
+                                           @NotNull List<ServerUrl> urls) {
+        final List<ServerLink> serverLinks = Lists.newArrayList();
         for (ServerUrl url : urls) {
-            futures.add(url.getServerLink(plugin, player));
+            serverLinks.add(url.getServerLink(plugin, player));
         }
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenApply(v -> futures.stream()
-                        .map(CompletableFuture::join).toList());
+        return serverLinks;
     }
 
     private Optional<ServerLink.Type> getBuiltInLabel() {

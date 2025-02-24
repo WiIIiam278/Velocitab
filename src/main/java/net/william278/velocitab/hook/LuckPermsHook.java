@@ -48,7 +48,7 @@ public class LuckPermsHook extends Hook {
     private boolean enabled;
 
     public LuckPermsHook(@NotNull Velocitab plugin) throws IllegalStateException {
-        super(plugin);
+        super(plugin, "LuckPerms");
         this.api = LuckPermsProvider.get();
         this.lastUpdate = Maps.newConcurrentMap();
         this.event = api.getEventBus().subscribe(
@@ -116,11 +116,11 @@ public class LuckPermsHook extends Hook {
                             }
 
                             tabPlayer.setRole(newRole);
-                            tabList.updatePlayerDisplayName(tabPlayer);
+                            tabList.updateDisplayName(tabPlayer);
                             tabList.getVanishTabList().recalculateVanishForPlayer(tabPlayer);
                             checkRoleUpdate(tabPlayer, oldRole);
                         })
-                        .delay(500, TimeUnit.MILLISECONDS)
+                        .delay(100, TimeUnit.MILLISECONDS)
                         .schedule());
     }
 
@@ -145,6 +145,7 @@ public class LuckPermsHook extends Hook {
         if (oldRole.equals(player.getRole())) {
             return;
         }
+
         plugin.getTabList().updatePlayer(player, false);
     }
 

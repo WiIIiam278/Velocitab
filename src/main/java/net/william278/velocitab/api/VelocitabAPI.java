@@ -29,6 +29,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -110,7 +111,7 @@ public class VelocitabAPI {
     public void setCustomPlayerName(@NotNull Player player, @Nullable String name) {
         getUser(player).ifPresent(tabPlayer -> {
             tabPlayer.setCustomName(name);
-            plugin.getTabList().updatePlayerDisplayName(tabPlayer);
+            plugin.getTabList().updateDisplayName(tabPlayer);
         });
     }
 
@@ -199,7 +200,7 @@ public class VelocitabAPI {
      */
     @NotNull
     public List<Group> getServerGroups() {
-        return plugin.getTabGroups().getGroups();
+        return new ArrayList<>(plugin.getTabGroupsManager().getGroups());
     }
 
     /**
@@ -211,11 +212,11 @@ public class VelocitabAPI {
      */
     @NotNull
     public Optional<Group> getGroup(@NotNull String name) {
-        return plugin.getTabGroups().getGroup(name);
+        return plugin.getTabGroupsManager().getGroup(name);
     }
 
     public Optional<Group> getGroupFromServer(@NotNull String server) {
-        return plugin.getTabGroups().getGroupFromServer(server, plugin);
+        return plugin.getTabGroupsManager().getGroupFromServer(server, plugin);
     }
 
     /**

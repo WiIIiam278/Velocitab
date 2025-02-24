@@ -17,9 +17,19 @@
  *  limitations under the License.
  */
 
-package net.william278.velocitab.config;
+package net.william278.velocitab.util;
 
-import org.jetbrains.annotations.NotNull;
+@FunctionalInterface
+public interface TriFunction<T, U, V, R> {
 
-public record PlaceholderReplacement(@NotNull String placeholder, @NotNull String replacement) {
+    /**
+     * Applies this function to the given arguments.
+     *
+     * @param t the first function argument
+     * @param u the second function argument
+     * @param v the third function argument
+     * @return the function result
+     */
+    R apply(T t, U u, V v);
+
 }

@@ -33,24 +33,20 @@ import lombok.Getter;
 import lombok.Setter;
 import net.william278.desertwell.util.UpdateChecker;
 import net.william278.desertwell.util.Version;
+import net.william278.toilet.Toilet;
 import net.william278.velocitab.api.PluginMessageAPI;
 import net.william278.velocitab.api.VelocitabAPI;
 import net.william278.velocitab.commands.VelocitabCommand;
-import net.william278.velocitab.config.ConfigProvider;
-import net.william278.velocitab.config.Formatter;
-import net.william278.velocitab.config.Settings;
-import net.william278.velocitab.config.TabGroups;
+import net.william278.velocitab.config.*;
 import net.william278.velocitab.hook.Hook;
 import net.william278.velocitab.hook.LuckPermsHook;
-import net.william278.velocitab.hook.MiniPlaceholdersHook;
 import net.william278.velocitab.packet.PacketEventManager;
 import net.william278.velocitab.packet.ScoreboardManager;
-import net.william278.velocitab.providers.HookProvider;
-import net.william278.velocitab.providers.LoggerProvider;
-import net.william278.velocitab.providers.MetricProvider;
-import net.william278.velocitab.providers.ScoreboardProvider;
+import net.william278.velocitab.placeholder.PlaceholderManager;
+import net.william278.velocitab.providers.*;
 import net.william278.velocitab.sorting.SortingManager;
 import net.william278.velocitab.tab.PlayerTabList;
+import net.william278.velocitab.util.DebugSystem;
 import net.william278.velocitab.vanish.VanishManager;
 import org.bstats.velocity.Metrics;
 import org.jetbrains.annotations.NotNull;
@@ -62,12 +58,12 @@ import java.util.List;
 
 @Plugin(id = "velocitab")
 @Getter
-public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProvider, HookProvider, MetricProvider {
+public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProvider, HookProvider, MetricProvider, DumpProvider {
 
     @Setter
     private Settings settings;
     @Setter
-    private TabGroups tabGroups;
+    private TabGroupsManager tabGroupsManager;
 
     private final ProxyServer server;
     private final Logger logger;
@@ -87,6 +83,9 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
     private VanishManager vanishManager;
     private PacketEventManager packetEventManager;
     private PluginMessageAPI pluginMessageAPI;
+    private PlaceholderManager placeholderManager;
+    @Setter
+    private Toilet toilet;
 
     @Inject
     public Velocitab(@NotNull ProxyServer server, @NotNull Logger logger, @DataDirectory Path configDirectory) {
@@ -100,13 +99,16 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
         checkCompatibility();
         loadConfigs();
         loadHooks();
+        preparePlaceholderManager();
         prepareVanishManager();
-        prepareChannelManager();
         prepareScoreboard();
         registerCommands();
         registerMetrics();
         checkForUpdates();
         prepareAPI();
+        prepareChannelManager();
+        initializeToilet();
+        DebugSystem.initializeTask(this);
         logger.info("Successfully enabled Velocitab");
     }
 
@@ -114,7 +116,6 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
     public void onProxyShutdown(@NotNull ProxyShutdownEvent event) {
         disableScoreboardManager();
         getLuckPermsHook().ifPresent(LuckPermsHook::closeEvent);
-        getMiniPlaceholdersHook().ifPresent(MiniPlaceholdersHook::unregisterExpansion);
         unregisterAPI();
         logger.info("Successfully disabled Velocitab");
     }
@@ -135,6 +136,10 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
 
     private void prepareChannelManager() {
         this.packetEventManager = new PacketEventManager(this);
+    }
+
+    private void preparePlaceholderManager() {
+        this.placeholderManager = new PlaceholderManager(this);
     }
 
     @Override

@@ -129,7 +129,7 @@ public interface DumpProvider {
 
         for (File tabGroupsFile : tabGroupsFiles) {
             final boolean isDefault = tabGroupsFile.equals(getPlugin().getTabGroupsManager().getGroupsFiles().get(0));
-            final String name = "Tab Groups File : (" + (isDefault ? "default" : tabGroupsFile.getName()) + ")";
+            final String name = "Tab Groups File (" + (isDefault ? "default" : tabGroupsFile.getName()) + ")";
             rules.add(FileInclusionRule.configFile(tabGroupsFile.getAbsolutePath(), name));
         }
 
@@ -195,7 +195,7 @@ public interface DumpProvider {
         return new PluginStatus.ChartStatusBlock(
                 players,
                 PluginStatus.ChartType.PIE,
-                "Players in each group",
+                "Online players per group",
                 "fa6-solid:users"
         );
     }

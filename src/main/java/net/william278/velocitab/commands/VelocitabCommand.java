@@ -149,7 +149,6 @@ public final class VelocitabCommand {
                             return Command.SINGLE_SUCCESS;
                         })
                 )
-                //debug
                 .then(LiteralArgumentBuilder.<CommandSource>literal("debug")
                         .requires(src -> hasPermission(src, "debug"))
                         .then(LiteralArgumentBuilder.<CommandSource>literal("tablist")
@@ -185,7 +184,6 @@ public final class VelocitabCommand {
                                         })
                                 )
                         ))
-                //dump
                 .then(LiteralArgumentBuilder.<CommandSource>literal("dump")
                         .requires(src -> hasPermission(src, "dump"))
                         .executes(ctx -> {

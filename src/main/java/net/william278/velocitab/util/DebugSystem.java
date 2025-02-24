@@ -75,16 +75,17 @@ public class DebugSystem {
 
     @NotNull
     private static String formatMessage(@NotNull final String message, @NotNull final Object... args) {
-        StringBuilder formattedMessage = new StringBuilder();
+        final StringBuilder formattedMessage = new StringBuilder();
         int argIndex = 0;
         for (int i = 0; i < message.length(); i++) {
             if (message.charAt(i) == '{' && i + 1 < message.length() && message.charAt(i + 1) == '}') {
                 formattedMessage.append(argIndex < args.length ? args[argIndex++] : "{}");
-                i++; // Salta il '}'
+                i++;
             } else {
                 formattedMessage.append(message.charAt(i));
             }
         }
+
         return formattedMessage.toString();
     }
 

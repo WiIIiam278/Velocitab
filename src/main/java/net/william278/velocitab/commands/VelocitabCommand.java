@@ -36,7 +36,6 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 
-import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 

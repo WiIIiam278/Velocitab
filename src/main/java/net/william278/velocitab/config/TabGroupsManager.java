@@ -97,6 +97,10 @@ public class TabGroupsManager {
         return groupsFiles.values().stream().map(f -> new File(f+".yml")).collect(Collectors.toList());
     }
 
+    public boolean isDefaultFile(@NotNull File file) {
+        return plugin.getConfigDirectory().resolve("tab_groups.yml").toFile().getAbsolutePath().equals(file.getAbsolutePath());
+    }
+
     private boolean validateGroups(@NotNull TabGroups group, @NotNull String name) {
         this.groupsFiles.put(group, name);
         group.validateConfig(plugin, name);

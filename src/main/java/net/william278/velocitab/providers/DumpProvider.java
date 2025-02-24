@@ -128,9 +128,14 @@ public interface DumpProvider {
         rules.add(FileInclusionRule.configFile(getPlugin().getConfigDirectory().resolve("config.yml").toFile().getAbsolutePath(), "Config File"));
 
         for (File tabGroupsFile : tabGroupsFiles) {
-            final boolean isDefault = tabGroupsFile.equals(getPlugin().getTabGroupsManager().getGroupsFiles().get(0));
+            final boolean isDefault = getPlugin().getTabGroupsManager().isDefaultFile(tabGroupsFile);
             final String name = "Tab Groups File (" + (isDefault ? "default" : tabGroupsFile.getName()) + ")";
-            rules.add(FileInclusionRule.configFile(tabGroupsFile.getAbsolutePath(), name));
+            final FileInclusionRule rule = FileInclusionRule.configFile(tabGroupsFile.getAbsolutePath(), name);
+            if (isDefault) {
+                rules.add(1, rule);
+            } else {
+                rules.add(rule);
+            }
         }
 
         return rules;

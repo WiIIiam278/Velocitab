@@ -52,7 +52,7 @@ dependencies {
     implementation 'de.exlll:configlib-yaml:4.5.0'
     implementation 'org.mvel:mvel2:2.5.2.Final'
     implementation 'net.jodah:expiringmap:0.5.11'
-    implementation 'net.william278.toilet:toilet-velocity:1.0.12'
+    implementation 'net.william278.toilet:toilet-velocity:1.0.12-3509d3d'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.36'
 }

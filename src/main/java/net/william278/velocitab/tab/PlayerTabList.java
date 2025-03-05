@@ -55,7 +55,7 @@ import java.util.stream.Collectors;
  */
 public class PlayerTabList {
 
-    private static final String RELATIONAL_PERMISSION = "velocitab.relational";
+    public static final String RELATIONAL_PERMISSION = "velocitab.relational";
 
     private final Velocitab plugin;
     @Getter
@@ -244,11 +244,12 @@ public class PlayerTabList {
                 continue;
             }
 
-            // Update lists regarding the joined player
-            checkVisibilityAndUpdateName(iteratedPlayer, tabPlayer, isJoinedVanished);
-            // Update lists regarding the iterated player
+            // Update tab list entry for the joined player of the iterated player
+            checkVisibilityAndUpdateName(iteratedPlayer, tabPlayer, isPlayerVanished);
+
+            // Update tab list entry for the iterated player of the joined player
             if (iteratedPlayer != tabPlayer) {
-                checkVisibilityAndUpdateName(tabPlayer, iteratedPlayer, isPlayerVanished);
+                checkVisibilityAndUpdateName(tabPlayer, iteratedPlayer, isJoinedVanished);
             }
             iteratedPlayer.sendHeaderAndFooter(this);
         }
@@ -260,18 +261,18 @@ public class PlayerTabList {
         plugin.getServer().getEventManager().fireAndForget(new PlayerAddedToTabEvent(tabPlayer, group));
     }
 
-    private void checkVisibilityAndUpdateName(@NotNull TabPlayer observedPlayer, @NotNull TabPlayer observableTabPlayer,
+    private void checkVisibilityAndUpdateName(@NotNull TabPlayer observedPlayer, @NotNull TabPlayer viewer,
                                               boolean isObservablePlayerVanished) {
-        final UUID observableUUID = observableTabPlayer.getPlayer().getUniqueId();
+        final UUID viewerUUID = viewer.getPlayer().getUniqueId();
         final String observedUsername = observedPlayer.getPlayer().getUsername();
-        final String observableUsername = observableTabPlayer.getPlayer().getUsername();
-        final TabList observableTabPlayerTabList = observableTabPlayer.getPlayer().getTabList();
+        final String viewerUsername = viewer.getPlayer().getUsername();
+        final TabList viewerTabList = viewer.getPlayer().getTabList();
 
-        if ((isObservablePlayerVanished && !plugin.getVanishManager().canSee(observableUsername, observedUsername) &&
-                !observableUUID.equals(observedPlayer.getPlayer().getUniqueId())) || !observedPlayer.getPlayer().isActive()) {
-            observableTabPlayerTabList.removeEntry(observedPlayer.getPlayer().getUniqueId());
+        if ((isObservablePlayerVanished && !plugin.getVanishManager().canSee(viewerUsername, observedUsername) &&
+                !viewerUUID.equals(observedPlayer.getPlayer().getUniqueId())) || !observedPlayer.getPlayer().isActive()) {
+            viewerTabList.removeEntry(observedPlayer.getPlayer().getUniqueId());
         } else {
-            calculateAndSetDisplayName(observedPlayer, observableTabPlayer);
+            calculateAndSetDisplayName(observedPlayer, viewer);
         }
     }
 
@@ -381,15 +382,15 @@ public class PlayerTabList {
     protected void calculateAndSetDisplayName(@NotNull TabPlayer player, @NotNull TabPlayer viewer) {
         final String withPlaceholders = plugin.getPlaceholderManager().applyPlaceholders(player, player.getGroup().format());
         final String unformatted = plugin.getPlaceholderManager().formatVelocitabPlaceholders(withPlaceholders, player, null);
-        if (!plugin.getSettings().isEnableRelationalPlaceholders()) {
+        if (!plugin.getSettings().isEnableRelationalPlaceholders() || !viewer.isRelationalPermission()) {
             final String stripped = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(unformatted);
-            final Component displayName = plugin.getFormatter().format(stripped, player, plugin);
+            final Component displayName = formatComponent(player, stripped);
             updateEntryDisplayName(player, viewer, displayName);
             return;
         }
 
         final String withRelationalPlaceholders = plugin.getPlaceholderManager().formatVelocitabPlaceholders(unformatted, player, viewer);
-        final Component displayName = plugin.getFormatter().format(withRelationalPlaceholders, player, viewer, plugin);
+        final Component displayName = formatRelationalComponent(player, viewer, withRelationalPlaceholders);
         updateEntryDisplayName(player, viewer, displayName);
     }
 
@@ -417,7 +418,8 @@ public class PlayerTabList {
     public TabPlayer createTabPlayer(@NotNull Player player, @NotNull Group group) {
         return new TabPlayer(plugin, player,
                 plugin.getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE),
-                group
+                group,
+                player.hasPermission(RELATIONAL_PERMISSION)
         );
     }
 
@@ -498,7 +500,7 @@ public class PlayerTabList {
     public void updateGroupNames(@NotNull Group group) {
         final List<TabPlayer> players = group.getTabPlayersAsList(plugin);
         if (plugin.getSettings().isEnableRelationalPlaceholders()) {
-            updateRelationalGroupNames(players, group);
+            updateRelationalGroupNames(players);
             return;
         }
 
@@ -510,95 +512,88 @@ public class PlayerTabList {
         checkStrippedString(stripped, group);
 
         for (TabPlayer player : players) {
-            final String displayName = plugin.getPlaceholderManager().applyPlaceholders(player, stripped);
-            final String displayNameConditional = plugin.getPlaceholderManager().formatVelocitabPlaceholders(displayName, player, null);
-            final Component displayNameComponent = formatComponent(player, displayNameConditional);
-            players.forEach(viewer -> updateEntryDisplayName(player, viewer, displayNameComponent));
+            updateNormalDisplayName(player, players);
         }
     }
 
-    private void updateRelationalGroupNames(@NotNull List<TabPlayer> players, @NotNull Group group) {
-        for (TabPlayer p1 : players) {
-            if (!p1.getPlayer().isActive() || !p1.isLoaded()) {
-                return;
+    private void updateRelationalGroupNames(@NotNull List<TabPlayer> players) {
+        for (TabPlayer current : players) {
+            if (!current.getPlayer().isActive() || !current.isLoaded()) {
+                continue;
             }
 
-            final boolean isVanished = plugin.getVanishManager().isVanished(p1.getPlayer().getUsername());
-            final String formatPlaceholders = plugin.getPlaceholderManager().applyPlaceholders(p1, group.format());
-            final String formatConditionalPlaceholders = plugin.getPlaceholderManager().formatVelocitabPlaceholders(formatPlaceholders, p1, null);
-
-            // Handles the case where the player is not
-            final String formatConditionalPlaceholdersWithoutRelational = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(formatConditionalPlaceholders);
-            final Component relationalPlaceholder = formatComponent(p1, formatConditionalPlaceholdersWithoutRelational);
-
-            for (TabPlayer player : players) {
-                if (isVanished && !plugin.getVanishManager().canSee(player.getPlayer().getUsername(), p1.getPlayer().getUsername())) {
-                    return;
-                }
-
-                if (!player.getPlayer().isActive() || !player.isLoaded()) {
-                    return;
-                }
-
-                if (!player.getPlayer().hasPermission(RELATIONAL_PERMISSION)) {
-                    updateEntryDisplayName(p1, player, relationalPlaceholder);
-                    continue;
-                }
-
-                final String withPlaceholders = plugin.getPlaceholderManager().applyViewerPlaceholders(player, formatConditionalPlaceholders);
-                final String unformatted = plugin.getPlaceholderManager().formatVelocitabPlaceholders(withPlaceholders, p1, player);
-
-                final Component displayName = formatRelationalComponent(p1, player, unformatted);
-                updateEntryDisplayName(p1, player, displayName);
-            }
+            updateRelationalDisplayName(current, players);
         }
     }
 
     public void updateDisplayName(@NotNull TabPlayer tabPlayer) {
+        final List<TabPlayer> players = tabPlayer.getGroup().getTabPlayersAsList(plugin, tabPlayer);
         if (plugin.getSettings().isEnableRelationalPlaceholders()) {
-            updateRelationalDisplayName(tabPlayer);
+            updateRelationalDisplayName(tabPlayer, players);
             return;
         }
 
-        updateNormalDisplayName(tabPlayer);
+        updateNormalDisplayName(tabPlayer, players);
     }
 
-    private void updateNormalDisplayName(@NotNull TabPlayer tabPlayer) {
+    private void updateNormalDisplayName(@NotNull TabPlayer tabPlayer, @NotNull List<TabPlayer> players) {
         final Group group = tabPlayer.getGroup();
         final String stripped = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(group.format());
-        checkStrippedString(stripped, group);
+        final String withPlaceholders = plugin.getPlaceholderManager().applyPlaceholders(tabPlayer, stripped);
+        final String unformatted = plugin.getPlaceholderManager().formatVelocitabPlaceholders(withPlaceholders, tabPlayer, null);
+        final Component displayName = formatComponent(tabPlayer, unformatted);
 
-        final List<TabPlayer> players = group.getTabPlayersAsList(plugin, tabPlayer);
-        players.forEach(player -> {
-            if (!player.getPlayer().hasPermission(RELATIONAL_PERMISSION)) {
-                final String displayName = plugin.getPlaceholderManager().applyPlaceholders(player, stripped);
-                final String displayNameConditional = plugin.getPlaceholderManager().formatVelocitabPlaceholders(displayName, player, null);
-                final Component displayNameComponent = formatComponent(player, displayNameConditional);
-                updateEntryDisplayName(player, tabPlayer, displayNameComponent);
+        final boolean isVanished = plugin.getVanishManager().isVanished(tabPlayer.getPlayer().getUsername());
+        players.forEach(viewer -> {
+            if (cantSeePlayer(viewer, tabPlayer, group, isVanished)) {
                 return;
             }
 
-            final String withPlaceholders = plugin.getPlaceholderManager().applyViewerPlaceholders(player, stripped);
-            final String unformatted = plugin.getPlaceholderManager().formatVelocitabPlaceholders(withPlaceholders, tabPlayer, player);
-
-            final Component displayName = formatRelationalComponent(tabPlayer, player, unformatted);
-            updateEntryDisplayName(tabPlayer, player, displayName);
+            updateEntryDisplayName(tabPlayer, viewer, displayName);
         });
     }
 
-    private void updateRelationalDisplayName(@NotNull TabPlayer tabPlayer) {
+    private void updateRelationalDisplayName(@NotNull TabPlayer tabPlayer, @NotNull List<TabPlayer> players) {
         final Group group = tabPlayer.getGroup();
         final String stripped = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(group.format());
         checkStrippedString(stripped, group);
 
-        final List<TabPlayer> players = group.getTabPlayersAsList(plugin, tabPlayer);
-        players.forEach(player -> {
-            final String displayName = plugin.getPlaceholderManager().applyPlaceholders(player, stripped);
-            final String displayNameConditional = plugin.getPlaceholderManager().formatVelocitabPlaceholders(displayName, player, null);
-            final Component displayNameComponent = formatRelationalComponent(player, tabPlayer, displayNameConditional);
-            updateEntryDisplayName(player, tabPlayer, displayNameComponent);
+        final String formatPlaceholders = plugin.getPlaceholderManager().applyPlaceholders(tabPlayer, group.format());
+        final String formatConditionalPlaceholders = plugin.getPlaceholderManager().formatVelocitabPlaceholders(formatPlaceholders, tabPlayer, null);
+
+        // Handles the case where the player is not
+        final String formatConditionalPlaceholdersWithoutRelational = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(formatConditionalPlaceholders);
+        final Component relationalPlaceholder = formatComponent(tabPlayer, formatConditionalPlaceholdersWithoutRelational);
+        final boolean isVanished = plugin.getVanishManager().isVanished(tabPlayer.getPlayer().getUsername());
+        players.forEach(viewer -> {
+            if (cantSeePlayer(viewer, tabPlayer, group, isVanished)) {
+                return;
+            }
+
+            if (!viewer.isRelationalPermission()) {
+                updateEntryDisplayName(tabPlayer, viewer, relationalPlaceholder);
+                return;
+            }
+
+            final String withPlaceholders = plugin.getPlaceholderManager().applyViewerPlaceholders(viewer, formatConditionalPlaceholders);
+            final String unformatted = plugin.getPlaceholderManager().formatVelocitabPlaceholders(withPlaceholders, tabPlayer, viewer);
+            final Component displayNameComponent = formatComponent(tabPlayer, unformatted);
+            updateEntryDisplayName(tabPlayer, viewer, displayNameComponent);
         });
     }
+
+    public boolean cantSeePlayer(@NotNull TabPlayer viewer, @NotNull TabPlayer tabPlayer,
+                                 @NotNull Group group, boolean isVanished) {
+        if (isVanished && !plugin.getVanishManager().canSee(viewer.getPlayer().getUsername(), tabPlayer.getPlayer().getUsername())) {
+            return true;
+        }
+        if (!viewer.getPlayer().isActive() || !viewer.isLoaded()) {
+            return true;
+        }
+
+        return group.onlyListPlayersInSameServer() && !tabPlayer.getServerName().equals(viewer.getServerName());
+    }
+
 
     private void checkStrippedString(@NotNull String text, @NotNull Group group) {
         if (text.length() != group.format().length()) {

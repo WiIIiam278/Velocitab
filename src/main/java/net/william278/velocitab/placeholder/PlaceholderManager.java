@@ -28,6 +28,7 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.tab.PlayerTabList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -104,7 +105,8 @@ public class PlaceholderManager {
         final TabPlayer tabPlayer = plugin.getTabList().getTabPlayer(player)
                 .orElse(new TabPlayer(plugin, player,
                         plugin.getLuckPermsHook().map(hook -> hook.getPlayerRole(player)).orElse(Role.DEFAULT_ROLE),
-                        plugin.getTabList().getGroupOrDefault(player)));
+                        plugin.getTabList().getGroupOrDefault(player),
+                        player.hasPermission(PlayerTabList.RELATIONAL_PERMISSION)));
 
         final List<String> placeholders = texts.stream()
                 .map(PlaceholderManager::extractPlaceholders)

@@ -69,15 +69,18 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     private Group group;
     @Setter
     private boolean loaded;
+    @Setter
+    private boolean relationalPermission;
 
     public TabPlayer(@NotNull Velocitab plugin, @NotNull Player player,
-                     @NotNull Role role, @NotNull Group group) {
+                     @NotNull Role role, @NotNull Group group, boolean relationalPermission) {
         this.plugin = plugin;
         this.player = player;
         this.role = role;
         this.group = group;
         this.relationalDisplayNames = Maps.newConcurrentMap();
         this.relationalNametags = Maps.newConcurrentMap();
+        this.relationalPermission = relationalPermission;
     }
 
     @NotNull

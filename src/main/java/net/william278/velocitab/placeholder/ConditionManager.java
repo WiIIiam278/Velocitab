@@ -70,7 +70,7 @@ public class ConditionManager {
 
         String condition = parameters.get(0);
         if (parameters.size() < 3) {
-            plugin.getLogger().warn("Invalid condition: Missing true/false values for condition: {}", condition);
+            plugin.getLogger().warn("Invalid condition: Missing true/false values for condition: {}. Parameters: {}", condition, parameters);
             return "";
         }
 

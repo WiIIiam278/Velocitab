@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 public interface VanishIntegration {
 
-    boolean canSee(@NotNull String name, @NotNull String otherName);
+    boolean canSee(@NotNull String viewer, @NotNull String target);
 
     boolean isVanished(@NotNull String name);
 

@@ -111,11 +111,14 @@ public class LuckPermsHook extends Hook {
                             final TabPlayer tabPlayer = tabPlayerOptional.get();
                             final Role oldRole = tabPlayer.getRole();
                             final Role newRole = getRoleFromMetadata(event.getUser().getCachedData().getMetaData());
-                            if (oldRole.equals(newRole)) {
+
+                            // there is no need to handle the case where the player had the permission and now doesn't
+                            if (oldRole.equals(newRole) && (player.hasPermission(PlayerTabList.RELATIONAL_PERMISSION) == tabPlayer.isRelationalPermission())) {
                                 return;
                             }
 
                             tabPlayer.setRole(newRole);
+                            tabPlayer.setRelationalPermission(player.hasPermission(PlayerTabList.RELATIONAL_PERMISSION));
                             tabList.updateDisplayName(tabPlayer);
                             tabList.getVanishTabList().recalculateVanishForPlayer(tabPlayer);
                             checkRoleUpdate(tabPlayer, oldRole);

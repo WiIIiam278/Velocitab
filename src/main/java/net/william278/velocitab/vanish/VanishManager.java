@@ -46,12 +46,12 @@ public class VanishManager {
         return integration;
     }
 
-    public boolean canSee(@NotNull String name, @NotNull String otherName) {
+    public boolean canSee(@NotNull String viewer, @NotNull String target) {
         final long start = System.currentTimeMillis();
-        final boolean result = integration.canSee(name, otherName);
+        final boolean result = integration.canSee(viewer, target);
         final long end = System.currentTimeMillis();
         if (end - start > 2) {
-            DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Vanish isVanished check took " + (end - start) + "ms");
+            DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Vanish canSee check took " + (end - start) + "ms");
         }
         return result;
     }

@@ -111,16 +111,19 @@ public class TabGroupsManager {
         outer:
         for (Group group1 : group.groups) {
             final Set<RegisteredServer> current = group1.registeredServers(plugin, false);
+            final boolean isDefault = group1.isDefault(plugin);
 
             if (groups.containsKey(group1.name())) {
                 plugin.getLogger().warn("Group {} is already defined in {} tab groups file. Skipping.", group1.name(), name);
                 continue;
             }
 
-            for (RegisteredServer registeredServer : current) {
-                if (registeredServers.contains(registeredServer)) {
-                    plugin.getLogger().warn("Server {} is already registered for group {} in {}, the same tabgroups file. Skipping.", registeredServer.getServerInfo().getName(), group1.name(), name);
-                    continue outer;
+            if(!(isDefault && plugin.getSettings().isFallbackEnabled())) {
+                for (RegisteredServer registeredServer : current) {
+                    if (registeredServers.contains(registeredServer)) {
+                        plugin.getLogger().warn("Server {} is already registered for group {} in {}, the same tabgroups file. Skipping.", registeredServer.getServerInfo().getName(), group1.name(), name);
+                        continue outer;
+                    }
                 }
             }
 
@@ -134,12 +137,15 @@ public class TabGroupsManager {
 
             for (Group loadingGroup : eligibleGroups) {
                 final Set<RegisteredServer> loadingGroupServers = loadingGroup.registeredServers(plugin, false);
+                final boolean isDefault = loadingGroup.isDefault(plugin);
 
-                for (RegisteredServer registeredServer : loadingGroupServers) {
-                    if (current.contains(registeredServer)) {
-                        plugin.getLogger().warn("Server {} in {} tab groups file is already registered for group {}. Skipping.", registeredServer.getServerInfo().getName(), name, group1.name());
-                        eligibleGroups.remove(loadingGroup);
-                        continue outer;
+                if(!(isDefault && plugin.getSettings().isFallbackEnabled())) {
+                    for (RegisteredServer registeredServer : loadingGroupServers) {
+                        if (current.contains(registeredServer)) {
+                            plugin.getLogger().warn("Server {} in {} tab groups file is already registered for group {}. Skipping.", registeredServer.getServerInfo().getName(), name, group1.name());
+                            eligibleGroups.remove(loadingGroup);
+                            continue outer;
+                        }
                     }
                 }
             }

@@ -192,8 +192,13 @@ groups:
     sorting_placeholders:
       - '%role_weight%'
       - '%username_lower%'
+    placeholder_replacements: {}
+    collisions: false
     header_footer_update_rate: 1000
+    footer_update_rate: 1000
+    nametag_update_rate: 1000
     placeholder_update_rate: 1000
+    only_list_players_in_same_server: false
   - name: creative
     headers:
       - '<rainbow:!2>Running Velocitab by William278 & AlexDev03 on Creative!</rainbow>'
@@ -205,10 +210,13 @@ groups:
     sorting_placeholders:
       - '%role_weight%'
       - '%username_lower%'
+    placeholder_replacements: {}
+    collisions: false
     header_footer_update_rate: 1000
-    format_update_rate: 1000
+    footer_update_rate: 1000
     nametag_update_rate: 1000
     placeholder_update_rate: 1000
+    only_list_players_in_same_server: false
   - name: survival
     headers:
       - '<rainbow:!2>Running Velocitab by William278 & AlexDev03 on Survival!</rainbow>'
@@ -220,10 +228,13 @@ groups:
     sorting_placeholders:
       - '%role_weight%'
       - '%username_lower%'
+    placeholder_replacements: {}
+    collisions: false
     header_footer_update_rate: 1000
-    format_update_rate: 1000
+    footer_update_rate: 1000
     nametag_update_rate: 1000
     placeholder_update_rate: 1000
+    only_list_players_in_same_server: false
   ```
 
 </details>
@@ -253,3 +264,8 @@ fallback_group: 'lobbies'
 ```
 
 </details>
+
+## Placeholders Replacements
+
+Used to customize final result of placeholders based on placeholders values
+See [[Placeholders-Replacements]] for more information.

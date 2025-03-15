@@ -335,7 +335,7 @@ public class PlayerTabList {
 
         plugin.getServer().getScheduler()
                 .buildTask(plugin, () -> {
-                    final List<TabPlayer> list = group.getTabPlayersAsList(plugin);
+                    final List<TabPlayer> list = group.getTabPlayersAsList(plugin, tabPlayer.get());
                     list.forEach(player -> {
                         player.getPlayer().getTabList().removeEntry(uuid);
                         player.sendHeaderAndFooter(this);

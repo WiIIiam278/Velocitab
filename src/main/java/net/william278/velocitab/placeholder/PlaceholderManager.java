@@ -43,7 +43,7 @@ public class PlaceholderManager {
     @Setter
     private boolean debug = false;
 
-    private static final String ELSE_PLACEHOLDER = "ELSE";
+    private static final String ELSE_PLACEHOLDER = "else";
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%.*?%", Pattern.DOTALL);
     private static final Pattern VELOCITAB_PLACEHOLDERS = Pattern.compile("<velocitab[^<>]*(?:<(?!v)[^<>]*>[^<>]*)*>");
     private static final Pattern VELOCITAB_REL_PLACEHOLDERS = Pattern.compile("<velocitab_rel[^<>]*(?:<(?!v)[^<>]*>[^<>]*)*>");
@@ -76,7 +76,7 @@ public class PlaceholderManager {
                 final Map<String, String> repMap = Maps.newHashMap();
                 map.put(placeholder, repMap);
                 for (PlaceholderReplacement replacement : group.placeholderReplacements().get(placeholder)) {
-                    repMap.put(replacement.placeholder(), replacement.replacement());
+                    repMap.put(replacement.placeholder().toLowerCase(Locale.ROOT), replacement.replacement());
                 }
             }
         }
@@ -201,10 +201,12 @@ public class PlaceholderManager {
         if (replacements == null) {
             return null;
         }
-        final Map<String, String> replacementMap = replacements.get(placeholder);
+
+        final Map<String, String> replacementMap = replacements.get(placeholder.toLowerCase(Locale.ROOT));
         if (replacementMap == null) {
             return null;
         }
+
         final String replacement = replacementMap.get(text);
         if (replacement == null) {
             return replacementMap.get(ELSE_PLACEHOLDER);

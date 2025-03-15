@@ -159,19 +159,16 @@ public class TaskManager {
     }
 
     private void updateLatency(@NotNull Group group) {
-        final Set<TabPlayer> groupPlayers = group.getTabPlayers(plugin);
+        final List<TabPlayer> groupPlayers = group.getTabPlayersAsList(plugin);
         if (groupPlayers.isEmpty()) {
             return;
         }
 
-        groupPlayers.stream()
-                .filter(player -> player.getPlayer().isActive())
-                .forEach(player -> {
-                    final int latency = (int) player.getPlayer().getPing();
-                    final Set<TabPlayer> players = group.getTabPlayers(plugin, player);
-                    players.forEach(p -> p.getPlayer().getTabList().getEntry(player.getPlayer().getUniqueId())
-                            .ifPresent(entry -> entry.setLatency(Math.max(latency, 0))));
-                });
+        groupPlayers.forEach(player -> {
+            final int latency = (int) player.getPlayer().getPing();
+            groupPlayers.forEach(p -> p.getPlayer().getTabList().getEntry(player.getPlayer().getUniqueId())
+                    .ifPresent(entry -> entry.setLatency(Math.max(latency, 0))));
+        });
     }
 
     public void run(@NotNull Runnable runnable) {

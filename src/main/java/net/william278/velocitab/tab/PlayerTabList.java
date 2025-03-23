@@ -555,9 +555,6 @@ public class PlayerTabList {
 
     private void updateRelationalDisplayName(@NotNull TabPlayer tabPlayer, @NotNull List<TabPlayer> players) {
         final Group group = tabPlayer.getGroup();
-        final String stripped = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(group.format());
-        checkStrippedString(stripped, group);
-
         final String formatPlaceholders = plugin.getPlaceholderManager().applyPlaceholders(tabPlayer, group.format());
         final String formatConditionalPlaceholders = plugin.getPlaceholderManager().formatVelocitabPlaceholders(formatPlaceholders, tabPlayer, null);
 

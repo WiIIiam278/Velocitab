@@ -215,6 +215,13 @@ public class VelocitabAPI {
         return plugin.getTabGroupsManager().getGroup(name);
     }
 
+    /**
+     * Gets a group from the server.
+     *
+     * @param server The server to get the group from.
+     * @return An optional Group object containing the group from the server, or an empty optional if no group exists with that name.
+     * @since 1.6.6
+     */
     public Optional<Group> getGroupFromServer(@NotNull String server) {
         return plugin.getTabGroupsManager().getGroupFromServer(server, plugin);
     }

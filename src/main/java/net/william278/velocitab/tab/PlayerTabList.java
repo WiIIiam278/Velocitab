@@ -424,7 +424,10 @@ public class PlayerTabList {
     }
 
     public void updateHeaderFooter(@NotNull Group group) {
-        group.getTabPlayers(plugin).forEach(p -> p.sendHeaderAndFooter(this));
+        group.getTabPlayers(plugin).forEach(p -> {
+            p.incrementIndexes();
+            p.sendHeaderAndFooter(this);
+        });
     }
 
     // Update a player's name in the tab list and scoreboard team

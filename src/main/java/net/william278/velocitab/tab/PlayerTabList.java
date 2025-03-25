@@ -424,7 +424,7 @@ public class PlayerTabList {
     }
 
     public void updateHeaderFooter(@NotNull Group group) {
-        group.getTabPlayers(plugin).forEach(p -> {
+        group.getTabPlayersAsList(plugin).forEach(p -> {
             p.incrementIndexes();
             p.sendHeaderAndFooter(this);
         });

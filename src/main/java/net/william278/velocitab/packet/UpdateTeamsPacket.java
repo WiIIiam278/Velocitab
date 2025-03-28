@@ -36,6 +36,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Getter
@@ -280,6 +282,10 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         HIDE_FOR_OTHER_TEAMS("hideForOtherTeams"),
         HIDE_FOR_OWN_TEAM("hideForOwnTeam");
 
+        private static final Map<String, NametagVisibility> BY_ID = Arrays.stream(values())
+                .collect(Collectors.toMap(NametagVisibility::id, Function.identity()));
+        private static final Map<Integer, NametagVisibility> BY_ORDINAL = Arrays.stream(values())
+                .collect(Collectors.toMap(NametagVisibility::ordinal, Function.identity()));
         private final String id;
 
         NametagVisibility(@NotNull String id) {
@@ -293,10 +299,12 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
         @NotNull
         public static NametagVisibility byId(@Nullable String id) {
-            return id == null ? ALWAYS : Arrays.stream(values())
-                    .filter(visibility -> visibility.id.equals(id))
-                    .findFirst()
-                    .orElse(ALWAYS);
+            return id == null ? ALWAYS : BY_ID.getOrDefault(id, ALWAYS);
+        }
+
+        @NotNull
+        public static NametagVisibility byOrdinal(int ordinal) {
+            return BY_ORDINAL.getOrDefault(ordinal, ALWAYS);
         }
     }
 
@@ -305,6 +313,12 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         NEVER("never"),
         PUSH_OTHER_TEAMS("pushOtherTeams"),
         PUSH_OWN_TEAM("pushOwnTeam");
+
+
+        private static final Map<String, CollisionRule> BY_ID = Arrays.stream(values())
+                .collect(Collectors.toMap(CollisionRule::id, Function.identity()));
+        private static final Map<Integer, CollisionRule> BY_ORDINAL = Arrays.stream(values())
+                .collect(Collectors.toMap(CollisionRule::ordinal, Function.identity()));
 
         private final String id;
 
@@ -319,10 +333,12 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
         @NotNull
         public static CollisionRule byId(@Nullable String id) {
-            return id == null ? ALWAYS : Arrays.stream(values())
-                    .filter(rule -> rule.id.equals(id))
-                    .findFirst()
-                    .orElse(ALWAYS);
+            return id == null ? ALWAYS : BY_ID.getOrDefault(id, ALWAYS);
+        }
+
+        @NotNull
+        public static CollisionRule byOrdinal(int ordinal) {
+            return BY_ORDINAL.getOrDefault(ordinal, ALWAYS);
         }
     }
 }

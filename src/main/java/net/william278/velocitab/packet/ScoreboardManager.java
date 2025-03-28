@@ -75,6 +75,8 @@ public class ScoreboardManager {
 
     private void registerVersions() {
         try {
+            final Protocol770Adapter protocol770Adapter = new Protocol770Adapter(plugin);
+            protocol770Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol770Adapter));
             final Protocol765Adapter protocol765Adapter = new Protocol765Adapter(plugin);
             protocol765Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol765Adapter));
             final Protocol735Adapter protocol735Adapter = new Protocol735Adapter(plugin);

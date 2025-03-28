@@ -184,10 +184,10 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         YELLOW('e', 14),
         WHITE('f', 15),
         OBFUSCATED('k', 16),
-        BOLD('f', 17),
-        STRIKETHROUGH('f', 18),
-        UNDERLINED('f', 19),
-        ITALIC('f', 20),
+        BOLD('l', 17),
+        STRIKETHROUGH('m', 18),
+        UNDERLINED('n', 19),
+        ITALIC('o', 20),
         RESET('r', 21);
 
         private static final Map<Character, TeamColor> BY_ID = Arrays.stream(values())

@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * Adapter for handling the UpdateTeamsPacket for Minecraft 1.21.5
  */
-public class Protocol770Adapter extends TeamsPacketAdapter {
+public class Protocol770Adapter extends Protocol765Adapter {
 
     public Protocol770Adapter(@NotNull Velocitab plugin) {
         super(plugin, Set.of(
@@ -95,18 +95,6 @@ public class Protocol770Adapter extends TeamsPacketAdapter {
                 ProtocolUtils.writeString(byteBuf, entity);
             }
         }
-    }
-
-    protected void writeComponent(@NotNull ByteBuf buf, @NotNull Component component) {
-        final BinaryTag tag = ComponentHolder.serialize(GsonComponentSerializer.gson().serializeToTree(component));
-        ProtocolUtils.writeBinaryTag(buf, ProtocolVersion.MINECRAFT_1_20_3, tag);
-    }
-
-    @NotNull
-    protected Component readComponent(@NotNull ByteBuf buf) {
-        return GsonComponentSerializer.gson().deserializeFromTree(ComponentHolder.deserialize(
-                ProtocolUtils.readBinaryTag(buf, ProtocolVersion.MINECRAFT_1_20_3, null)
-        ));
     }
 
 }

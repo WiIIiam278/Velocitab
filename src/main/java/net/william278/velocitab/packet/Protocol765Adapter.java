@@ -46,6 +46,10 @@ public class Protocol765Adapter extends Protocol404Adapter {
         ));
     }
 
+    protected Protocol765Adapter(@NotNull Velocitab plugin, @NotNull Set<ProtocolVersion> protocolVersions) {
+        super(plugin, protocolVersions);
+    }
+
     protected void writeComponent(@NotNull ByteBuf buf, @NotNull Component component) {
         final BinaryTag tag = ComponentHolder.serialize(GsonComponentSerializer.gson().serializeToTree(component));
         ProtocolUtils.writeBinaryTag(buf, ProtocolVersion.MINECRAFT_1_20_3, tag);

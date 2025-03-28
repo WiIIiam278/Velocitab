@@ -190,6 +190,9 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         ITALIC('f', 20),
         RESET('r', 21);
 
+        private static final Map<Character, TeamColor> BY_ID = Arrays.stream(values())
+                .collect(Collectors.toMap(TeamColor::colorChar, Function.identity()));
+
         @Getter
         private final char colorChar;
         private final int id;
@@ -200,10 +203,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         }
 
         public static int getColorId(char var) {
-            return Arrays.stream(values())
-                    .filter(color -> color.colorChar == var)
-                    .map(c -> c.id).findFirst()
-                    .orElse(15);
+            return BY_ID.getOrDefault(var, TeamColor.RESET).id;
         }
     }
 
@@ -231,6 +231,9 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         ADD_PLAYERS((byte) 3),
         REMOVE_PLAYERS((byte) 4);
 
+        private static final Map<Byte, UpdateMode> BY_ID = Arrays.stream(values())
+                .collect(Collectors.toMap(UpdateMode::id, Function.identity()));
+
         private final byte id;
 
         UpdateMode(byte id) {
@@ -243,16 +246,15 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
         @Nullable
         public static UpdateMode byId(byte id) {
-            return Arrays.stream(values())
-                    .filter(mode -> mode.id == id)
-                    .findFirst()
-                    .orElse(null);
+            return BY_ID.getOrDefault(id, null);
         }
     }
 
     public enum FriendlyFlag {
         CAN_HURT_FRIENDLY(0x01),
         CAN_HURT_FRIENDLY_FIRE(0x02);
+
+        private static final List<FriendlyFlag> BY_ID = Arrays.stream(values()).toList();
 
         private final int id;
 
@@ -262,7 +264,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
 
         @NotNull
         public static List<FriendlyFlag> fromBitMask(int bitMask) {
-            return Arrays.stream(values())
+            return BY_ID.stream()
                     .filter(flag -> (bitMask & flag.id) != 0)
                     .collect(Collectors.toList());
         }
@@ -286,6 +288,7 @@ public class UpdateTeamsPacket implements MinecraftPacket {
                 .collect(Collectors.toMap(NametagVisibility::id, Function.identity()));
         private static final Map<Integer, NametagVisibility> BY_ORDINAL = Arrays.stream(values())
                 .collect(Collectors.toMap(NametagVisibility::ordinal, Function.identity()));
+
         private final String id;
 
         NametagVisibility(@NotNull String id) {
@@ -313,7 +316,6 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         NEVER("never"),
         PUSH_OTHER_TEAMS("pushOtherTeams"),
         PUSH_OWN_TEAM("pushOwnTeam");
-
 
         private static final Map<String, CollisionRule> BY_ID = Arrays.stream(values())
                 .collect(Collectors.toMap(CollisionRule::id, Function.identity()));

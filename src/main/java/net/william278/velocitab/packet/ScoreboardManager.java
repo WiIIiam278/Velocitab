@@ -75,6 +75,8 @@ public class ScoreboardManager {
 
     private void registerVersions() {
         try {
+            final Protocol770Adapter protocol770Adapter = new Protocol770Adapter(plugin);
+            protocol770Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol770Adapter));
             final Protocol765Adapter protocol765Adapter = new Protocol765Adapter(plugin);
             protocol765Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol765Adapter));
             final Protocol735Adapter protocol735Adapter = new Protocol735Adapter(plugin);
@@ -415,7 +417,8 @@ public class ScoreboardManager {
                     .mapping(0x5C, MINECRAFT_1_20_2, false)
                     .mapping(0x5E, MINECRAFT_1_20_3, false)
                     .mapping(0x60, MINECRAFT_1_20_5, false)
-                    .mapping(0x67, MINECRAFT_1_21_2, false);
+                    .mapping(0x67, MINECRAFT_1_21_2, false)
+                    .mapping(0x66, MINECRAFT_1_21_5, false);
             packetRegistration.register();
         } catch (Throwable e) {
             plugin.log(Level.ERROR, "Failed to register UpdateTeamsPacket", e);

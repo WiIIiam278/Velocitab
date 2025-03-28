@@ -32,7 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Set;
 
 /**
- * Adapter for handling the UpdateTeamsPacket for Minecraft 1.20.3-1.21.2
+ * Adapter for handling the UpdateTeamsPacket for Minecraft 1.20.3-1.21.4
  */
 public class Protocol765Adapter extends Protocol404Adapter {
 
@@ -44,6 +44,10 @@ public class Protocol765Adapter extends Protocol404Adapter {
                 ProtocolVersion.MINECRAFT_1_21_2,
                 ProtocolVersion.MINECRAFT_1_21_4
         ));
+    }
+
+    protected Protocol765Adapter(@NotNull Velocitab plugin, @NotNull Set<ProtocolVersion> protocolVersions) {
+        super(plugin, protocolVersions);
     }
 
     protected void writeComponent(@NotNull ByteBuf buf, @NotNull Component component) {

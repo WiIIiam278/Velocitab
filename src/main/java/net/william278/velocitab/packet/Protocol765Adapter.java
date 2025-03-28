@@ -32,7 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Set;
 
 /**
- * Adapter for handling the UpdateTeamsPacket for Minecraft 1.20.3-1.21.2
+ * Adapter for handling the UpdateTeamsPacket for Minecraft 1.20.3-1.21.5
  */
 public class Protocol765Adapter extends Protocol404Adapter {
 
@@ -42,7 +42,8 @@ public class Protocol765Adapter extends Protocol404Adapter {
                 ProtocolVersion.MINECRAFT_1_20_5,
                 ProtocolVersion.MINECRAFT_1_21,
                 ProtocolVersion.MINECRAFT_1_21_2,
-                ProtocolVersion.MINECRAFT_1_21_4
+                ProtocolVersion.MINECRAFT_1_21_4,
+                ProtocolVersion.MINECRAFT_1_21_5
         ));
     }
 

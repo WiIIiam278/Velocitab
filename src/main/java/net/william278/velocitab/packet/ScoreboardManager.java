@@ -87,7 +87,7 @@ public class ScoreboardManager {
             protocol48Adapter.getProtocolVersions().forEach(version -> versions.put(version, protocol48Adapter));
         } catch (NoSuchFieldError e) {
             throw new IllegalStateException("Failed to register Scoreboard Teams packets." +
-                                            " Velocitab probably does not (yet) support your Proxy version.", e);
+                    " Velocitab probably does not (yet) support your Proxy version.", e);
         }
     }
 
@@ -311,7 +311,7 @@ public class ScoreboardManager {
         }
         final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty() && !plugin.getSettings().isRemoveNametags();
         tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer).forEach(viewer -> {
-            if (viewer == tabPlayer || !viewer.getPlayer().isActive()) {
+            if (!viewer.getPlayer().isActive()) {
                 return;
             }
 

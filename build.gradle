@@ -39,7 +39,7 @@ dependencies {
     compileOnly "net.william278:papiproxybridge:${papi_proxy_bridge_minimum_version}"
 
     compileOnly 'io.netty:netty-codec-http:4.1.119.Final'
-    compileOnly 'org.projectlombok:lombok:1.18.36'
+    compileOnly 'org.projectlombok:lombok:1.18.38'
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.2.3'
     compileOnly 'it.unimi.dsi:fastutil:8.5.15'
@@ -54,7 +54,7 @@ dependencies {
     implementation 'net.jodah:expiringmap:0.5.11'
     implementation 'net.william278.toilet:toilet-velocity:1.0.12'
 
-    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.38'
 }
 
 processResources {

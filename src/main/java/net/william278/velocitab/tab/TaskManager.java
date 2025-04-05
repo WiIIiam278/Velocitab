@@ -137,12 +137,12 @@ public class TaskManager {
                     updateLatency(group);
                     final long endTime = System.currentTimeMillis();
                     final long time = endTime - startTime;
-                    if (time > 10) {
+                    if (time > 25) {
                         DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated latency for group {} took {}ms", group.name(), time);
                     }
                 },
                 1250,
-                2500,
+                5000,
                 TimeUnit.MILLISECONDS);
 
         tasks.add(latencyTask);

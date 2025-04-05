@@ -334,13 +334,13 @@ public class PlayerTabList {
         tabPlayer.get().setLoaded(false);
 
         plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> {
+                .buildTask(plugin, () -> plugin.getTabList().getTaskManager().run(() -> {
                     final List<TabPlayer> list = group.getTabPlayersAsList(plugin, tabPlayer.get());
                     list.forEach(player -> {
                         player.getPlayer().getTabList().removeEntry(uuid);
                         player.sendHeaderAndFooter(this);
                     });
-                })
+                }))
                 .delay(250, TimeUnit.MILLISECONDS)
                 .schedule();
 

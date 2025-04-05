@@ -74,7 +74,7 @@ public class PlaceholderManager {
             placeholdersReplacements.put(group, map);
             for (String placeholder : group.placeholderReplacements().keySet()) {
                 final Map<String, String> repMap = Maps.newHashMap();
-                map.put(placeholder, repMap);
+                map.put(placeholder.toLowerCase(Locale.ROOT), repMap);
                 for (PlaceholderReplacement replacement : group.placeholderReplacements().get(placeholder)) {
                     repMap.put(replacement.placeholder().toLowerCase(Locale.ROOT), replacement.replacement());
                 }

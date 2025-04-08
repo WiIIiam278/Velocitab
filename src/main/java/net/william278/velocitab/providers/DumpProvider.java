@@ -47,12 +47,11 @@ import java.util.stream.Collectors;
 public interface DumpProvider {
 
     @NotNull PluginInfo.Label VANISH_INCOMPATIBLE = new PluginInfo.Label("Vanish Incompatible", "#bd3b01",
-            "PremiumVanish is not compatible with Velocitab as the developer has not added support it. " +
+            "This plugin is not compatible with Velocitab as the developer has not added support for it. " +
                     "Vanished users will continue to appear in TAB.");
 
     @NotNull Map<String, PluginInfo.Label> INCOMPATIBLE_PLUGINS = Map.ofEntries(
-            Map.entry("tab", PluginInfo.INCOMPATIBLE_LABEL),
-            Map.entry("premiumvanish", VANISH_INCOMPATIBLE)
+            Map.entry("tab", PluginInfo.INCOMPATIBLE_LABEL)
     );
 
     @NotNull List<Integer> COLORS = Arrays.asList(

@@ -101,30 +101,27 @@ public class LuckPermsHook extends Hook {
 
         final PlayerTabList tabList = plugin.getTabList();
         plugin.getServer().getPlayer(event.getUser().getUniqueId())
-                .ifPresent(player -> plugin.getServer().getScheduler()
-                        .buildTask(plugin, () -> {
-                            final Optional<TabPlayer> tabPlayerOptional = tabList.getTabPlayer(player);
-                            if (tabPlayerOptional.isEmpty()) {
-                                return;
-                            }
+                .ifPresent(player -> tabList.getTaskManager().runDelayed(() -> {
+                    final Optional<TabPlayer> tabPlayerOptional = tabList.getTabPlayer(player);
+                    if (tabPlayerOptional.isEmpty()) {
+                        return;
+                    }
 
-                            final TabPlayer tabPlayer = tabPlayerOptional.get();
-                            final Role oldRole = tabPlayer.getRole();
-                            final Role newRole = getRoleFromMetadata(event.getUser().getCachedData().getMetaData());
+                    final TabPlayer tabPlayer = tabPlayerOptional.get();
+                    final Role oldRole = tabPlayer.getRole();
+                    final Role newRole = getRoleFromMetadata(event.getUser().getCachedData().getMetaData());
 
-                            // there is no need to handle the case where the player had the permission and now doesn't
-                            if (oldRole.equals(newRole) && (player.hasPermission(PlayerTabList.RELATIONAL_PERMISSION) == tabPlayer.isRelationalPermission())) {
-                                return;
-                            }
+                    // there is no need to handle the case where the player had the permission and now doesn't
+                    if (oldRole.equals(newRole) && (player.hasPermission(PlayerTabList.RELATIONAL_PERMISSION) == tabPlayer.isRelationalPermission())) {
+                        return;
+                    }
 
-                            tabPlayer.setRole(newRole);
-                            tabPlayer.setRelationalPermission(player.hasPermission(PlayerTabList.RELATIONAL_PERMISSION));
-                            tabList.updateDisplayName(tabPlayer);
-                            tabList.getVanishTabList().recalculateVanishForPlayer(tabPlayer);
-                            checkRoleUpdate(tabPlayer, oldRole);
-                        })
-                        .delay(100, TimeUnit.MILLISECONDS)
-                        .schedule());
+                    tabPlayer.setRole(newRole);
+                    tabPlayer.setRelationalPermission(player.hasPermission(PlayerTabList.RELATIONAL_PERMISSION));
+                    tabList.updateDisplayName(tabPlayer);
+                    tabList.getVanishTabList().recalculateVanishForPlayer(tabPlayer);
+                    checkRoleUpdate(tabPlayer, oldRole);
+                }, 100, TimeUnit.MILLISECONDS));
     }
 
     // Get a group by name

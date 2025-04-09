@@ -37,7 +37,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class PlaceholderManager {
 
     @Setter
@@ -207,7 +206,7 @@ public class PlaceholderManager {
             return null;
         }
 
-        final String replacement = replacementMap.get(text);
+        final String replacement = replacementMap.get(text.toLowerCase(Locale.ROOT));
         if (replacement == null) {
             return replacementMap.get(ELSE_PLACEHOLDER);
         }

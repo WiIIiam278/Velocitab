@@ -62,7 +62,7 @@ public class PlayerTabList {
     private final VanishTabList vanishTabList;
     @Getter(value = AccessLevel.PUBLIC)
     private final Map<UUID, TabPlayer> players;
-    @Getter(value = AccessLevel.PROTECTED)
+    @Getter(value = AccessLevel.PUBLIC)
     private final TaskManager taskManager;
     private final Map<Class<?>, Field> entriesFields;
 
@@ -152,12 +152,10 @@ public class PlayerTabList {
                 .schedule();
 
         //After updating papiproxybridge we can check if redis is used
-        plugin.getServer().getScheduler().buildTask(plugin, () -> {
-                    task.cancel();
-                    joinPlayer(player, group);
-                })
-                .delay(delay, TimeUnit.MILLISECONDS)
-                .schedule();
+        taskManager.runDelayed(() -> {
+            task.cancel();
+            joinPlayer(player, group);
+        }, delay, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -331,19 +329,13 @@ public class PlayerTabList {
             return;
         }
         final Group group = tabPlayer.get().getGroup();
+        final List<TabPlayer> list = group.getTabPlayersAsList(plugin, tabPlayer.get());
         tabPlayer.get().setLoaded(false);
 
-        plugin.getServer().getScheduler()
-                .buildTask(plugin, () -> plugin.getTabList().getTaskManager().run(() -> {
-                    final List<TabPlayer> list = group.getTabPlayersAsList(plugin, tabPlayer.get());
-                    list.forEach(player -> {
-                        player.getPlayer().getTabList().removeEntry(uuid);
-                        player.sendHeaderAndFooter(this);
-                    });
-                }))
-                .delay(250, TimeUnit.MILLISECONDS)
-                .schedule();
-
+        taskManager.runDelayed(() -> list.forEach(player -> {
+            player.getPlayer().getTabList().removeEntry(uuid);
+            player.sendHeaderAndFooter(this);
+        }), 250, TimeUnit.MILLISECONDS);
 
         // Delete player team
         plugin.getScoreboardManager().resetCache(target);
@@ -440,10 +432,7 @@ public class PlayerTabList {
         plugin.getPlaceholderManager().fetchPlaceholders(tabPlayer.getPlayer().getUniqueId(), tabPlayer.getGroup().sortingPlaceholders(), tabPlayer.getGroup());
 
         //to make sure that role placeholder is updated even for a backend placeholder
-        plugin.getServer().getScheduler().buildTask(plugin,
-                        () -> updateSorting(tabPlayer, force))
-                .delay(100, TimeUnit.MILLISECONDS)
-                .schedule();
+        taskManager.runDelayed(() -> updateSorting(tabPlayer, force), 100, TimeUnit.MILLISECONDS);
     }
 
 

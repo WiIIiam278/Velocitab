@@ -147,6 +147,21 @@ public record Group(
         return getPlayers(plugin);
     }
 
+    @NotNull
+    public List<Player> getPlayersAsList(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {
+        if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
+            return Lists.newArrayList(plugin.getServer().getAllPlayers());
+        }
+
+        if (onlyListPlayersInSameServer) {
+            return tabPlayer.getPlayer().getCurrentServer()
+                    .map(s -> Lists.newArrayList(s.getServer().getPlayersConnected()))
+                    .orElseGet(Lists::newArrayList);
+        }
+
+        return getPlayersAsList(plugin);
+    }
+
     /**
      * Retrieves the set of TabPlayers associated with the given Velocitab plugin instance.
      * If the plugin is configured to show all players from all groups, all players will be returned.

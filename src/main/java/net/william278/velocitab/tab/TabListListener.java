@@ -194,9 +194,7 @@ public class TabListListener {
     }
 
     private void removeOldEntry(@NotNull Group group, @NotNull UUID uuid) {
-        plugin.getServer().getScheduler().buildTask(plugin, () -> tabList.removeOldEntry(group, uuid))
-                .delay(100, TimeUnit.MILLISECONDS)
-                .schedule();
+        tabList.getTaskManager().runDelayed(() -> tabList.removeOldEntry(group, uuid), 100, TimeUnit.MILLISECONDS);
     }
 
     private void cleanOldHeadersAndFooters(@NotNull TabPlayer tabPlayer) {
@@ -216,22 +214,4 @@ public class TabListListener {
             }
         }).delay(500, TimeUnit.MILLISECONDS).schedule();
     }
-
-    private void checkDelayedDisconnect(@NotNull DisconnectEvent event) {
-        final Player player = event.getPlayer();
-        plugin.getServer().getScheduler().buildTask(plugin, () -> {
-            final Optional<Player> actualPlayer = plugin.getServer().getPlayer(player.getUniqueId());
-            if (actualPlayer.isPresent() && !actualPlayer.get().equals(player)) {
-                return;
-            }
-            if (player.getCurrentServer().isPresent()) {
-                return;
-            }
-
-            tabList.removeOfflinePlayer(player);
-            tabList.removeTabListUUID(event.getPlayer().getUniqueId());
-        }).delay(750, TimeUnit.MILLISECONDS).schedule();
-    }
-
-
 }

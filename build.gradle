@@ -45,7 +45,7 @@ dependencies {
     compileOnly 'it.unimi.dsi:fastutil:8.5.15'
     compileOnly 'net.kyori:adventure-nbt:4.19.0'
 
-    implementation 'org.apache.commons:commons-text:1.13.0'
+    implementation 'org.apache.commons:commons-text:1.13.1'
     implementation 'net.william278:desertwell:2.0.4'
     implementation 'net.william278:minedown:1.8.2'
     implementation 'org.bstats:bstats-velocity:3.1.0'

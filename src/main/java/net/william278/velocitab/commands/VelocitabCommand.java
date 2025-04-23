@@ -31,9 +31,14 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.william278.desertwell.about.AboutMenu;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.config.Group;
+import net.william278.velocitab.config.Settings;
+import net.william278.velocitab.config.TabGroups;
 import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.event.Level;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -146,7 +151,28 @@ public final class VelocitabCommand {
                 .then(LiteralArgumentBuilder.<CommandSource>literal("reload")
                         .requires(src -> hasPermission(src, "reload"))
                         .executes(ctx -> {
-                            plugin.loadConfigs();
+                            final Settings settings = plugin.getSettings();
+                            try {
+                                plugin.loadSettings();
+                            } catch (Throwable e) {
+                                plugin.setSettings(settings);
+                                ctx.getSource().sendRichMessage("<red>An error occurred while reloading the settings file");
+                                plugin.log(Level.ERROR, "An error occurred while reloading the settings file", e);
+                                return Command.SINGLE_SUCCESS;
+                            }
+
+                            final Map<String, Group> groups = Map.copyOf(plugin.getTabGroupsManager().getGroupsMap());
+                            final Map<TabGroups, String> groupsFiles = Map.copyOf(plugin.getTabGroupsManager().getGroupsFilesMap());
+
+                            try {
+                                plugin.getTabGroupsManager().loadGroups();
+                            } catch (Throwable e) {
+                                plugin.getTabGroupsManager().loadGroupsBackup(groups, groupsFiles);
+                                ctx.getSource().sendRichMessage("<red>An error occurred while reloading the tab groups file");
+                                plugin.log(Level.ERROR, "An error occurred while reloading the tab groups file", e);
+                                return Command.SINGLE_SUCCESS;
+                            }
+
                             plugin.getTabList().reloadUpdate();
                             ctx.getSource().sendRichMessage(systemReloaded);
                             return Command.SINGLE_SUCCESS;

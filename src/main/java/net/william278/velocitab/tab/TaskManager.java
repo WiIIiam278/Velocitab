@@ -30,7 +30,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -149,7 +148,7 @@ public class TaskManager {
     }
 
     private void updatePlaceholders(@NotNull Group group) {
-        final List<TabPlayer> players = group.getTabPlayersAsList(plugin);
+        final List<TabPlayer> players = group.getTabPlayers(plugin);
         if (players.isEmpty()) {
             return;
         }
@@ -159,7 +158,7 @@ public class TaskManager {
     }
 
     private void updateLatency(@NotNull Group group) {
-        final List<TabPlayer> groupPlayers = group.getTabPlayersAsList(plugin);
+        final List<TabPlayer> groupPlayers = group.getTabPlayers(plugin);
         if (groupPlayers.isEmpty()) {
             return;
         }

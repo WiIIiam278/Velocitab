@@ -196,7 +196,7 @@ public interface DumpProvider {
         final Map<PluginStatus.ChartKey, Integer> players = getPlugin().getTabGroupsManager().getGroups().stream()
                 .collect(Collectors.toMap(
                         g -> new PluginStatus.ChartKey(g.name(), "fa6-solid:server", COLORS.get(colorIndex.getAndIncrement() % COLORS.size())),
-                        group -> group.getTabPlayersAsList(getPlugin()).size()
+                        group -> group.getTabPlayers(getPlugin()).size()
                 ));
         return new PluginStatus.ChartStatusBlock(
                 players,

@@ -153,7 +153,7 @@ public class ScoreboardManager {
         if (teamName == null) {
             return;
         }
-        final Set<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
+        final List<RegisteredServer> siblings = tabPlayer.getGroup().registeredServers(plugin);
         final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty() && !plugin.getSettings().isRemoveNametags();
 
         final Optional<Nametag> cachedTag = Optional.ofNullable(nametags.getOrDefault(teamName, null));
@@ -231,7 +231,7 @@ public class ScoreboardManager {
         }
 
         final Player player = tabPlayer.getPlayer();
-        final Set<Player> players = tabPlayer.getGroup().getPlayers(plugin, tabPlayer);
+        final List<Player> players = tabPlayer.getGroup().getPlayers(plugin, tabPlayer);
 
         final Set<String> roles = Sets.newHashSet();
         players.forEach(p -> {
@@ -367,7 +367,7 @@ public class ScoreboardManager {
             return;
         }
 
-        final Set<Player> players = tabPlayer.getGroup().getPlayers(plugin);
+        final List<Player> players = tabPlayer.getGroup().getPlayers(plugin);
         final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty() && !plugin.getSettings().isRemoveNametags();
         players.forEach(connected -> {
             try {

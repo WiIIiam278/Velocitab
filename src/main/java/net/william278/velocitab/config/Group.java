@@ -20,7 +20,6 @@
 package net.william278.velocitab.config;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import net.william278.velocitab.Velocitab;
@@ -34,13 +33,13 @@ import org.slf4j.event.Level;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("unused")
 public record Group(
         String name,
         List<String> headers,
@@ -76,23 +75,28 @@ public record Group(
     }
 
     @NotNull
-    public Set<RegisteredServer> registeredServers(@NotNull Velocitab plugin) {
+    public List<RegisteredServer> registeredServers(@NotNull Velocitab plugin) {
         return registeredServers(plugin, true);
     }
 
     @NotNull
-    public Set<RegisteredServer> registeredServers(@NotNull Velocitab plugin, boolean includeAllPlayers) {
+    public List<RegisteredServer> registeredServers(@NotNull Velocitab plugin, boolean includeAllPlayers) {
         if ((includeAllPlayers && plugin.getSettings().isShowAllPlayersFromAllGroups()) ||
                 (isDefault(plugin) && plugin.getSettings().isFallbackEnabled())) {
-            return Sets.newHashSet(plugin.getServer().getAllServers());
+            return Lists.newArrayList(plugin.getServer().getAllServers());
         }
 
         return getRegexServers(plugin);
     }
 
     @NotNull
-    private Set<RegisteredServer> getRegexServers(@NotNull Velocitab plugin) {
-        final Set<RegisteredServer> totalServers = Sets.newHashSet();
+    private List<RegisteredServer> getRegexServers(@NotNull Velocitab plugin) {
+        final Optional<List<RegisteredServer>> cachedServers = plugin.getTabGroupsManager().getCachedServers(this);
+        if (cachedServers.isPresent()) {
+            return cachedServers.get();
+        }
+
+        final List<RegisteredServer> totalServers = Lists.newArrayList();
         for (String server : servers) {
             try {
                 final Matcher matcher = Pattern.compile(server, Pattern.CASE_INSENSITIVE).matcher("");
@@ -105,6 +109,7 @@ public record Group(
             }
         }
 
+        plugin.getTabGroupsManager().cacheServers(this, totalServers);
         return totalServers;
     }
 
@@ -113,17 +118,7 @@ public record Group(
     }
 
     @NotNull
-    public Set<Player> getPlayers(@NotNull Velocitab plugin) {
-        final Set<Player> players = Sets.newHashSet();
-        for (RegisteredServer server : registeredServers(plugin)) {
-            players.addAll(server.getPlayersConnected());
-        }
-
-        return players;
-    }
-
-    @NotNull
-    public List<Player> getPlayersAsList(@NotNull Velocitab plugin) {
+    public List<Player> getPlayers(@NotNull Velocitab plugin) {
         final List<Player> players = Lists.newArrayList();
         for (RegisteredServer server : registeredServers(plugin)) {
             players.addAll(server.getPlayersConnected());
@@ -133,22 +128,7 @@ public record Group(
     }
 
     @NotNull
-    public Set<Player> getPlayers(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {
-        if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
-            return Sets.newHashSet(plugin.getServer().getAllPlayers());
-        }
-
-        if (onlyListPlayersInSameServer) {
-            return tabPlayer.getPlayer().getCurrentServer()
-                    .map(s -> Sets.newHashSet(s.getServer().getPlayersConnected()))
-                    .orElseGet(Sets::newHashSet);
-        }
-
-        return getPlayers(plugin);
-    }
-
-    @NotNull
-    public List<Player> getPlayersAsList(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {
+    public List<Player> getPlayers(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {
         if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
             return Lists.newArrayList(plugin.getServer().getAllPlayers());
         }
@@ -159,30 +139,10 @@ public record Group(
                     .orElseGet(Lists::newArrayList);
         }
 
-        return getPlayersAsList(plugin);
+        return getPlayers(plugin);
     }
 
-    /**
-     * Retrieves the set of TabPlayers associated with the given Velocitab plugin instance.
-     * If the plugin is configured to show all players from all groups, all players will be returned.
-     *
-     * @param plugin The Velocitab plugin instance.
-     * @return A set of TabPlayers.
-     */
-    @NotNull
-    public Set<TabPlayer> getTabPlayers(@NotNull Velocitab plugin) {
-        if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
-            return plugin.getTabList().getPlayers().values().stream().filter(TabPlayer::isLoaded).collect(Collectors.toSet());
-        }
-
-        return plugin.getTabList().getPlayers()
-                .values()
-                .stream()
-                .filter(tabPlayer -> tabPlayer.isLoaded() && tabPlayer.getGroup().equals(this))
-                .collect(Collectors.toSet());
-    }
-
-    public List<TabPlayer> getTabPlayersAsList(@NotNull Velocitab plugin) {
+    public List<TabPlayer> getTabPlayers(@NotNull Velocitab plugin) {
         if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
             return plugin.getTabList().getPlayers().values().stream().filter(TabPlayer::isLoaded).collect(Collectors.toList());
         }
@@ -195,24 +155,12 @@ public record Group(
     }
 
     @NotNull
-    public Set<TabPlayer> getTabPlayers(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {
-        if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
-            return plugin.getTabList().getPlayers().values().stream().filter(TabPlayer::isLoaded).collect(Collectors.toSet());
-        }
-
-        if (onlyListPlayersInSameServer) {
-            return plugin.getTabList().getPlayers()
-                    .values()
-                    .stream()
-                    .filter(player -> player.isLoaded() && player.getGroup().equals(this) && player.getServerName().equals(tabPlayer.getServerName()))
-                    .collect(Collectors.toSet());
-        }
-
-        return getTabPlayers(plugin);
+    public List<TabPlayer> getTabPlayers(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {
+        return getTabPlayers(plugin, tabPlayer, false);
     }
 
     @NotNull
-    public List<TabPlayer> getTabPlayersAsList(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer) {
+    public List<TabPlayer> getTabPlayers(@NotNull Velocitab plugin, @NotNull TabPlayer tabPlayer, boolean force) {
         if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
             return plugin.getTabList().getPlayers().values().stream().filter(TabPlayer::isLoaded).collect(Collectors.toList());
         }
@@ -221,11 +169,11 @@ public record Group(
             return plugin.getTabList().getPlayers()
                     .values()
                     .stream()
-                    .filter(player -> player.isLoaded() && player.getGroup().equals(this) && player.getServerName().equals(tabPlayer.getServerName()))
+                    .filter(player -> (player.isLoaded() || force) && player.getGroup().equals(this) && player.getServerName().equals(tabPlayer.getServerName()))
                     .collect(Collectors.toList());
         }
 
-        return getTabPlayersAsList(plugin);
+        return getTabPlayers(plugin);
     }
 
     @NotNull

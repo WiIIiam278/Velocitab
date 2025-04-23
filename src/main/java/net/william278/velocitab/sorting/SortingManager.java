@@ -67,7 +67,7 @@ public class SortingManager {
     }
 
     private boolean isLongTeamNotAllowed(@NotNull TabPlayer player) {
-        return !player.getGroup().getPlayersAsList(plugin, player).stream()
+        return !player.getGroup().getPlayers(plugin, player).stream()
                 .allMatch(t -> t.getProtocolVersion().noLessThan(ProtocolVersion.MINECRAFT_1_18));
     }
 

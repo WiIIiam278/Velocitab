@@ -183,13 +183,13 @@ public final class VelocitabCommand {
                         .then(LiteralArgumentBuilder.<CommandSource>literal("tablist")
                                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.string())
                                         .suggests((ctx, builder1) -> {
-                                            final String input = ctx.getInput();
+                                            final String input = builder1.getRemainingLowerCase();
                                             if (input.isEmpty()) {
                                                 return builder1.buildFuture();
                                             }
                                             plugin.getServer().getAllPlayers().stream()
                                                     .map(Player::getUsername)
-                                                    .filter(s -> s.toLowerCase().startsWith(input.toLowerCase()))
+                                                    .filter(s -> s.toLowerCase().contains(input))
                                                     .forEach(builder1::suggest);
                                             return builder1.buildFuture();
                                         })

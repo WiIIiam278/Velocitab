@@ -83,7 +83,7 @@ public class PlaceholderManager {
 
     public void fetchPlaceholders(@NotNull Group group) {
         final List<String> texts = cachedTexts.computeIfAbsent(group, g -> g.getTextsWithPlaceholders(plugin));
-        group.getPlayersAsList(plugin).forEach(player -> fetchPlaceholders(player.getUniqueId(), texts, group));
+        group.getPlayers(plugin).forEach(player -> fetchPlaceholders(player.getUniqueId(), texts, group));
     }
 
     public void reload() {
@@ -231,10 +231,24 @@ public class PlaceholderManager {
 
     @NotNull
     private String applyPlaceholders(@NotNull String text, @NotNull Map<String, String> replacements) {
-        for (Map.Entry<String, String> entry : replacements.entrySet()) {
-            text = text.replace(entry.getKey(), entry.getValue());
+        final Matcher matcher = PLACEHOLDER_PATTERN.matcher(text);
+        final StringBuilder builder = new StringBuilder();
+        int lastAppendPosition = 0;
+
+        while (matcher.find()) {
+            builder.append(text, lastAppendPosition, matcher.start());
+            final String placeholder = matcher.group();
+            final String replacement = replacements.get(placeholder);
+            if (replacement != null) {
+                builder.append(replacement);
+            } else {
+                builder.append(placeholder);
+            }
+            lastAppendPosition = matcher.end();
         }
-        return text;
+
+        builder.append(text.substring(lastAppendPosition));
+        return builder.toString();
     }
 
     public Optional<String> getCachedPlaceholderValue(@NotNull String text, @NotNull UUID uuid) {

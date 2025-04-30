@@ -43,6 +43,7 @@ import net.william278.velocitab.player.Role;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.util.DebugSystem;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.event.Level;
 
 import java.lang.reflect.Field;
@@ -173,7 +174,7 @@ public class PlayerTabList {
                 return;
             }
 
-            final Set<RegisteredServer> serversInGroup = tabPlayer.getGroup().registeredServers(plugin);
+            final List<RegisteredServer> serversInGroup = tabPlayer.getGroup().registeredServers(plugin);
             if (serversInGroup.isEmpty()) {
                 return;
             }
@@ -219,7 +220,7 @@ public class PlayerTabList {
         players.putIfAbsent(joined.getUniqueId(), tabPlayer);
         tabPlayer.sendHeaderAndFooter(this);
         tabPlayer.setLoaded(true);
-        final List<TabPlayer> tabPlayers = group.getTabPlayersAsList(plugin, tabPlayer);
+        final List<TabPlayer> tabPlayers = group.getTabPlayers(plugin, tabPlayer);
         updateTabListOnJoin(tabPlayer, group, tabPlayers, isVanished);
     }
 
@@ -311,31 +312,23 @@ public class PlayerTabList {
         }
     }
 
-    /**
-     * Remove a player from the tab list
-     *
-     * @param uuid {@link UUID} of the {@link TabPlayer player} to remove
-     */
-    protected void removeTabListUUID(@NotNull UUID uuid) {
-        getPlayers().forEach((key, value) -> value.getPlayer().getTabList().getEntry(uuid).ifPresent(
-                entry -> value.getPlayer().getTabList().removeEntry(uuid)
-        ));
-    }
-
     protected void removePlayer(@NotNull Player target) {
         final UUID uuid = target.getUniqueId();
         final Optional<TabPlayer> tabPlayer = getTabPlayer(target.getUniqueId());
         if (tabPlayer.isEmpty()) {
             return;
         }
+
         final Group group = tabPlayer.get().getGroup();
-        final List<TabPlayer> list = group.getTabPlayersAsList(plugin, tabPlayer.get());
         tabPlayer.get().setLoaded(false);
 
-        taskManager.runDelayed(() -> list.forEach(player -> {
-            player.getPlayer().getTabList().removeEntry(uuid);
-            player.sendHeaderAndFooter(this);
-        }), 250, TimeUnit.MILLISECONDS);
+        taskManager.runDelayed(() -> {
+            final List<TabPlayer> list = group.getTabPlayers(plugin, tabPlayer.get());
+            list.forEach(player -> {
+                player.getPlayer().getTabList().removeEntry(uuid);
+                player.sendHeaderAndFooter(this);
+            });
+        }, 250, TimeUnit.MILLISECONDS);
 
         // Delete player team
         plugin.getScoreboardManager().resetCache(target);
@@ -416,7 +409,7 @@ public class PlayerTabList {
     }
 
     public void updateHeaderFooter(@NotNull Group group) {
-        group.getTabPlayersAsList(plugin).forEach(p -> {
+        group.getTabPlayers(plugin).forEach(p -> {
             p.incrementIndexes();
             p.sendHeaderAndFooter(this);
         });
@@ -437,12 +430,12 @@ public class PlayerTabList {
 
 
     public void updateSorting(@NotNull Group group) {
-        final List<TabPlayer> players = group.getTabPlayersAsList(plugin);
+        final List<TabPlayer> players = group.getTabPlayers(plugin);
         players.forEach(p -> updateSorting(p, false, players));
     }
 
     private void updateSorting(@NotNull TabPlayer tabPlayer, boolean force) {
-        final List<TabPlayer> players = tabPlayer.getGroup().getTabPlayersAsList(plugin, tabPlayer);
+        final List<TabPlayer> players = tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer);
         updateSorting(tabPlayer, force, players);
     }
 
@@ -490,7 +483,7 @@ public class PlayerTabList {
     }
 
     public void updateGroupNames(@NotNull Group group) {
-        final List<TabPlayer> players = group.getTabPlayersAsList(plugin);
+        final List<TabPlayer> players = group.getTabPlayers(plugin);
         if (plugin.getSettings().isEnableRelationalPlaceholders()) {
             updateRelationalGroupNames(players);
             return;
@@ -504,7 +497,7 @@ public class PlayerTabList {
         checkStrippedString(stripped, group);
 
         for (TabPlayer player : players) {
-            updateNormalDisplayName(player, players);
+            updateNormalDisplayName(player, players, stripped);
         }
     }
 
@@ -519,18 +512,21 @@ public class PlayerTabList {
     }
 
     public void updateDisplayName(@NotNull TabPlayer tabPlayer) {
-        final List<TabPlayer> players = tabPlayer.getGroup().getTabPlayersAsList(plugin, tabPlayer);
+        final List<TabPlayer> players = tabPlayer.getGroup().getTabPlayers(plugin, tabPlayer);
         if (plugin.getSettings().isEnableRelationalPlaceholders()) {
             updateRelationalDisplayName(tabPlayer, players);
             return;
         }
 
-        updateNormalDisplayName(tabPlayer, players);
+        final String stripped = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(tabPlayer.getGroup().format());
+        updateNormalDisplayName(tabPlayer, players, stripped);
     }
 
-    private void updateNormalDisplayName(@NotNull TabPlayer tabPlayer, @NotNull List<TabPlayer> players) {
+    private void updateNormalDisplayName(@NotNull TabPlayer tabPlayer, @NotNull List<TabPlayer> players, @Nullable String stripped) {
         final Group group = tabPlayer.getGroup();
-        final String stripped = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(group.format());
+        if (stripped == null) {
+            stripped = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(group.format());
+        }
         final String withPlaceholders = plugin.getPlaceholderManager().applyPlaceholders(tabPlayer, stripped);
         final String unformatted = plugin.getPlaceholderManager().formatVelocitabPlaceholders(withPlaceholders, tabPlayer, null);
         final Component displayName = formatComponent(tabPlayer, unformatted);
@@ -689,7 +685,7 @@ public class PlayerTabList {
     }
 
     public void removeOldEntry(@NotNull Group group, @NotNull UUID uuid) {
-        final Set<TabPlayer> players = group.getTabPlayers(plugin);
+        final List<TabPlayer> players = group.getTabPlayers(plugin);
         players.forEach(player -> player.getPlayer().getTabList().removeEntry(uuid));
     }
 

@@ -25,12 +25,15 @@ import com.google.common.collect.Sets;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import de.exlll.configlib.YamlConfigurationProperties;
 import de.exlll.configlib.YamlConfigurations;
+import net.jodah.expiringmap.ExpiringMap;
 import net.william278.velocitab.Velocitab;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class TabGroupsManager {
@@ -39,17 +42,22 @@ public class TabGroupsManager {
     private final Map<String, Group> groups;
     private final Map<TabGroups, String> groupsFiles;
     private List<Group> groupsList;
+    private final Map<Group, List<RegisteredServer>> cachedServers;
 
     public TabGroupsManager(@NotNull Velocitab plugin) {
         this.plugin = plugin;
         this.groups = Maps.newConcurrentMap();
         this.groupsFiles = Maps.newConcurrentMap();
         this.groupsList = Lists.newArrayList();
+        this.cachedServers = ExpiringMap.builder()
+                .expiration(30, TimeUnit.SECONDS)
+                .build();
     }
 
     public void loadGroups() {
         groups.clear();
         groupsFiles.clear();
+        cachedServers.clear();
         final Path configDirectory = plugin.getConfigDirectory();
         final File defaultFile = configDirectory.resolve("tab_groups.yml").toFile();
         final YamlConfigurationProperties properties = ConfigProvider.YAML_CONFIGURATION_PROPERTIES.header(TabGroups.CONFIG_HEADER).build();
@@ -110,7 +118,7 @@ public class TabGroupsManager {
 
         outer:
         for (Group group1 : group.groups) {
-            final Set<RegisteredServer> current = group1.registeredServers(plugin, false);
+            final List<RegisteredServer> current = group1.registeredServers(plugin, false);
             final boolean isDefault = group1.isDefault(plugin);
 
             if (groups.containsKey(group1.name())) {
@@ -133,10 +141,10 @@ public class TabGroupsManager {
 
         outer:
         for (Group group1 : groups.values()) {
-            final Set<RegisteredServer> current = group1.registeredServers(plugin, false);
+            final List<RegisteredServer> current = group1.registeredServers(plugin, false);
 
             for (Group loadingGroup : eligibleGroups) {
-                final Set<RegisteredServer> loadingGroupServers = loadingGroup.registeredServers(plugin, false);
+                final List<RegisteredServer> loadingGroupServers = loadingGroup.registeredServers(plugin, false);
                 final boolean isDefault = loadingGroup.isDefault(plugin);
 
                 if(!(isDefault && plugin.getSettings().isFallbackEnabled())) {
@@ -200,4 +208,30 @@ public class TabGroupsManager {
     public Collection<Group> getGroups() {
         return groups.values();
     }
+
+    public Optional<List<RegisteredServer>> getCachedServers(@NotNull Group group) {
+        return Optional.ofNullable(cachedServers.get(group));
+    }
+
+    public void cacheServers(@NotNull Group group, @NotNull List<RegisteredServer> servers) {
+        cachedServers.put(group, servers);
+    }
+
+    @ApiStatus.Internal
+    public Map<String, Group> getGroupsMap() {
+        return groups;
+    }
+
+    @ApiStatus.Internal
+    public Map<TabGroups, String> getGroupsFilesMap() {
+        return groupsFiles;
+    }
+
+    public void loadGroupsBackup(@NotNull Map<String, Group> groups, @NotNull Map<TabGroups, String> groupsFiles) {
+        this.groups.clear();
+        this.groups.putAll(groups);
+        this.groupsFiles.clear();
+        this.groupsFiles.putAll(groupsFiles);
+    }
+
 }

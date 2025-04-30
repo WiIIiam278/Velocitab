@@ -49,7 +49,7 @@ public enum Placeholder {
             .orElse("")),
     GROUP_PLAYERS_ONLINE((param, plugin, player) -> {
         if (param.isEmpty()) {
-            return Integer.toString(player.getGroup().getPlayers(plugin).size());
+            return Integer.toString(player.getGroup().getTabPlayers(plugin).size());
         }
         return plugin.getTabGroupsManager().getGroup(param)
                 .map(group -> Integer.toString(group.getPlayers(plugin).size()))

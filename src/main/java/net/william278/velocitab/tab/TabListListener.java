@@ -90,13 +90,11 @@ public class TabListListener {
     }
 
 
-    @SuppressWarnings("UnstableApiUsage")
     @Subscribe(priority = Short.MIN_VALUE)
     private void onPlayerJoin(@NotNull ServerPostConnectEvent event) {
         plugin.getTabList().getTaskManager().run(() -> handlePlayerJoin(event));
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     private void handlePlayerJoin(@NotNull ServerPostConnectEvent event) {
         final Player joined = event.getPlayer();
         final String serverName = joined.getCurrentServer()
@@ -162,9 +160,7 @@ public class TabListListener {
         final Group group = groupOptional.get();
         plugin.getScoreboardManager().resetCache(joined, group);
 
-        plugin.getServer().getScheduler().buildTask(plugin, () -> {
-            plugin.getPlaceholderManager().unblockPlayer(joined.getUniqueId());
-        }).delay(10, TimeUnit.MILLISECONDS).schedule();
+        plugin.getServer().getScheduler().buildTask(plugin, () -> plugin.getPlaceholderManager().unblockPlayer(joined.getUniqueId())).delay(10, TimeUnit.MILLISECONDS).schedule();
 
         tabList.loadPlayer(joined, group, justQuit.contains(joined.getUniqueId()) ? 400 : 500);
     }

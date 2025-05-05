@@ -153,22 +153,22 @@ public class PlaceholderManager {
     @NotNull
     public String applyPlaceholders(@NotNull TabPlayer player, @NotNull String text) {
         final Map<String, String> parsed = placeholders.computeIfAbsent(player.getPlayer().getUniqueId(), uuid -> Maps.newConcurrentMap());
-        return applyPlaceholderReplacements(text, player, parsed);
+        return applyPlaceholdersAndReplacements(text, player, parsed);
     }
 
     @NotNull
     public String applyPlaceholders(@NotNull TabPlayer player, @NotNull String text, @NotNull TabPlayer viewer) {
         final Map<String, String> parsed = placeholders.computeIfAbsent(player.getPlayer().getUniqueId(), uuid -> Maps.newConcurrentMap());
-        final String applied = applyPlaceholderReplacements(text, player, parsed);
+        final String applied = applyPlaceholdersAndReplacements(text, player, parsed);
 
         final Map<String, String> targetParsed = placeholders.computeIfAbsent(viewer.getPlayer().getUniqueId(), uuid -> Maps.newConcurrentMap());
-        return applyPlaceholderReplacements(applied.replace("%target_", "%"), viewer, targetParsed);
+        return applyPlaceholdersAndReplacements(applied.replace("%target_", "%"), viewer, targetParsed);
     }
 
     @NotNull
     public String applyViewerPlaceholders(@NotNull TabPlayer viewer, @NotNull String text) {
         final Map<String, String> parsed = placeholders.computeIfAbsent(viewer.getPlayer().getUniqueId(), uuid -> Maps.newConcurrentMap());
-        return applyPlaceholderReplacements(text.replace("%target_", "%"), viewer, parsed);
+        return applyPlaceholdersAndReplacements(text.replace("%target_", "%"), viewer, parsed);
     }
 
     public void clearPlaceholders(@NotNull UUID uuid) {
@@ -215,39 +215,39 @@ public class PlaceholderManager {
     }
 
     @NotNull
-    private String applyPlaceholderReplacements(@NotNull String text, @NotNull TabPlayer player,
-                                                @NotNull Map<String, String> parsed) {
-        for (final Map.Entry<String, List<PlaceholderReplacement>> entry : player.getGroup().placeholderReplacements().entrySet()) {
-            final String replaced = parsed.get(entry.getKey());
-            final String replacement = getReplacement(player.getGroup(), entry.getKey(), replaced);
-            if (replacement != null) {
-                text = text.replace(entry.getKey(), replacement);
-            }
-        }
-
-        return applyPlaceholders(text, parsed);
-    }
-
-
-    @NotNull
-    private String applyPlaceholders(@NotNull String text, @NotNull Map<String, String> replacements) {
+    private String applyPlaceholdersAndReplacements(@NotNull String text, @NotNull TabPlayer player,
+                                                    @NotNull Map<String, String> parsed) {
         final Matcher matcher = PLACEHOLDER_PATTERN.matcher(text);
-        final StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder(text.length());
         int lastAppendPosition = 0;
+        final Map<String, List<PlaceholderReplacement>> groupReplacements = player.getGroup().placeholderReplacements();
 
         while (matcher.find()) {
             builder.append(text, lastAppendPosition, matcher.start());
             final String placeholder = matcher.group();
-            final String replacement = replacements.get(placeholder);
-            if (replacement != null) {
-                builder.append(replacement);
-            } else {
-                builder.append(placeholder);
+
+            String replacementToAppend = null;
+
+            if (groupReplacements.containsKey(placeholder)) {
+                final String currentValue = parsed.get(placeholder);
+                if (currentValue != null) {
+                    replacementToAppend = getReplacement(player.getGroup(), placeholder, currentValue);
+                }
             }
+
+            if (replacementToAppend == null) {
+                replacementToAppend = parsed.get(placeholder);
+            }
+
+            if (replacementToAppend == null) {
+                replacementToAppend = placeholder;
+            }
+
+            builder.append(replacementToAppend);
             lastAppendPosition = matcher.end();
         }
 
-        builder.append(text.substring(lastAppendPosition));
+        builder.append(text, lastAppendPosition, text.length());
         return builder.toString();
     }
 

@@ -28,6 +28,7 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.william278.desertwell.about.AboutMenu;
 import net.william278.velocitab.Velocitab;
@@ -38,9 +39,7 @@ import net.william278.velocitab.player.TabPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.event.Level;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public final class VelocitabCommand {
 
@@ -180,16 +179,97 @@ public final class VelocitabCommand {
                 )
                 .then(LiteralArgumentBuilder.<CommandSource>literal("debug")
                         .requires(src -> hasPermission(src, "debug"))
+                        .then(LiteralArgumentBuilder.<CommandSource>literal("tabgroups")
+                                .then(RequiredArgumentBuilder.<CommandSource, String>argument("group", StringArgumentType.string())
+                                        .suggests((ctx, builder1) -> {
+                                            final String input = builder1.getRemainingLowerCase();
+                                            plugin.getTabGroupsManager().getGroups().stream()
+                                                    .map(Group::name)
+                                                    .filter(s -> input.isEmpty() || s.toLowerCase().contains(input))
+                                                    .forEach(builder1::suggest);
+                                            return builder1.buildFuture();
+                                        })
+                                        // players - headers - footers
+                                        .then(LiteralArgumentBuilder.<CommandSource>literal("players")
+                                                .executes(ctx -> {
+                                                    final String input = ctx.getArgument("group", String.class);
+                                                    final Optional<Group> optionalGroup = plugin.getTabGroupsManager().getGroup(input);
+                                                    if (optionalGroup.isEmpty()) {
+                                                        ctx.getSource().sendRichMessage(errorTabNameChangeUntracked);
+                                                        return Command.SINGLE_SUCCESS;
+                                                    }
+
+                                                    //send group info: players count(hover with player list sorted by their team name)
+
+                                                    final List<TabPlayer> players = optionalGroup.get().getTabPlayers(plugin)
+                                                            .stream()
+                                                            .sorted(Comparator.comparing(t -> -plugin.getScoreboardManager().getPosition(t.getTeamName())))
+                                                            .toList();
+
+                                                    Component playersCount = MiniMessage.miniMessage().deserialize("<yellow>Players:</yellow> <gray>%s".formatted(players.size()));
+                                                    final String join = joinPlayersName(players);
+                                                    Component playersCountHover = MiniMessage.miniMessage().deserialize("<yellow>Players:</yellow> <gray>%s".formatted(join));
+                                                    playersCount = playersCount.hoverEvent(playersCountHover);
+
+                                                    ctx.getSource().sendMessage(playersCount);
+                                                    return Command.SINGLE_SUCCESS;
+                                                })
+                                        )
+                                        .then(LiteralArgumentBuilder.<CommandSource>literal("header")
+                                                .executes(ctx -> {
+                                                    final String input = ctx.getArgument("group", String.class);
+                                                    final Optional<Group> optionalGroup = plugin.getTabGroupsManager().getGroup(input);
+                                                    if (optionalGroup.isEmpty()) {
+                                                        ctx.getSource().sendRichMessage(errorTabNameChangeUntracked);
+                                                        return Command.SINGLE_SUCCESS;
+                                                    }
+
+                                                    final Group group = optionalGroup.get();
+
+                                                    for (int i = 0; i < group.headers().size(); i++) {
+                                                        final String header = group.getHeader(i);
+
+                                                        Component headerComponent = MiniMessage.miniMessage().deserialize("<yellow>Header:</yellow> <gray>%s".formatted((i + 1)));
+                                                        Component headerHover = plugin.getFormatter().deserialize(header);
+                                                        headerComponent = headerComponent.hoverEvent(headerHover);
+                                                        ctx.getSource().sendMessage(headerComponent);
+                                                    }
+
+                                                    return Command.SINGLE_SUCCESS;
+                                                })
+                                        )
+                                        .then(LiteralArgumentBuilder.<CommandSource>literal("footer")
+                                                .executes(ctx -> {
+                                                    final String input = ctx.getArgument("group", String.class);
+                                                    final Optional<Group> optionalGroup = plugin.getTabGroupsManager().getGroup(input);
+                                                    if (optionalGroup.isEmpty()) {
+                                                        ctx.getSource().sendRichMessage(errorTabNameChangeUntracked);
+                                                        return Command.SINGLE_SUCCESS;
+                                                    }
+
+                                                    final Group group = optionalGroup.get();
+
+                                                    for (int i = 0; i < group.footers().size(); i++) {
+                                                        final String footer = group.getFooter(i);
+
+                                                        Component footerComponent = MiniMessage.miniMessage().deserialize("<yellow>Footer:</yellow> <gray>%s".formatted((i + 1)));
+                                                        Component footerHover = plugin.getFormatter().deserialize(footer);
+                                                        footerComponent = footerComponent.hoverEvent(footerHover);
+                                                        ctx.getSource().sendMessage(footerComponent);
+                                                    }
+
+                                                    return Command.SINGLE_SUCCESS;
+                                                })
+                                        )
+                                )
+                        )
                         .then(LiteralArgumentBuilder.<CommandSource>literal("tablist")
                                 .then(RequiredArgumentBuilder.<CommandSource, String>argument("player", StringArgumentType.string())
                                         .suggests((ctx, builder1) -> {
                                             final String input = builder1.getRemainingLowerCase();
-                                            if (input.isEmpty()) {
-                                                return builder1.buildFuture();
-                                            }
                                             plugin.getServer().getAllPlayers().stream()
                                                     .map(Player::getUsername)
-                                                    .filter(s -> s.toLowerCase().contains(input))
+                                                    .filter(s -> input.isEmpty() || s.toLowerCase().contains(input))
                                                     .forEach(builder1::suggest);
                                             return builder1.buildFuture();
                                         })
@@ -209,9 +289,14 @@ public final class VelocitabCommand {
                                                         .map(c -> PlainTextComponentSerializer.plainText().serialize(c))
                                                         .orElse("empty");
 
-                                                ctx.getSource().sendMessage(Component.text(
-                                                        "Name: %s, UUID: %s, Unformatted display name: %s"
-                                                                .formatted(name, uuid, unformattedDisplayName)));
+                                                final Component hover = MiniMessage.miniMessage().deserialize("<yellow>UUID:</yellow> <gray>%s<gray>".formatted(uuid))
+                                                        .appendNewline()
+                                                        .append(MiniMessage.miniMessage().deserialize("<yellow>Format</yellow>: ").append(entry.getDisplayNameComponent().orElse(Component.empty())));
+
+                                                final Component component = MiniMessage.miniMessage().deserialize("<gray>%s<gray> <yellow>-</yellow> <gray>%s"
+                                                                .formatted(name, unformattedDisplayName))
+                                                        .hoverEvent(hover);
+                                                ctx.getSource().sendMessage(component);
                                             });
 
                                             return Command.SINGLE_SUCCESS;
@@ -252,6 +337,22 @@ public final class VelocitabCommand {
                 );
 
         return new BrigadierCommand(builder);
+    }
+
+    @NotNull
+    private static String joinPlayersName(@NotNull List<TabPlayer> players) {
+        final StringBuilder join = new StringBuilder();
+        for(int i = 0; i < players.size(); i++) {
+            join.append("<yellow>%s</yellow>".formatted(players.get(i).getPlayer().getUsername()));
+            if (i != players.size() - 1) {
+                join.append("<gray>,</gray> ");
+            }
+            if (i % 4 == 0) {
+                join.append("<br>");
+            }
+        }
+
+        return join.toString();
     }
 
     private boolean hasPermission(@NotNull CommandSource source, @NotNull String command) {

@@ -21,12 +21,12 @@ package net.william278.velocitab.tab;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.util.DebugSystem;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.event.Level;
 
 import java.util.List;
 import java.util.Map;
@@ -39,19 +39,25 @@ public class TaskManager {
 
     private final Velocitab plugin;
     private final Map<Group, List<ScheduledFuture<?>>> groupTasks;
-    private final Map<Group, List<ScheduledTask>> groupTasksOld;
     private final ScheduledExecutorService processThread;
 
     public TaskManager(@NotNull Velocitab plugin) {
         this.plugin = plugin;
-        this.groupTasksOld = Maps.newConcurrentMap();
         this.groupTasks = Maps.newConcurrentMap();
-        this.processThread = Executors.newSingleThreadScheduledExecutor();
+        this.processThread = createProcessThread();
+    }
+
+    @NotNull
+    private ScheduledExecutorService createProcessThread() {
+        final Thread.UncaughtExceptionHandler handler = (t, e) -> plugin.log(Level.ERROR, "Uncaught exception in task manager thread", e);
+        return Executors.newSingleThreadScheduledExecutor(r -> {
+            final Thread thread = new Thread(r, "Velocitab Task Manager");
+            thread.setUncaughtExceptionHandler(handler);
+            return thread;
+        });
     }
 
     protected void cancelAllTasks() {
-        groupTasksOld.values().forEach(c -> c.forEach(ScheduledTask::cancel));
-        groupTasksOld.clear();
         groupTasks.values().forEach(c -> c.forEach(t -> t.cancel(true)));
         groupTasks.clear();
     }
@@ -69,12 +75,16 @@ public class TaskManager {
         final List<ScheduledFuture<?>> tasks = groupTasks.computeIfAbsent(group, g -> Lists.newArrayList());
         if (group.headerFooterUpdateRate() > 0) {
             final ScheduledFuture<?> headerFooterTask = processThread.scheduleAtFixedRate(() -> {
-                        final long startTime = System.currentTimeMillis();
-                        plugin.getTabList().updateHeaderFooter(group);
-                        final long endTime = System.currentTimeMillis();
-                        final long time = endTime - startTime;
-                        if (time > 30) {
-                            DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated header/footer for group {} took {}ms", group.name(), time);
+                        try {
+                            final long startTime = System.currentTimeMillis();
+                            plugin.getTabList().updateHeaderFooter(group);
+                            final long endTime = System.currentTimeMillis();
+                            final long time = endTime - startTime;
+                            if (time > 30) {
+                                DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated header/footer for group {} took {}ms", group.name(), time);
+                            }
+                        } catch (Throwable e) {
+                            plugin.log(Level.ERROR, "Failed to update header/footer for group " + group.name(), e);
                         }
                     },
                     250,
@@ -85,12 +95,16 @@ public class TaskManager {
 
         if (group.formatUpdateRate() > 0) {
             final ScheduledFuture<?> formatTask = processThread.scheduleAtFixedRate(() -> {
-                        final long startTime = System.currentTimeMillis();
-                        plugin.getTabList().updateGroupNames(group);
-                        final long endTime = System.currentTimeMillis();
-                        final long time = endTime - startTime;
-                        if (time > 50) {
-                            DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated format for group {} took {}ms", group.name(), time);
+                        try {
+                            final long startTime = System.currentTimeMillis();
+                            plugin.getTabList().updateGroupNames(group);
+                            final long endTime = System.currentTimeMillis();
+                            final long time = endTime - startTime;
+                            if (time > 50) {
+                                DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated format for group {} took {}ms", group.name(), time);
+                            }
+                        } catch (Throwable e) {
+                            plugin.log(Level.ERROR, "Failed to update format for group " + group.name(), e);
                         }
                     },
                     500,
@@ -101,12 +115,16 @@ public class TaskManager {
 
         if (group.nametagUpdateRate() > 0) {
             final ScheduledFuture<?> nametagTask = processThread.scheduleAtFixedRate(() -> {
-                        final long startTime = System.currentTimeMillis();
-                        plugin.getTabList().updateSorting(group);
-                        final long endTime = System.currentTimeMillis();
-                        final long time = endTime - startTime;
-                        if (time > 50) {
-                            DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated nametags/sorting for group {} took {}ms", group.name(), time);
+                        try {
+                            final long startTime = System.currentTimeMillis();
+                            plugin.getTabList().updateSorting(group);
+                            final long endTime = System.currentTimeMillis();
+                            final long time = endTime - startTime;
+                            if (time > 50) {
+                                DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated nametags/sorting for group {} took {}ms", group.name(), time);
+                            }
+                        } catch (Throwable e) {
+                            plugin.log(Level.ERROR, "Failed to update nametags/sorting for group " + group.name(), e);
                         }
                     },
                     750,
@@ -117,12 +135,16 @@ public class TaskManager {
 
         if (group.placeholderUpdateRate() > 0) {
             final ScheduledFuture<?> updateTask = processThread.scheduleAtFixedRate(() -> {
-                        final long startTime = System.currentTimeMillis();
-                        updatePlaceholders(group);
-                        final long endTime = System.currentTimeMillis();
-                        final long time = endTime - startTime;
-                        if (time > 10) {
-                            DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated placeholders for group {} took {}ms", group.name(), time);
+                        try {
+                            final long startTime = System.currentTimeMillis();
+                            updatePlaceholders(group);
+                            final long endTime = System.currentTimeMillis();
+                            final long time = endTime - startTime;
+                            if (time > 10) {
+                                DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated placeholders for group {} took {}ms", group.name(), time);
+                            }
+                        } catch (Throwable e) {
+                            plugin.log(Level.ERROR, "Failed to update placeholders for group " + group.name(), e);
                         }
                     },
                     1000,
@@ -132,12 +154,16 @@ public class TaskManager {
         }
 
         final ScheduledFuture<?> latencyTask = processThread.scheduleAtFixedRate(() -> {
-                    final long startTime = System.currentTimeMillis();
-                    updateLatency(group);
-                    final long endTime = System.currentTimeMillis();
-                    final long time = endTime - startTime;
-                    if (time > 25) {
-                        DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated latency for group {} took {}ms", group.name(), time);
+                    try {
+                        final long startTime = System.currentTimeMillis();
+                        updateLatency(group);
+                        final long endTime = System.currentTimeMillis();
+                        final long time = endTime - startTime;
+                        if (time > 25) {
+                            DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated latency for group {} took {}ms", group.name(), time);
+                        }
+                    } catch (Throwable e) {
+                        plugin.log(Level.ERROR, "Failed to update latency for group " + group.name(), e);
                     }
                 },
                 1250,
@@ -171,10 +197,18 @@ public class TaskManager {
     }
 
     public void run(@NotNull Runnable runnable) {
-        processThread.execute(runnable);
+        try {
+            processThread.execute(runnable);
+        } catch (Throwable e) {
+            plugin.log(Level.ERROR, "Failed to run task", e);
+        }
     }
 
     public void runDelayed(@NotNull Runnable runnable, long delay, @NotNull TimeUnit timeUnit) {
-        processThread.schedule(runnable, delay, timeUnit);
+        try {
+            processThread.schedule(runnable, delay, timeUnit);
+        } catch (Throwable e) {
+            plugin.log(Level.ERROR, "Failed to run delayed task", e);
+        }
     }
 }

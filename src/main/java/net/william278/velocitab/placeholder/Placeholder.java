@@ -110,6 +110,8 @@ public enum Placeholder {
             .map(hook -> hook.getMeta(player.getPlayer(), param))
             .orElse(getPlaceholderFallback(plugin, "%luckperms_meta_" + param + "%"))),
     BACKEND_LUCKPERMS_META_WEIGHT((plugin, player) -> "%luckperms_meta_weight%", true),
+    BACKEND_LUCKPERMS_PREFIX((plugin, player) -> "%luckperms_prefix%", true),
+    BACKEND_LUCKPERMS_SUFFIX((plugin, player) -> "%luckperms_suffix%", true),
     ;
 
 

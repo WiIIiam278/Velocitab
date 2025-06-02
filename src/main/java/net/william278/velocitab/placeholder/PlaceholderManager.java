@@ -115,39 +115,47 @@ public class PlaceholderManager {
 
         final long start = System.currentTimeMillis();
 
-        placeholders.forEach(placeholder -> replaceSingle(placeholder, plugin, tabPlayer)
-                .ifPresentOrElse(replacement -> parsed.put(placeholder, replacement),
-                        () -> plugin.getPAPIProxyBridgeHook().ifPresent(hook -> {
-                            final CompletableFuture<String> future = hook.formatPlaceholders(placeholder, player);
-                            requests.computeIfAbsent(player.getUniqueId(), u -> Sets.newConcurrentHashSet()).add(future);
-                            future.thenAccept(replacement -> {
-                                if (replacement == null || replacement.equals(placeholder)) {
-                                    return;
-                                }
+        placeholders.forEach(placeholder -> {
+            final Optional<PlaceholderResult> result = replaceSingle(placeholder, plugin, tabPlayer);
+            if (result.isPresent() && !result.get().isForBackend()) {
+                parsed.put(placeholder, result.get().postParsed());
+                return;
+            }
 
-                                if (blocked.contains(player.getUniqueId())) {
-                                    return;
-                                }
+            final String key = result.isPresent() ? result.get().preParsed() : placeholder;
+            final String toParse = result.isPresent() ? result.get().postParsed() : placeholder;
+            plugin.getPAPIProxyBridgeHook().ifPresent(hook -> {
+                final CompletableFuture<String> future = hook.formatPlaceholders(toParse, player);
+                requests.computeIfAbsent(player.getUniqueId(), u -> Sets.newConcurrentHashSet()).add(future);
+                future.thenAccept(replacement -> {
+                    if (replacement == null || replacement.equals(placeholder)) {
+                        return;
+                    }
 
-                                if (debug) {
-                                    plugin.getLogger().info("Placeholder {} replaced with  {} in {}ms", placeholder, replacement, System.currentTimeMillis() - start);
-                                }
+                    if (blocked.contains(player.getUniqueId())) {
+                        return;
+                    }
 
-                                final long diff = System.currentTimeMillis() - start;
-                                if (diff > group.placeholderUpdateRate()) {
-                                    final long increase = diff + 100;
-                                    plugin.getLogger().warn("""
+                    if (debug) {
+                        plugin.getLogger().info("Placeholder {} replaced with  {} in {}ms", placeholder, replacement, System.currentTimeMillis() - start);
+                    }
+
+                    final long diff = System.currentTimeMillis() - start;
+                    if (diff > group.placeholderUpdateRate()) {
+                        final long increase = diff + 100;
+                        plugin.getLogger().warn("""
                                                     Placeholder {} took more than group placeholder update rate of {} ms to update. This may cause a thread leak.
                                                     Please fix the issue of the plugin providing the placeholder.
                                                     If you can't fix it, increase the placeholder update rate of the group to at least {} ms.
                                                     """
-                                            , placeholder, group.placeholderUpdateRate(), increase);
-                                }
+                                , placeholder, group.placeholderUpdateRate(), increase);
+                    }
 
-                                parsed.put(placeholder, replacement);
-                                requests.get(player.getUniqueId()).remove(future);
-                            });
-                        })));
+                    requests.get(player.getUniqueId()).remove(future);
+                    parsed.put(key, replacement);
+                });
+            });
+        });
     }
 
     @NotNull
@@ -259,7 +267,7 @@ public class PlaceholderManager {
         return Optional.ofNullable(placeholders.get(uuid).get(text));
     }
 
-    private Optional<String> replaceSingle(@NotNull String placeholder, @NotNull Velocitab plugin, @NotNull TabPlayer player) {
+    private Optional<PlaceholderResult> replaceSingle(@NotNull String placeholder, @NotNull Velocitab plugin, @NotNull TabPlayer player) {
         final Optional<Placeholder> optionalPlaceholder = Placeholder.byName(placeholder);
         if (optionalPlaceholder.isEmpty()) {
             //check if it's parameterised
@@ -268,7 +276,7 @@ public class PlaceholderManager {
                 if (matcher.find()) {
                     final String s = chop(matcher.group().replace("%" + placeholderType.name().toLowerCase(), "")
                             .replaceFirst("_", ""));
-                    return Optional.of(placeholderType.getReplacer().apply(s, plugin, player));
+                    return Optional.of(new PlaceholderResult(placeholder, false, placeholderType.getReplacer().apply(s, plugin, player)));
                 }
             }
 
@@ -280,7 +288,11 @@ public class PlaceholderManager {
         }
 
         final Placeholder placeholderType = optionalPlaceholder.get();
-        return Optional.of(placeholderType.getReplacer().apply(null, plugin, player));
+        if (placeholderType.isForBackend()) {
+            return Optional.of(new PlaceholderResult(placeholder, true, placeholderType.getReplacer().apply(null, plugin, player)));
+        }
+
+        return Optional.of(new PlaceholderResult(placeholder, false, placeholderType.getReplacer().apply(null, plugin, player)));
     }
 
     @NotNull
@@ -348,4 +360,7 @@ public class PlaceholderManager {
         result.append(text.substring(lastEnd));
         return result.toString();
     }
+
+    private record PlaceholderResult(String preParsed, boolean isForBackend, String postParsed) {}
+
 }

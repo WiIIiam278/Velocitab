@@ -124,7 +124,7 @@ public record Group(
             players.addAll(server.getPlayersConnected());
         }
 
-        return players;
+        return players.stream().filter(Player::isActive).collect(Collectors.toList());
     }
 
     @NotNull
@@ -143,14 +143,18 @@ public record Group(
     }
 
     public List<TabPlayer> getTabPlayers(@NotNull Velocitab plugin) {
-        if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
+        return getTabPlayers(plugin, true);
+    }
+
+    public List<TabPlayer> getTabPlayers(@NotNull Velocitab plugin, boolean allGroups) {
+        if (allGroups && plugin.getSettings().isShowAllPlayersFromAllGroups()) {
             return plugin.getTabList().getPlayers().values().stream().filter(TabPlayer::isLoaded).collect(Collectors.toList());
         }
 
         return plugin.getTabList().getPlayers()
                 .values()
                 .stream()
-                .filter(tabPlayer -> tabPlayer.isLoaded() && tabPlayer.getGroup().equals(this))
+                .filter(tabPlayer -> tabPlayer.isLoaded() && tabPlayer.getGroup().equals(this) && tabPlayer.getPlayer().isActive())
                 .collect(Collectors.toList());
     }
 
@@ -169,7 +173,7 @@ public record Group(
             return plugin.getTabList().getPlayers()
                     .values()
                     .stream()
-                    .filter(player -> (player.isLoaded() || force) && player.getGroup().equals(this) && player.getServerName().equals(tabPlayer.getServerName()))
+                    .filter(player -> (player.isLoaded() || force) && player.getGroup().equals(this) && tabPlayer.getPlayer().isActive() && player.getServerName().equals(tabPlayer.getServerName()))
                     .collect(Collectors.toList());
         }
 

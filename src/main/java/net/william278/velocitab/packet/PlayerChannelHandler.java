@@ -30,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.util.DebugSystem;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -73,7 +74,7 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
 
             // Cancel packet if the backend is trying to send a team packet with an online player.
             // This is to prevent conflicts with Velocitab teams.
-            plugin.getLogger().warn("Cancelled team \"{}\" packet from backend for player {}. " +
+            DebugSystem.log(DebugSystem.DebugLevel.WARNING, "Cancelled team \"{}\" packet from backend for player {}. " +
                                     "We suggest disabling \"send_scoreboard_packets\" in Velocitab's config.yml file, " +
                                     "but note this will disable TAB sorting. If you want to use sorting you have to disable team handling on your backend servers (plugin or vanilla scoreboard teams)",
                     updateTeamsPacket.teamName(), player.getUsername());

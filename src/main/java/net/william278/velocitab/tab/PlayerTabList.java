@@ -409,7 +409,7 @@ public class PlayerTabList {
     }
 
     public void updateHeaderFooter(@NotNull Group group) {
-        group.getTabPlayers(plugin).forEach(p -> {
+        group.getTabPlayers(plugin, false).forEach(p -> {
             p.incrementIndexes();
             p.sendHeaderAndFooter(this);
         });
@@ -445,10 +445,14 @@ public class PlayerTabList {
             return;
         }
 
-        plugin.getScoreboardManager().updateRole(tabPlayer, teamName, force);
+        final boolean updated = plugin.getScoreboardManager().updateRole(tabPlayer, teamName, force);
+        if (!updated) {
+            return;
+        }
+
         final int order = plugin.getScoreboardManager().getPosition(teamName);
         if (order == -1) {
-            DebugSystem.log(DebugSystem.DebugLevel.ERROR, "Failed to get position for " + tabPlayer.getPlayer().getUsername());
+            DebugSystem.log(DebugSystem.DebugLevel.ERROR, "Failed to get position for " + tabPlayer.getPlayer().getUsername() + " and " + teamName);
             return;
         }
 

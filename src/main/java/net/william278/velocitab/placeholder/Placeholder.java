@@ -108,7 +108,9 @@ public enum Placeholder {
     DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getLastTeamName().orElse(""))),
     LUCKPERMS_META((param, plugin, player) -> plugin.getLuckPermsHook()
             .map(hook -> hook.getMeta(player.getPlayer(), param))
-            .orElse(getPlaceholderFallback(plugin, "%luckperms_meta_" + param + "%")));
+            .orElse(getPlaceholderFallback(plugin, "%luckperms_meta_" + param + "%"))),
+    BACKEND_LUCKPERMS_META_WEIGHT((plugin, player) -> "%luckperms_meta_weight%", true),
+    ;
 
 
     private static final List<Placeholder> VALUES = Arrays.asList(values());
@@ -121,16 +123,26 @@ public enum Placeholder {
      */
     private final TriFunction<String, Velocitab, TabPlayer, String> replacer;
     private final boolean parameterised;
+    private final boolean forBackend;
     private final Pattern pattern;
 
     Placeholder(@NotNull BiFunction<Velocitab, TabPlayer, String> replacer) {
         this.parameterised = false;
+        this.forBackend = false;
+        this.replacer = (text, player, plugin) -> replacer.apply(player, plugin);
+        this.pattern = Pattern.compile("%" + this.name().toLowerCase() + "%");
+    }
+
+    Placeholder(@NotNull BiFunction<Velocitab, TabPlayer, String> replacer, boolean forBackend) {
+        this.parameterised = false;
+        this.forBackend = forBackend;
         this.replacer = (text, player, plugin) -> replacer.apply(player, plugin);
         this.pattern = Pattern.compile("%" + this.name().toLowerCase() + "%");
     }
 
     Placeholder(@NotNull TriFunction<String, Velocitab, TabPlayer, String> parameterisedReplacer) {
         this.parameterised = true;
+        this.forBackend = false;
         this.replacer = parameterisedReplacer;
         this.pattern = Pattern.compile("%" + this.name().toLowerCase() + "[^%]*%", Pattern.CASE_INSENSITIVE);
     }

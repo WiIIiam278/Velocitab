@@ -120,7 +120,7 @@ public class TaskManager {
                             plugin.getTabList().updateSorting(group);
                             final long endTime = System.currentTimeMillis();
                             final long time = endTime - startTime;
-                            if (time > 50) {
+                            if (time > 100) {
                                 DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Updated nametags/sorting for group {} took {}ms", group.name(), time);
                             }
                         } catch (Throwable e) {

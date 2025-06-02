@@ -212,7 +212,7 @@ public interface DumpProvider {
                 .sorted(getGroupComparator(getPlugin()).reversed())
                 .collect(Collectors.toMap(
                         Group::name,
-                        g -> g.registeredServers(getPlugin()).stream()
+                        g -> g.registeredServers(getPlugin(), false).stream()
                                 .map(RegisteredServer::getServerInfo)
                                 .map(ServerInfo::getName)
                                 .collect(Collectors.joining(", ")),
@@ -228,8 +228,8 @@ public interface DumpProvider {
 
     default Comparator<Group> getGroupComparator(@NotNull Velocitab plugin) {
         return (g1, g2) -> {
-            final int servers1 = g1.registeredServers(plugin).size();
-            final int servers2 = g2.registeredServers(plugin).size();
+            final int servers1 = g1.registeredServers(plugin, false).size();
+            final int servers2 = g2.registeredServers(plugin, false).size();
             if (servers1 != servers2) {
                 return servers1 - servers2;
             }

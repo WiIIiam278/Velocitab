@@ -240,6 +240,8 @@ public class PlaceholderManager {
                 final String currentValue = parsed.get(placeholder);
                 if (currentValue != null) {
                     replacementToAppend = getReplacement(player.getGroup(), placeholder, currentValue);
+                } else {
+                    replacementToAppend = getReplacement(player.getGroup(), placeholder, placeholder);
                 }
             }
 

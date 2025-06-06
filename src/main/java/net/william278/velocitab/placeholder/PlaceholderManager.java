@@ -237,7 +237,7 @@ public class PlaceholderManager {
             String replacementToAppend = null;
 
             if (groupReplacements.containsKey(placeholder)) {
-                final String currentValue = parsed.get(placeholder);
+                final String currentValue = parsed.getOrDefault(placeholder, placeholder);
                 if (currentValue != null) {
                     replacementToAppend = getReplacement(player.getGroup(), placeholder, currentValue);
                 }

@@ -40,7 +40,7 @@ dependencies {
 
     compileOnly 'io.netty:netty-codec-http:4.1.119.Final'
     compileOnly 'org.projectlombok:lombok:1.18.38'
-    compileOnly 'net.luckperms:api:5.4'
+    compileOnly 'net.luckperms:api:5.5'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.2.3'
     compileOnly 'it.unimi.dsi:fastutil:8.5.15'
     compileOnly 'net.kyori:adventure-nbt:4.20.0'

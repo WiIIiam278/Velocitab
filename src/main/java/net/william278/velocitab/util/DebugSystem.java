@@ -22,11 +22,10 @@ package net.william278.velocitab.util;
 import net.william278.velocitab.Velocitab;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.Iterator;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 public class DebugSystem {

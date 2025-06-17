@@ -35,14 +35,14 @@ import net.william278.velocitab.util.DebugSystem;
 import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.NotNull;
 
-import static net.william278.toilet.DumpOptions.*;
-
 import java.awt.*;
 import java.io.File;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static net.william278.toilet.DumpOptions.*;
 
 public interface DumpProvider {
 

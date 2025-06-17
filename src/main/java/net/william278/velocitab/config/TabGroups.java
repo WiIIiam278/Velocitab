@@ -27,7 +27,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import net.william278.velocitab.Velocitab;
-import net.william278.velocitab.placeholder.PlaceholderReplacement;
 import net.william278.velocitab.tab.Nametag;
 import org.jetbrains.annotations.NotNull;
 

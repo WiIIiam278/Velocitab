@@ -132,6 +132,11 @@ public final class TabPlayer implements Comparable<TabPlayer> {
         final Component footer = tabList.getFooter(this);
         lastHeader = header;
         lastFooter = footer;
+
+        if (plugin.getSettings().isDisableHeaderFooterIfEmpty() && (header.equals(Component.empty()) && footer.equals(Component.empty()))) {
+            return;
+        }
+
         player.sendPlayerListHeaderAndFooter(header, footer);
     }
 

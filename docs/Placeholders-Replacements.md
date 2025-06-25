@@ -9,6 +9,7 @@ You can specify a list of replacements for a placeholder, and the replacements w
 
 The replacements are specified as a list of objects with two properties: `placeholder` and `replacement`.
 `placeholder` is the placeholder to replace, and `replacement` is the replacement text.
+To retrieve a placeholder's original value during replacement, simply use `%placeholder_value%`.
 
 ### Example section
 ```yaml

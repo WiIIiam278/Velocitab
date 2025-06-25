@@ -43,6 +43,8 @@ public class PlaceholderManager {
     private boolean debug = false;
 
     private static final String ELSE_PLACEHOLDER = "else";
+    private static final String DEFAULT_PLACEHOLDER = "%placeholder_value%";
+
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%.*?%", Pattern.DOTALL);
     private static final Pattern VELOCITAB_PLACEHOLDERS = Pattern.compile("<velocitab[^<>]*(?:<(?!v)[^<>]*>[^<>]*)*>");
     private static final Pattern VELOCITAB_REL_PLACEHOLDERS = Pattern.compile("<velocitab_rel[^<>]*(?:<(?!v)[^<>]*>[^<>]*)*>");
@@ -223,6 +225,11 @@ public class PlaceholderManager {
     }
 
     @NotNull
+    private String applyDefaultReplacement(@NotNull String replacementText, @NotNull String originalValue) {
+        return replacementText.replace(DEFAULT_PLACEHOLDER, originalValue);
+    }
+
+    @NotNull
     private String applyPlaceholdersAndReplacements(@NotNull String text, @NotNull TabPlayer player,
                                                     @NotNull Map<String, String> parsed) {
         final Matcher matcher = PLACEHOLDER_PATTERN.matcher(text);
@@ -239,7 +246,11 @@ public class PlaceholderManager {
             if (groupReplacements.containsKey(placeholder)) {
                 final String currentValue = parsed.getOrDefault(placeholder, placeholder);
                 if (currentValue != null) {
-                    replacementToAppend = getReplacement(player.getGroup(), placeholder, currentValue);
+                    final String rawReplacement = getReplacement(player.getGroup(), placeholder, currentValue);
+
+                    if (rawReplacement != null) {
+                        replacementToAppend = applyDefaultReplacement(rawReplacement, currentValue);
+                    }
                 }
             }
 

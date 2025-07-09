@@ -205,6 +205,10 @@ public class UpdateTeamsPacket implements MinecraftPacket {
         public static int getColorId(char var) {
             return BY_ID.getOrDefault(var, TeamColor.RESET).id;
         }
+
+        public static TeamColor getColor(char var) {
+            return BY_ID.getOrDefault(var, TeamColor.RESET);
+        }
     }
 
     @Override

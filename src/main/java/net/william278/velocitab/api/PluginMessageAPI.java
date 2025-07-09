@@ -27,6 +27,7 @@ import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.packet.UpdateTeamsPacket;
 import net.william278.velocitab.player.TabPlayer;
+import net.william278.velocitab.util.DebugSystem;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -35,6 +36,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class PluginMessageAPI {
+
+    private static final Map<MinecraftChannelIdentifier, PluginMessageRequest> CHANNELS = Maps.newHashMap();
 
     private final Velocitab plugin;
     private final Map<String, MinecraftChannelIdentifier> channels;
@@ -46,13 +49,13 @@ public class PluginMessageAPI {
 
     public void registerChannel() {
         Arrays.stream(PluginMessageRequest.values())
-                .map(PluginMessageRequest::name)
-                .map(s -> s.toLowerCase(Locale.ENGLISH))
                 .forEach(request -> {
-                    final String channelName = "velocitab:" + request;
+                    final String requestName = request.name().toLowerCase(Locale.ENGLISH);
+                    final String channelName = "velocitab:" + requestName;
                     final MinecraftChannelIdentifier channel = MinecraftChannelIdentifier.from(channelName);
                     channels.put(channelName, channel);
                     plugin.getServer().getChannelRegistrar().register(channel);
+                    CHANNELS.put(channel, request);
                 });
         plugin.getServer().getEventManager().register(plugin, PluginMessageEvent.class, this::onPluginMessage);
     }
@@ -102,13 +105,10 @@ public class PluginMessageAPI {
                     return;
                 }
                 final char colorChar = clean.charAt(0);
-                final Optional<UpdateTeamsPacket.TeamColor> color = Arrays.stream(UpdateTeamsPacket.TeamColor.values())
-                        .filter(teamColor -> teamColor.colorChar() == colorChar)
-                        .findFirst();
-                color.ifPresent(teamColor -> {
-                    tabPlayer.setTeamColor(teamColor);
-                    plugin.getTabList().updatePlayer(tabPlayer, true);
-                });
+                final UpdateTeamsPacket.TeamColor color = UpdateTeamsPacket.TeamColor.getColor(colorChar);
+                DebugSystem.log(DebugSystem.DebugLevel.DEBUG, "Team color for " + tabPlayer.getPlayer().getUsername() + " is " + color + " (" + arg + ")");
+                tabPlayer.setTeamColor(color);
+                plugin.getTabList().updatePlayer(tabPlayer, true);
             }
         }
     }
@@ -118,9 +118,7 @@ public class PluginMessageAPI {
         UPDATE_TEAM_COLOR;
 
         public static Optional<PluginMessageRequest> get(@NotNull MinecraftChannelIdentifier channelIdentifier) {
-            return Arrays.stream(values())
-                    .filter(request -> request.name().equalsIgnoreCase(channelIdentifier.getName()))
-                    .findFirst();
+            return Optional.ofNullable(CHANNELS.get(channelIdentifier));
         }
     }
 

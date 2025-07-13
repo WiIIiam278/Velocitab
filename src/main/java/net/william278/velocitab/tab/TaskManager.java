@@ -39,11 +39,13 @@ public class TaskManager {
 
     private final Velocitab plugin;
     private final Map<Group, List<ScheduledFuture<?>>> groupTasks;
+    private final List<ScheduledFuture<?>> otherTasks;
     private final ScheduledExecutorService processThread;
 
     public TaskManager(@NotNull Velocitab plugin) {
         this.plugin = plugin;
         this.groupTasks = Maps.newConcurrentMap();
+        this.otherTasks = Lists.newArrayList();
         this.processThread = createProcessThread();
     }
 
@@ -60,6 +62,8 @@ public class TaskManager {
     protected void cancelAllTasks() {
         groupTasks.values().forEach(c -> c.forEach(t -> t.cancel(true)));
         groupTasks.clear();
+        otherTasks.forEach(t -> t.cancel(true));
+        otherTasks.clear();
     }
 
     public void close() {
@@ -93,7 +97,7 @@ public class TaskManager {
             tasks.add(headerFooterTask);
         }
 
-        if (group.formatUpdateRate() > 0) {
+        if (group.formatUpdateRate() > 0 && !plugin.getSettings().isShowAllPlayersFromAllGroups()) {
             final ScheduledFuture<?> formatTask = processThread.scheduleAtFixedRate(() -> {
                         try {
                             final long startTime = System.currentTimeMillis();
@@ -194,6 +198,24 @@ public class TaskManager {
             groupPlayers.forEach(p -> p.getPlayer().getTabList().getEntry(player.getPlayer().getUniqueId())
                     .ifPresent(entry -> entry.setLatency(Math.max(latency, 0))));
         });
+    }
+
+    public void loadShowAllPlayersFromAllGroups() {
+        final long minDelay = plugin.getTabGroupsManager().getGroups().stream()
+                .mapToLong(Group::formatUpdateRate)
+                .min()
+                .orElse(0);
+
+        if (minDelay <= 0) {
+            return;
+        }
+
+        final ScheduledFuture<?> showAllTask = processThread.scheduleAtFixedRate(() -> {
+            final List<TabPlayer> players = List.copyOf(plugin.getTabList().getPlayers().values());
+            plugin.getTabList().updateNames(players);
+        }, 1500, minDelay, TimeUnit.MILLISECONDS);
+
+        otherTasks.add(showAllTask);
     }
 
     public void run(@NotNull Runnable runnable) {

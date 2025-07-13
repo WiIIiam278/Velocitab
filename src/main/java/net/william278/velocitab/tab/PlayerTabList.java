@@ -31,6 +31,7 @@ import com.velocitypowered.api.scheduler.ScheduledTask;
 import com.velocitypowered.api.util.ServerLink;
 import com.velocitypowered.proxy.tablist.KeyedVelocityTabList;
 import com.velocitypowered.proxy.tablist.VelocityTabList;
+import it.unimi.dsi.fastutil.Pair;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -496,11 +497,32 @@ public class PlayerTabList {
         updateNormalGroupNames(players, group);
     }
 
+    public void updateNames(@NotNull List<TabPlayer> players) {
+        if (plugin.getSettings().isEnableRelationalPlaceholders()) {
+            updateRelationalGroupNames(players);
+            return;
+        }
+
+        updateNormalGroupNames(players);
+    }
+
     private void updateNormalGroupNames(List<TabPlayer> players, @NotNull Group group) {
         final String stripped = plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(group.format());
         checkStrippedString(stripped, group);
 
         for (TabPlayer player : players) {
+            updateNormalDisplayName(player, players, stripped);
+        }
+    }
+
+    private void updateNormalGroupNames(@NotNull List<TabPlayer> players) {
+        final Map<Group, String> strippedGroups = plugin.getTabGroupsManager().getGroups().stream()
+                .map(g -> Pair.of(g, plugin.getPlaceholderManager().stripVelocitabRelPlaceholders(g.format())))
+                .peek(pair -> checkStrippedString(pair.right(), pair.left()))
+                .collect(Collectors.toMap(Pair::left, Pair::right));
+
+        for (TabPlayer player : players) {
+            final String stripped = strippedGroups.get(player.getGroup());
             updateNormalDisplayName(player, players, stripped);
         }
     }
@@ -651,6 +673,10 @@ public class PlayerTabList {
             plugin.getPlaceholderManager().fetchPlaceholders(g);
             taskManager.updatePeriodically(g);
         });
+
+        if (plugin.getSettings().isShowAllPlayersFromAllGroups()) {
+            taskManager.loadShowAllPlayersFromAllGroups();
+        }
 
         if (players.isEmpty()) {
             return;

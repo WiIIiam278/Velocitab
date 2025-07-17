@@ -26,6 +26,7 @@ import net.william278.velocitab.Velocitab;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.util.TriFunction;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -48,16 +49,17 @@ public enum Placeholder {
             .map(players -> Integer.toString(players.size()))
             .orElse("")),
     GROUP_PLAYERS_ONLINE((param, plugin, player) -> {
-        if (param.isEmpty()) {
+        if (param == null) {
             return Integer.toString(player.getGroup().getTabPlayers(plugin).size());
         }
+
         return plugin.getTabGroupsManager().getGroup(param)
                 .map(group -> Integer.toString(group.getPlayers(plugin).size()))
                 .orElse("Group " + param + " not found");
     }),
     CURRENT_DATE_DAY((plugin, player) -> DateTimeFormatter.ofPattern("dd").format(LocalDateTime.now())),
     CURRENT_DATE_WEEKDAY((param, plugin, player) -> {
-        if (param.isEmpty()) {
+        if (param == null) {
             return DateTimeFormatter.ofPattern("EEEE").format(LocalDateTime.now());
         }
 
@@ -68,7 +70,7 @@ public enum Placeholder {
     CURRENT_DATE_MONTH((plugin, player) -> DateTimeFormatter.ofPattern("MM").format(LocalDateTime.now())),
     CURRENT_DATE_YEAR((plugin, player) -> DateTimeFormatter.ofPattern("yyyy").format(LocalDateTime.now())),
     CURRENT_DATE((param, plugin, player) -> {
-        if (param.isEmpty()) {
+        if (param == null) {
             return DateTimeFormatter.ofPattern("dd/MM/yyyy").format(LocalDateTime.now());
         }
 
@@ -80,7 +82,7 @@ public enum Placeholder {
     CURRENT_TIME_MINUTE((plugin, player) -> DateTimeFormatter.ofPattern("mm").format(LocalDateTime.now())),
     CURRENT_TIME_SECOND((plugin, player) -> DateTimeFormatter.ofPattern("ss").format(LocalDateTime.now())),
     CURRENT_TIME((param, plugin, player) -> {
-        if (param.isEmpty()) {
+        if (param == null) {
             return DateTimeFormatter.ofPattern("HH:mm:ss").format(LocalTime.now());
         }
 
@@ -105,6 +107,17 @@ public enum Placeholder {
             .orElse(getPlaceholderFallback(plugin, "%luckperms_meta_weight%"))),
     SERVER_GROUP((plugin, player) -> player.getGroup().name()),
     SERVER_GROUP_INDEX((plugin, player) -> Integer.toString(player.getServerGroupPosition(plugin))),
+    SERVER_ONLINE_PLAYERS((param, plugin, player) -> {
+        if (param == null) {
+            return Integer.toString(player.getPlayer().getCurrentServer()
+                    .map(ServerConnection::getServer)
+                    .map(RegisteredServer::getPlayersConnected)
+                    .map(Collection::size)
+                    .orElse(0));
+        }
+
+        return Integer.toString(plugin.getServer().getServer(param).map(RegisteredServer::getPlayersConnected).map(Collection::size).orElse(0));
+    }),
     DEBUG_TEAM_NAME((plugin, player) -> plugin.getFormatter().escape(player.getLastTeamName().orElse(""))),
     LUCKPERMS_META((param, plugin, player) -> plugin.getLuckPermsHook()
             .map(hook -> hook.getMeta(player.getPlayer(), param))
@@ -123,7 +136,7 @@ public enum Placeholder {
     /**
      * Function to replace placeholders with a real value
      */
-    private final TriFunction<String, Velocitab, TabPlayer, String> replacer;
+    private final TriFunction<@Nullable String, @NotNull Velocitab, @NotNull TabPlayer, @NotNull String> replacer;
     private final boolean parameterised;
     private final boolean forBackend;
     private final Pattern pattern;

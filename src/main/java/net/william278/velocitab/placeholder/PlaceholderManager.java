@@ -294,10 +294,6 @@ public class PlaceholderManager {
             return Optional.empty();
         }
 
-        if (optionalPlaceholder.get().isParameterised()) {
-            throw new IllegalArgumentException("Placeholder " + placeholder + " is parameterised");
-        }
-
         final Placeholder placeholderType = optionalPlaceholder.get();
         if (placeholderType.isForBackend()) {
             return Optional.of(new PlaceholderResult(placeholder, true, placeholderType.getReplacer().apply(null, plugin, player)));

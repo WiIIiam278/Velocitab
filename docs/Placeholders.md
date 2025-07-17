@@ -3,10 +3,6 @@ Velocitab supports a number of Placeholders that will be replaced with their res
 ## Default placeholders
 Placeholders can be included in the header, footer and player name format of the TAB list. The following placeholders are supported out of the box:
 
-/*
-BACKEND_LUCKPERMS_META_WEIGHT((plugin, player) -> "%luckperms_meta_weight%", true),
-BACKEND_LUCKPERMS_PREFIX((plugin, player) -> "%luckperms_prefix%", true),
-BACKEND_LUCKPERMS_SUFFIX((plugin, player) -> "%luckperms_suffix%", true),
 
 | Placeholder                       | Description                                                                                                                                       | Example            |
 |-----------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|--------------------|
@@ -15,6 +11,10 @@ BACKEND_LUCKPERMS_SUFFIX((plugin, player) -> "%luckperms_suffix%", true),
 | `%local_players_online%`          | Players online on the server the player is on                                                                                                     | `3`                |
 | `%group_players_online_(name)%`   | Players online on the group provided                                                                                                              | `11`               |
 | `%group_players_online%`          | Players online on player's group                                                                                                                  | `15`               |
+| `%server_group%`                  | The name of the server group the player is on                                                                                                     | `default`          |
+| `%server_group_index%`            | Indexed order of the server group in the list                                                                                                     | `0`                |
+| `%server_online_players_(name)%`  | Players online on the server provided                                                                                                             | `11`               |
+| `%server_online_players%`         | Players online on the server the player is on                                                                                                     | `3`                |
 | `%current_date_day%`              | Current day of the month                                                                                                                          | `14`               |
 | `%current_date_weekday%`          | Current day of the week                                                                                                                           | `Wednesday`        |
 | `%current_date_weekday_(tag)%`    | Current day of the week ([localized](https://en.wikipedia.org/wiki/IETF_language_tag#List_of_common_primary_language_subtags)) `it-IT` as example | `Mercoledì`        |
@@ -40,8 +40,6 @@ BACKEND_LUCKPERMS_SUFFIX((plugin, player) -> "%luckperms_suffix%", true),
 | `%backend_luckperms_meta_weight%` | Weight of the player's LuckPerms group from the backend(Paper), PapiProxyBridge is required, used for [[Sorting]]                                 | `100`              |
 | `%backend_luckperms_prefix%`      | Prefix of the player's LuckPerms group from the backend(Paper), PapiProxyBridge is required, used for [[Sorting]]                                 | `&4[Admin]`        |
 | `%backend_luckperms_suffix%`      | Suffix of the player's LuckPerms group from the backend(Paper), PapiProxyBridge is required, used for [[Sorting]]                                 | `&c `              |
-| `%server_group%`                  | The name of the server group the player is on                                                                                                     | `default`          |
-| `%server_group_index%`            | Indexed order of the server group in the list                                                                                                     | `0`                |
 | `%debug_team_name%`               | (Debug) Player's team name, used for [[Sorting]]                                                                                                  | `1alphaWilliam278` |
 
 **Note:** `(tag)` stands for IETF language tag, used for localization of date and time placeholders. For example, `en-US` for American English, `fr-FR` for French, `it-IT` for Italian, etc.

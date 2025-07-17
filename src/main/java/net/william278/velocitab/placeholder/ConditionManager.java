@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ConditionManager {
 
@@ -69,9 +70,13 @@ public class ConditionManager {
         }
 
         String condition = parameters.get(0);
-        if (parameters.size() < 3) {
+        if (parameters.size() < 2) {
             plugin.getLogger().warn("Invalid condition: Missing true/false values for condition: {}. Parameters: {}", condition, parameters);
             return "";
+        }
+
+        if (parameters.size() == 2) {
+            parameters.add("");
         }
 
         condition = plugin.getPlaceholderManager().applyPlaceholders(target, condition);
@@ -88,7 +93,7 @@ public class ConditionManager {
 
         return Arrays.stream(argument.split(":"))
                 .map(s -> s.replace("''", "\""))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @NotNull

@@ -345,6 +345,7 @@ public class PlayerTabList {
                 .displayName(displayName)
                 .latency(Math.max((int) player.getPlayer().getPing(), 0))
                 .tabList(tabList)
+                .showHat(true)
                 .build();
     }
 
@@ -362,6 +363,7 @@ public class PlayerTabList {
                 .displayName(displayName)
                 .latency(Math.max((int) player.getPlayer().getPing(), 0))
                 .tabList(tabList)
+                .showHat(true)
                 .build();
     }
 

@@ -37,6 +37,18 @@ placeholder_replacements:
       replacement: <aqua>River</aqua>
 ```
 
+## Example for the server placeholder
+```yaml
+  placeholder_replacements:
+    '%server%':
+    - placeholder: spawn
+      replacement: <bold><#ff8080>Spawn
+    - placeholder: realms
+      replacement: <bold><#ff0000>Realms
+    - placeholder: dungeons
+      replacement: <bold><#00ff00>Dungeons
+```
+
 ## Specified cases
 
 ### Vanish status

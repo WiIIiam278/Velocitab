@@ -652,16 +652,18 @@ public class PlayerTabList {
     public Component getHeader(@NotNull TabPlayer player) {
         final String header = player.getGroup().getHeader(player.getHeaderIndex());
         final String replaced = plugin.getPlaceholderManager().applyPlaceholders(player, header);
+        final String withVelocitabPlaceholders = plugin.getPlaceholderManager().formatVelocitabPlaceholders(replaced, player, null);
 
-        return plugin.getFormatter().format(replaced, player, plugin);
+        return plugin.getFormatter().format(withVelocitabPlaceholders, player, plugin);
     }
 
     // Get the component for the TAB list footer
     public Component getFooter(@NotNull TabPlayer player) {
         final String footer = player.getGroup().getFooter(player.getFooterIndex());
         final String replaced = plugin.getPlaceholderManager().applyPlaceholders(player, footer);
+        final String withVelocitabPlaceholders = plugin.getPlaceholderManager().formatVelocitabPlaceholders(replaced, player, null);
 
-        return plugin.getFormatter().format(replaced, player, plugin);
+        return plugin.getFormatter().format(withVelocitabPlaceholders, player, plugin);
     }
 
     /**

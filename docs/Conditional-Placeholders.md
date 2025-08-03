@@ -1,8 +1,6 @@
 Conditional placeholders allow you to display different values based on certain conditions. The format
 is `<velocitab_condition|<condition>|<true>|<false>>` and the relational format is `<velocitab_rel_condition|<condition>|<true>|<false>>`.
 
-Currently, this system is only available for the `format` and `nametag` fields in the tab groups configuration.
-
 **Note:** The difference between the two is that relational placeholders are evaluated from the viewer's perspective, while the conditional placeholders are evaluated from the player's perspective.
 So if you have 200 players, if you use a conditional placeholder, the placeholder will be evaluated 200 times, while if you use a relational placeholder, it will be evaluated 200*200 = 40000 times.
 Using relational placeholders could be really slow, so it is recommended to not use them unless you need them.

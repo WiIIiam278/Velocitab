@@ -21,6 +21,7 @@ package net.william278.velocitab.hook;
 
 import com.velocitypowered.api.proxy.Player;
 import io.github.miniplaceholders.api.MiniPlaceholders;
+import io.github.miniplaceholders.api.types.RelationalAudience;
 import net.jodah.expiringmap.ExpiringMap;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -45,22 +46,12 @@ public class MiniPlaceholdersHook extends Hook {
     }
 
     @NotNull
-    private TagResolver getResolver(@NotNull Player player, @Nullable Player viewer) {
-        if (viewer == null) {
-            return cache.computeIfAbsent(player.getUniqueId(), u -> MiniPlaceholders.getAudienceGlobalPlaceholders(player));
-        }
-
-        final UUID merged = new UUID(player.getUniqueId().getMostSignificantBits(), viewer.getUniqueId().getMostSignificantBits());
-        return cache.computeIfAbsent(merged, u -> MiniPlaceholders.getRelationalGlobalPlaceholders(player, viewer));
-    }
-
-    @NotNull
     public Component format(@NotNull String text, @NotNull Player player, @Nullable Player viewer) {
         if (viewer == null) {
-            return MiniMessage.miniMessage().deserialize(text, getResolver(player, null));
+            return MiniMessage.miniMessage().deserialize(text, player, MiniPlaceholders.audienceGlobalPlaceholders());
         }
 
-        return MiniMessage.miniMessage().deserialize(text, getResolver(player, viewer));
+        return MiniMessage.miniMessage().deserialize(text, new RelationalAudience<>(player, viewer), MiniPlaceholders.relationalGlobalPlaceholders());
     }
 
 }

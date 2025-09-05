@@ -41,7 +41,7 @@ dependencies {
     compileOnly 'io.netty:netty-codec-http:4.2.2.Final'
     compileOnly 'org.projectlombok:lombok:1.18.38'
     compileOnly 'net.luckperms:api:5.5'
-    compileOnly 'io.github.miniplaceholders:miniplaceholders-api:2.2.3'
+    compileOnly 'io.github.miniplaceholders:miniplaceholders-api:3.0.1'
     compileOnly 'it.unimi.dsi:fastutil:8.5.16'
     compileOnly 'net.kyori:adventure-nbt:4.23.0'
 
@@ -177,7 +177,7 @@ tasks {
 
         downloadPlugins {
 //            github ("WiIIiam278", "PAPIProxyBridge", "1.7.1", "PAPIProxyBridge-Velocity-1.7.1.jar")
-            modrinth ("miniplaceholders", "2.2.4")
+            modrinth ("miniplaceholders", "3.0.1")
         }
     }
 }

@@ -110,7 +110,10 @@ public class ConditionManager {
 
     @NotNull
     private String buildExpression(@NotNull String condition) {
-        return condition.replace("and", "&&").replace("or", "||")
+        return condition
+                .replace("GREATER_THAN_OR_EQUAL", ">=").replace("LESS_THAN_OR_EQUAL", "<=")
+                .replace("GREATER_THAN", ">").replace("LESS_THAN", "<")
+                .replace("and", "&&").replace("or", "||")
                 .replace("AND", "&&").replace("OR", "||");
     }
 

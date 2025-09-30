@@ -38,7 +38,8 @@ public class Protocol770Adapter extends Protocol765Adapter {
         super(plugin, Set.of(
                 ProtocolVersion.MINECRAFT_1_21_5,
                 ProtocolVersion.MINECRAFT_1_21_6,
-                ProtocolVersion.MINECRAFT_1_21_7
+                ProtocolVersion.MINECRAFT_1_21_7,
+                ProtocolVersion.MINECRAFT_1_21_9
         ));
     }
 

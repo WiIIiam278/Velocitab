@@ -43,7 +43,7 @@ dependencies {
     compileOnly 'net.luckperms:api:5.5'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:3.0.1'
     compileOnly 'it.unimi.dsi:fastutil:8.5.16'
-    compileOnly 'net.kyori:adventure-nbt:4.23.0'
+    compileOnly 'net.kyori:adventure-nbt:4.25.0'
 
     implementation 'org.apache.commons:commons-text:1.13.1'
     implementation 'net.william278:desertwell:2.0.4'

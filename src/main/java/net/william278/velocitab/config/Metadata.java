@@ -50,7 +50,7 @@ public class Metadata {
 
     public void validateBuild(@NotNull Version version) {
         int serverBuild = getBuildNumber(version.toString());
-        if (serverBuild < velocityMinimumBuild) {
+        if (serverBuild > 0 && serverBuild < velocityMinimumBuild) {
             throw new IllegalStateException("Your Velocity build version (#" + serverBuild + ") is not supported! " +
                     "Disabling Velocitab. Please update to at least Velocity v" + velocityApiVersion
                     + " build #" + velocityMinimumBuild + " or newer.");
@@ -70,6 +70,12 @@ public class Metadata {
         if (matcher.find(1)) {
             return Integer.parseInt(matcher.group(1));
         }
+
+        final Matcher simpleMatcher = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)$").matcher(proxyVersion);
+        if (simpleMatcher.matches()) {
+            return 0;
+        }
+
         throw new IllegalArgumentException("No build number found for proxy version: " + proxyVersion);
     }
 

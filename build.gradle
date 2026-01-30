@@ -171,9 +171,10 @@ publishing {
 }
 
 tasks {
-    var papi = papi_proxy_bridge_minimum_version
     runVelocity {
-        velocityVersion("${velocity_api_version}-SNAPSHOT")
+        var snapshotSuffix = velocity_snapshot.toBoolean() ? "-SNAPSHOT" : ""
+        println "Using Velocity API version: ${velocity_api_version}${snapshotSuffix}"
+        velocityVersion("${velocity_api_version}" + snapshotSuffix)
 
         downloadPlugins {
 //            github ("WiIIiam278", "PAPIProxyBridge", "1.7.1", "PAPIProxyBridge-Velocity-1.7.1.jar")

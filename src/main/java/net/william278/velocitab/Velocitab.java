@@ -34,6 +34,7 @@ import lombok.Setter;
 import net.william278.desertwell.util.UpdateChecker;
 import net.william278.desertwell.util.Version;
 import net.william278.toilet.Toilet;
+import net.william278.velocitab.api.EventDispatcher;
 import net.william278.velocitab.api.PluginMessageAPI;
 import net.william278.velocitab.api.VelocitabAPI;
 import net.william278.velocitab.commands.VelocitabCommand;
@@ -87,6 +88,7 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
     private PacketEventManager packetEventManager;
     private PluginMessageAPI pluginMessageAPI;
     private PlaceholderManager placeholderManager;
+    private EventDispatcher eventDispatcher;
     @Setter
     private Toilet toilet;
 
@@ -158,6 +160,7 @@ public class Velocitab implements ConfigProvider, ScoreboardProvider, LoggerProv
 
     private void prepareAPI() {
         VelocitabAPI.register(this);
+        eventDispatcher = new EventDispatcher(this);
         if (settings.isEnablePluginMessageApi()) {
             pluginMessageAPI = new PluginMessageAPI(this);
             pluginMessageAPI.registerChannel();

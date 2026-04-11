@@ -130,14 +130,21 @@ public final class TabPlayer implements Comparable<TabPlayer> {
     public void sendHeaderAndFooter(@NotNull PlayerTabList tabList) {
         final Component header = tabList.getHeader(this);
         final Component footer = tabList.getFooter(this);
-        lastHeader = header;
-        lastFooter = footer;
 
         if (plugin.getSettings().isDisableHeaderFooterIfEmpty() && (header.equals(Component.empty()) && footer.equals(Component.empty()))) {
+            lastHeader = header;
+            lastFooter = footer;
             return;
         }
 
-        player.sendPlayerListHeaderAndFooter(header, footer);
+        // Allow API consumers to transform header/footer before sending to the client.
+        final Component[] result = plugin.getEventDispatcher().fireHeaderFooterEvent(this, header, footer);
+        final Component finalHeader = result[0];
+        final Component finalFooter = result[1];
+
+        lastHeader = finalHeader;
+        lastFooter = finalFooter;
+        player.sendPlayerListHeaderAndFooter(finalHeader, finalFooter);
     }
 
     public void incrementIndexes() {

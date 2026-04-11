@@ -33,6 +33,7 @@ import com.velocitypowered.proxy.protocol.StateRegistry;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.william278.velocitab.Velocitab;
+import net.william278.velocitab.api.TabTeamUpdateEvent;
 import net.william278.velocitab.config.Group;
 import net.william278.velocitab.player.TabPlayer;
 import net.william278.velocitab.sorting.SortedSet;
@@ -302,6 +303,17 @@ public class ScoreboardManager {
         }
 
         final UpdateTeamsPacket packet = UpdateTeamsPacket.create(plugin, tabPlayer, teamName, nametag, viewer, teamMembers);
+
+        // Allow API consumers to transform nametag components before the packet is sent.
+        final TabTeamUpdateEvent event = plugin.getEventDispatcher().fireTeamUpdateEvent(
+                tabPlayer, viewer.getPlayer(),
+                packet.prefix(), packet.suffix(), packet.displayName(),
+                TabTeamUpdateEvent.Mode.CREATE
+        );
+        packet.prefix(event.getPrefix());
+        packet.suffix(event.getSuffix());
+        packet.displayName(event.getDisplayName());
+
         trackedTeams.put(viewer.getPlayer().getUniqueId(), teamName);
         final boolean isNameTagEmpty = tabPlayer.getGroup().nametag().isEmpty() && !plugin.getSettings().isRemoveNametags();
         sendPacket(viewer.getPlayer(), packet, isNameTagEmpty);
@@ -338,6 +350,20 @@ public class ScoreboardManager {
                 return;
             }
 
+            // Allow API consumers to transform nametag components before the packet is sent.
+            final TabTeamUpdateEvent event = plugin.getEventDispatcher().fireTeamUpdateEvent(
+                    tabPlayer, viewer.getPlayer(),
+                    prefix, suffix, packet.displayName(),
+                    TabTeamUpdateEvent.Mode.UPDATE
+            );
+            packet.prefix(event.getPrefix());
+            packet.suffix(event.getSuffix());
+            packet.displayName(event.getDisplayName());
+
+            // Cache the pre-event (Velocitab-computed) values for deduplication.
+            // The event transformation is deterministic: same input → same output, so if
+            // Velocitab's computed values haven't changed the client already has the correct
+            // post-event result and we can safely skip the next cycle.
             tabPlayer.setRelationalNametag(viewer.getPlayer().getUniqueId(), prefix, suffix);
             sendPacket(viewer.getPlayer(), packet, isNameTagEmpty);
         });

@@ -392,12 +392,18 @@ public class PlayerTabList {
             return;
         }
 
-        player.setRelationalDisplayName(viewer.getPlayer().getUniqueId(), displayName);
+        // Allow API consumers to transform the display name before it reaches the client.
+        // Fired after the cache check to avoid unnecessary event firing for unchanged values.
+        // The post-event value is cached and sent, keeping the cache consistent with what clients receive.
+        final Component finalDisplayName = plugin.getEventDispatcher()
+                .fireDisplayNameEvent(player, viewer, displayName);
+
+        player.setRelationalDisplayName(viewer.getPlayer().getUniqueId(), finalDisplayName);
         viewer.getPlayer().getTabList().getEntry(player.getPlayer().getUniqueId())
                 .ifPresentOrElse(
-                        entry -> entry.setDisplayName(displayName),
+                        entry -> entry.setDisplayName(finalDisplayName),
                         () -> viewer.getPlayer().getTabList()
-                                .addEntry(createEntry(player, viewer.getPlayer().getTabList(), displayName))
+                                .addEntry(createEntry(player, viewer.getPlayer().getTabList(), finalDisplayName))
                 );
     }
 

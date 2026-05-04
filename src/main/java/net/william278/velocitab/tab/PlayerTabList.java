@@ -596,7 +596,7 @@ public class PlayerTabList {
 
             final String withPlaceholders = plugin.getPlaceholderManager().applyViewerPlaceholders(viewer, formatConditionalPlaceholders);
             final String unformatted = plugin.getPlaceholderManager().formatVelocitabPlaceholders(withPlaceholders, tabPlayer, viewer);
-            final Component displayNameComponent = formatComponent(tabPlayer, unformatted);
+            final Component displayNameComponent = formatRelationalComponent(tabPlayer, viewer, unformatted);
             updateEntryDisplayName(tabPlayer, viewer, displayNameComponent);
         });
     }

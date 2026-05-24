@@ -46,7 +46,7 @@
 **Ready?** [Get started in a new TAB&hellip;](https://william278.net/docs/velocitab/setup)
 
 ## Setup
-We suggest installing [LuckPerms](https://luckperms.net) on your Velocity proxy and backend (Spigot, Paper, Fabric, etc.) servers for prefix/suffix formatting right out the box.
+We suggest installing [LuckPerms](https://luckperms.net) on your Velocity proxy and backend (Spigot, Paper, Fabric, etc.) servers for prefix/suffix formatting right out of the box.
 
 1. Turn off your Velocity proxy server
 2. [Download](https://github.com/WiIIiam278/Velocitab/releases/latest) and place the plugin jar file in the `/plugins/` folder of your Velocity proxy server.

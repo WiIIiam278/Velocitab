@@ -70,7 +70,7 @@ footers:
   - |
     \n<gray>For Velocity proxy servers:</gray>
     <gradient:#1bd96a:#6cffa9>https://modrinth.com/plugin/velocitab</gradient>
-    <gradient:#1bd96a:#6cffa9>https://william278.net/project/veloictab</gradient>'
+    <gradient:#1bd96a:#6cffa9>https://william278.net/project/velocitab</gradient>'
 format: '<gradient:#999:#fff>[%server%] &f%username%</gradient>'
 header_footer_update_rate: 200
 ```

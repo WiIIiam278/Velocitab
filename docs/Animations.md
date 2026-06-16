@@ -1,7 +1,7 @@
 Velocitab lets you create basic animations in the header and footer, which you can combine with some nice [[Formatting]] to create a slick TAB menu for your server. Note you cannot animate player name formats, only headers and footers.
 
 ## Creating basic animations
-By default, Velocitab headers/footers are static; only containing a single frame of animation and only updating when a user joins/leaves your server, or when permissions are recalcualated by LuckPerms.
+By default, Velocitab headers/footers are static; only containing a single frame of animation and only updating when a user joins/leaves your server, or when permissions are recalculated by LuckPerms.
 
 ### Adding additional frames of animation
 To add additional frames of animation to a header format for a [server group](server-groups), add it to the string list for that group. The example below uses the MineDown gradient fade feature to create a simple three-phase animation.
@@ -70,7 +70,7 @@ footers:
   - |
     \n<gray>For Velocity proxy servers:</gray>
     <gradient:#1bd96a:#6cffa9>https://modrinth.com/plugin/velocitab</gradient>
-    <gradient:#1bd96a:#6cffa9>https://william278.net/project/veloictab</gradient>'
+    <gradient:#1bd96a:#6cffa9>https://william278.net/project/velocitab</gradient>'
 format: '<gradient:#999:#fff>[%server%] &f%username%</gradient>'
 header_footer_update_rate: 200
 ```

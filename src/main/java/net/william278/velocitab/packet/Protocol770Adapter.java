@@ -41,7 +41,8 @@ public class Protocol770Adapter extends Protocol765Adapter {
                 ProtocolVersion.MINECRAFT_1_21_7,
                 ProtocolVersion.MINECRAFT_1_21_9,
                 ProtocolVersion.MINECRAFT_1_21_11,
-                ProtocolVersion.MINECRAFT_26_1
+                ProtocolVersion.MINECRAFT_26_1,
+                ProtocolVersion.MINECRAFT_26_2
         ));
     }
 
@@ -55,12 +56,21 @@ public class Protocol770Adapter extends Protocol765Adapter {
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.UPDATE_INFO) {
             packet.displayName(readComponent(byteBuf));
-            packet.friendlyFlags(UpdateTeamsPacket.FriendlyFlag.fromBitMask(byteBuf.readByte()));
-            packet.nametagVisibility(UpdateTeamsPacket.NametagVisibility.byOrdinal(ProtocolUtils.readVarInt(byteBuf)));
-            packet.collisionRule(UpdateTeamsPacket.CollisionRule.byOrdinal(ProtocolUtils.readVarInt(byteBuf)));
-            packet.color(byteBuf.readByte());
-            packet.prefix(readComponent(byteBuf));
-            packet.suffix(readComponent(byteBuf));
+            if (protocolVersion.noLessThan(ProtocolVersion.MINECRAFT_26_2)) {
+                packet.prefix(readComponent(byteBuf));
+                packet.suffix(readComponent(byteBuf));
+                packet.nametagVisibility(UpdateTeamsPacket.NametagVisibility.byOrdinal(ProtocolUtils.readVarInt(byteBuf)));
+                packet.collisionRule(UpdateTeamsPacket.CollisionRule.byOrdinal(ProtocolUtils.readVarInt(byteBuf)));
+                packet.color(byteBuf.readBoolean() ? ProtocolUtils.readVarInt(byteBuf) : 21);
+                packet.friendlyFlags(UpdateTeamsPacket.FriendlyFlag.fromBitMask(byteBuf.readByte()));
+            } else {
+                packet.friendlyFlags(UpdateTeamsPacket.FriendlyFlag.fromBitMask(byteBuf.readByte()));
+                packet.nametagVisibility(UpdateTeamsPacket.NametagVisibility.byOrdinal(ProtocolUtils.readVarInt(byteBuf)));
+                packet.collisionRule(UpdateTeamsPacket.CollisionRule.byOrdinal(ProtocolUtils.readVarInt(byteBuf)));
+                packet.color(byteBuf.readByte());
+                packet.prefix(readComponent(byteBuf));
+                packet.suffix(readComponent(byteBuf));
+            }
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.ADD_PLAYERS || mode == UpdateTeamsPacket.UpdateMode.REMOVE_PLAYERS) {
             int count = ProtocolUtils.readVarInt(byteBuf);
@@ -82,12 +92,24 @@ public class Protocol770Adapter extends Protocol765Adapter {
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.UPDATE_INFO) {
             writeComponent(byteBuf, packet.displayName());
-            byteBuf.writeByte(UpdateTeamsPacket.FriendlyFlag.toBitMask(packet.friendlyFlags()));
-            ProtocolUtils.writeVarInt(byteBuf, packet.nametagVisibility().ordinal());
-            ProtocolUtils.writeVarInt(byteBuf, packet.collisionRule().ordinal());
-            byteBuf.writeByte(packet.color());
-            writeComponent(byteBuf, packet.prefix());
-            writeComponent(byteBuf, packet.suffix());
+            if (protocolVersion.noLessThan(ProtocolVersion.MINECRAFT_26_2)) {
+                writeComponent(byteBuf, packet.prefix());
+                writeComponent(byteBuf, packet.suffix());
+                ProtocolUtils.writeVarInt(byteBuf, packet.nametagVisibility().ordinal());
+                ProtocolUtils.writeVarInt(byteBuf, packet.collisionRule().ordinal());
+                byteBuf.writeBoolean(packet.color() != 21);
+                if (packet.color() != 21) {
+                    ProtocolUtils.writeVarInt(byteBuf, Math.min(15, packet.color()));
+                }
+                byteBuf.writeByte(UpdateTeamsPacket.FriendlyFlag.toBitMask(packet.friendlyFlags()));
+            } else {
+                byteBuf.writeByte(UpdateTeamsPacket.FriendlyFlag.toBitMask(packet.friendlyFlags()));
+                ProtocolUtils.writeVarInt(byteBuf, packet.nametagVisibility().ordinal());
+                ProtocolUtils.writeVarInt(byteBuf, packet.collisionRule().ordinal());
+                byteBuf.writeByte(packet.color());
+                writeComponent(byteBuf, packet.prefix());
+                writeComponent(byteBuf, packet.suffix());
+            }
         }
         if (mode == UpdateTeamsPacket.UpdateMode.CREATE_TEAM || mode == UpdateTeamsPacket.UpdateMode.ADD_PLAYERS || mode == UpdateTeamsPacket.UpdateMode.REMOVE_PLAYERS) {
             List<String> entities = packet.entities();

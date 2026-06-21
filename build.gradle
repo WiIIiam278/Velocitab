@@ -38,7 +38,7 @@ dependencies {
     compileOnly "com.velocitypowered:velocity-proxy:${velocity_api_version}-SNAPSHOT"
     compileOnly "net.william278:papiproxybridge:${papi_proxy_bridge_minimum_version}"
 
-    compileOnly 'io.netty:netty-codec-http:4.2.2.Final'
+    compileOnly 'io.netty:netty-codec-http:4.2.7.Final'
     compileOnly 'org.projectlombok:lombok:1.18.38'
     compileOnly 'net.luckperms:api:5.5'
     compileOnly 'io.github.miniplaceholders:miniplaceholders-api:3.0.1'

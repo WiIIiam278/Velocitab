@@ -19,6 +19,7 @@ ext {
     set 'description', description.toString()
 
     set 'velocity_api_version', velocity_api_version.toString()
+    set 'velocity_compile_api_version', velocity_compile_api_version.toString()
     set 'velocity_minimum_build', velocity_minimum_build.toString()
     set 'papi_proxy_bridge_minimum_version', papi_proxy_bridge_minimum_version.toString()
 }
@@ -34,8 +35,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly "com.velocitypowered:velocity-api:${velocity_api_version}-SNAPSHOT"
-    compileOnly "com.velocitypowered:velocity-proxy:${velocity_api_version}-SNAPSHOT"
+    compileOnly "com.velocitypowered:velocity-api:${velocity_compile_api_version}-SNAPSHOT"
+    compileOnly "com.velocitypowered:velocity-proxy:${velocity_compile_api_version}-SNAPSHOT"
     compileOnly "net.william278:papiproxybridge:${papi_proxy_bridge_minimum_version}"
 
     compileOnly 'io.netty:netty-codec-http:4.2.2.Final'

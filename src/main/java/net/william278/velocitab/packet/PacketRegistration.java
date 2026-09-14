@@ -41,6 +41,7 @@ public final class PacketRegistration<P extends MinecraftPacket> {
     private ProtocolUtils.Direction direction;
     private StateRegistry stateRegistry;
     private final List<StateRegistry.PacketMapping> mappings = new ArrayList<>();
+    private boolean registered;
 
     public PacketRegistration<P> packetSupplier(final @NotNull Supplier<P> packetSupplier) {
         this.packetSupplier = packetSupplier;
@@ -73,48 +74,85 @@ public final class PacketRegistration<P extends MinecraftPacket> {
     }
 
     public void register() {
+        final List<StateRegistry.PacketRegistry.ProtocolRegistry> unregistered = new ArrayList<>();
         try {
-            final StateRegistry.PacketRegistry packetRegistry = direction == ProtocolUtils.Direction.CLIENTBOUND
-                    ? (StateRegistry.PacketRegistry) STATE_REGISTRY$clientBound.invoke(stateRegistry)
-                    : (StateRegistry.PacketRegistry) STATE_REGISTRY$serverBound.invoke(stateRegistry);
-
-            PACKET_REGISTRY$register.invoke(
-                    packetRegistry,
-                    packetClass,
-                    packetSupplier,
-                    mappings.toArray(StateRegistry.PacketMapping[]::new)
-            );
-
+            final StateRegistry.PacketRegistry packetRegistry = getPacketRegistry();
+            for (StateRegistry.PacketRegistry.ProtocolRegistry registry : getProtocolRegistries(packetRegistry)) {
+                if (!getPacketClassToId(registry).containsKey(packetClass)) {
+                    unregistered.add(registry);
+                }
+            }
+            try {
+                PACKET_REGISTRY$register.invoke(
+                        packetRegistry,
+                        packetClass,
+                        packetSupplier,
+                        mappings.toArray(StateRegistry.PacketMapping[]::new)
+                );
+                registered = true;
+            } catch (Throwable failure) {
+                // Velocity registers protocols sequentially: a later collision must not leave
+                // earlier protocols registered while newer clients have no encoder mapping.
+                for (StateRegistry.PacketRegistry.ProtocolRegistry registry : unregistered) {
+                    try {
+                        removeMapping(registry);
+                    } catch (Throwable rollbackFailure) {
+                        failure.addSuppressed(rollbackFailure);
+                    }
+                }
+                throw failure;
+            }
         } catch (Throwable t) {
-            throw new RuntimeException(t);
+            throw new RuntimeException("Failed to register " + packetClass.getSimpleName(), t);
         }
     }
 
-    @SuppressWarnings("unchecked")
     public void unregister() {
+        if (!registered) {
+            return;
+        }
         try {
-            final StateRegistry.PacketRegistry packetRegistry = direction == ProtocolUtils.Direction.CLIENTBOUND
-                    ? (StateRegistry.PacketRegistry) STATE_REGISTRY$clientBound.invoke(stateRegistry)
-                    : (StateRegistry.PacketRegistry) STATE_REGISTRY$serverBound.invoke(stateRegistry);
-
-            Map<ProtocolVersion, StateRegistry.PacketRegistry.ProtocolRegistry> versions = (Map<ProtocolVersion, StateRegistry.PacketRegistry.ProtocolRegistry>) PACKET_REGISTRY$versions.invoke(packetRegistry);
-            versions.forEach((protocolVersion, protocolRegistry) -> {
-                try {
-                    IntObjectMap<Supplier<?>> packetIdToSupplier = (IntObjectMap<Supplier<?>>) PACKET_REGISTRY$packetIdToSupplier.invoke(protocolRegistry);
-                    Object2IntMap<Class<?>> packetClassToId = (Object2IntMap<Class<?>>) PACKET_REGISTRY$packetClassToId.invoke(protocolRegistry);
-                    Set.copyOf(packetIdToSupplier.keySet()).stream()
-                            .filter(supplier -> packetIdToSupplier.get(supplier).get().getClass().equals(packetClass))
-                            .forEach(packetIdToSupplier::remove);
-                    packetClassToId.values().intStream()
-                            .filter(id -> Objects.equals(packetClassToId.getInt(packetClass), id))
-                            .forEach(packetClassToId::removeInt);
-                } catch (Throwable t) {
-                    throw new RuntimeException(t);
-                }
-            });
-
+            for (StateRegistry.PacketRegistry.ProtocolRegistry registry : getProtocolRegistries(getPacketRegistry())) {
+                removeMapping(registry);
+            }
+            registered = false;
         } catch (Throwable t) {
-            throw new RuntimeException(t);
+            throw new RuntimeException("Failed to unregister " + packetClass.getSimpleName(), t);
+        }
+    }
+
+    private StateRegistry.PacketRegistry getPacketRegistry() throws Throwable {
+        return direction == ProtocolUtils.Direction.CLIENTBOUND
+                ? (StateRegistry.PacketRegistry) STATE_REGISTRY$clientBound.invoke(stateRegistry)
+                : (StateRegistry.PacketRegistry) STATE_REGISTRY$serverBound.invoke(stateRegistry);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Collection<StateRegistry.PacketRegistry.ProtocolRegistry> getProtocolRegistries(
+            StateRegistry.PacketRegistry registry) throws Throwable {
+        return ((Map<ProtocolVersion, StateRegistry.PacketRegistry.ProtocolRegistry>)
+                PACKET_REGISTRY$versions.invoke(registry)).values();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object2IntMap<Class<?>> getPacketClassToId(
+            StateRegistry.PacketRegistry.ProtocolRegistry registry) throws Throwable {
+        return (Object2IntMap<Class<?>>) PACKET_REGISTRY$packetClassToId.invoke(registry);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void removeMapping(StateRegistry.PacketRegistry.ProtocolRegistry registry) throws Throwable {
+        final Object2IntMap<Class<?>> packetClassToId = getPacketClassToId(registry);
+        if (!packetClassToId.containsKey(packetClass)) {
+            return;
+        }
+        final int id = packetClassToId.removeInt(packetClass);
+        final IntObjectMap<Supplier<?>> packetIdToSupplier =
+                (IntObjectMap<Supplier<?>>) PACKET_REGISTRY$packetIdToSupplier.invoke(registry);
+        // Never instantiate packet suppliers (including other plugins' factories) to identify
+        // a mapping. Only remove our decoder, leaving encode-only/foreign entries untouched.
+        if (packetIdToSupplier.get(id) == packetSupplier) {
+            packetIdToSupplier.remove(id);
         }
     }
 
